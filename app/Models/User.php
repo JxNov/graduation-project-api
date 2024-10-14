@@ -11,7 +11,10 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    const _GENDERS = [
+        'Male' => 'Male',
+        'Female' => 'Female',
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -20,6 +23,10 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $fillable = [
         'name',
+        'date_of_birth',
+        'gender',
+        'address',
+        'phone_number',
         'email',
         'password',
     ];
