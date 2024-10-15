@@ -25,9 +25,12 @@ Route::prefix('admin')
             Route::get('/', [AcademicYearController::class, 'index']);
             Route::get('/create', [AcademicYearController::class, 'create']);
             Route::post('/', [AcademicYearController::class, 'store']);
+            Route::get('/trash', [AcademicYearController::class, 'trash']);
             Route::get('/{slug}', [AcademicYearController::class, 'show']);
             Route::get('/edit/{slug}', [AcademicYearController::class, 'edit']);
             Route::patch('/{slug}', [AcademicYearController::class, 'update']);
             Route::delete('/{slug}', [AcademicYearController::class, 'destroy']);
+            Route::get('/restore/{slug}', [AcademicYearController::class, 'restore']);
+            Route::delete('/force-delete/{slug}', [AcademicYearController::class, 'forceDelete']);
         });
     });
