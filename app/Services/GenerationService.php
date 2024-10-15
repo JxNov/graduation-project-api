@@ -12,16 +12,12 @@ class GenerationService
 {
     public function createNewGeneration(array $data)
     {
-        DB::beginTransaction();
-
-        try {
+        return DB::transaction(function () use ($data) {
             $generations = Generation::select('start_date', 'end_date')->get();
 
             // lấy năm bắt đầu và kết thúc nhập vào
             $startYear = Carbon::parse($data['start_date'])->year;
             $endYear = Carbon::parse($data['end_date'])->year;
-
-            // Log::info('startYear: ' . $startYear . ' endYear: ' . $endYear);
 
             // tính tổng số năm của khóa học
             $generationTotalYear = $endYear - $startYear;
@@ -29,28 +25,27 @@ class GenerationService
             // năm bắt đầu phải < năm kết thúc
             if ($startYear >= $endYear) {
                 throw new Exception('Năm bắt đầu phải nhỏ hơn năm kết thúc');
-            } else {
-                if ($generationTotalYear > $data['year']) {
-                    throw new Exception('Khóa học chỉ có ' . $data['year'] . ' năm');
-                }
-                if ($generationTotalYear < $data['year']) {
-                    throw new Exception('Khóa học cần có ' . $data['year'] . ' năm');
-                }
+            }
+
+            if ($generationTotalYear > $data['year']) {
+                throw new Exception('Khóa học chỉ có ' . $data['year'] . ' năm');
+            }
+
+            if ($generationTotalYear < $data['year']) {
+                throw new Exception('Khóa học cần có ' . $data['year'] . ' năm');
             }
 
             // duyệt qua tất cả những khóa học sinh
             foreach ($generations as $generation) {
-                // lấy năm bắt đầu và kết thúc của tất cả khóa học sinh
-
                 $startGenerationYear = Carbon::parse($generation->start_date)->year;
                 $endGenerationYear = Carbon::parse($generation->end_date)->year;
 
-                // kiểm tra năm bắt đầu có trùng với năm bắt đầu và kết thúc có trùng năm kết thúc không
+                // kiểm tra năm bắt đầu và năm kết thúc
                 if ($startYear == $startGenerationYear || $endYear == $endGenerationYear) {
                     throw new Exception('Khóa học không thể cùng năm bắt đầu hoặc kết thúc với khóa học khác');
                 }
 
-                // kiểm tra xem khoảng thời gian của khóa học mới có bị chồng lấn với khóa học hiện có hay không
+                // kiểm tra chồng lấn thời gian
                 if (
                     ($startYear < $endGenerationYear && $endYear > $startGenerationYear) ||
                     ($startGenerationYear < $endYear && $endGenerationYear > $startYear)
@@ -58,8 +53,7 @@ class GenerationService
                     throw new Exception('Khóa học sinh đã tồn tại trong khoảng thời gian này rồi');
                 }
 
-                // đảm bảo, năm bắt đầu của khóa học mới phải luôn >= năm kết thúc của những năm trước
-                // tháng 5 học xong tháng 9 khai giảng, tức có thể = năm kết thúc
+                // đảm bảo năm bắt đầu của khóa học mới phải lớn hơn năm kết thúc của các khóa trước
                 if ($startYear < $endGenerationYear) {
                     throw new Exception('Năm bắt đầu của khóa học mới phải lớn hơn tất cả các năm kết thúc của các khóa trước');
                 }
@@ -70,21 +64,13 @@ class GenerationService
             // tạo mới khóa học
             $newGeneration = Generation::create($data);
 
-            DB::commit();
-
             return $newGeneration;
-        } catch (Exception $e) {
-            DB::rollBack();
-
-            throw $e;
-        }
+        });
     }
 
     public function updateGeneration(array $data, $slug)
     {
-        DB::beginTransaction();
-
-        try {
+        return DB::transaction(function () use ($data, $slug) {
             $currentGeneration = Generation::where('slug', $slug)->first();
 
             if ($currentGeneration === null) {
@@ -109,7 +95,6 @@ class GenerationService
                 }
             }
 
-            // Chỉ kiểm tra sự trùng lặp năm nếu có khóa học khác
             foreach ($generations as $generation) {
                 if ($currentGeneration->id != $generation->id) {
                     $startGenerationYear = Carbon::parse($generation->start_date)->year;
@@ -135,18 +120,13 @@ class GenerationService
             // Cập nhật khóa học
             $currentGeneration->update($data);
 
-            DB::commit();
-
             return $currentGeneration;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        });
     }
 
     public function deleteGeneration($slug)
     {
-        try {
+        return DB::transaction(function () use ($slug) {
             $generation = Generation::where('slug', $slug)->first();
 
             if ($generation === null) {
@@ -156,15 +136,12 @@ class GenerationService
             $generation->delete();
 
             return $generation;
-        } catch (Exception $e) {
-            throw $e;
-        }
+        });
     }
 
     public function restoreGeneration($slug)
     {
-        DB::beginTransaction();
-        try {
+        return DB::transaction(function () use ($slug) {
             $generation = Generation::onlyTrashed()->where('slug', $slug)->first();
 
             if ($generation === null) {
@@ -173,18 +150,14 @@ class GenerationService
 
             $generation->restore();
 
-            DB::commit();
             return $generation;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        });
     }
 
     // xóa vĩnh viễn
     public function forceDeleteGeneration($slug)
     {
-        try {
+        return DB::transaction(function () use ($slug) {
             $generation = Generation::where('slug', $slug)
                 ->withTrashed()
                 ->first();
@@ -196,8 +169,7 @@ class GenerationService
             $generation->forceDelete();
 
             return $generation;
-        } catch (Exception $e) {
-            throw $e;
-        }
+        });
     }
+
 }
