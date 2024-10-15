@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\v1\AcademicYearController;
 use App\Http\Controllers\Api\v1\GenerationController;
+use App\Http\Controllers\Api\v1\SemesterController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')
@@ -32,5 +33,17 @@ Route::prefix('admin')
             Route::delete('/{slug}', [AcademicYearController::class, 'destroy']);
             Route::get('/restore/{slug}', [AcademicYearController::class, 'restore']);
             Route::delete('/force-delete/{slug}', [AcademicYearController::class, 'forceDelete']);
+        });
+
+        // kỳ học
+        Route::prefix('semesters')
+            ->group(function () {
+            Route::get('/', [SemesterController::class, 'index']);
+            Route::get('/create', [SemesterController::class, 'create']);
+            Route::post('/', [SemesterController::class, 'store']);
+            Route::get('/{slug}', [SemesterController::class, 'show']);
+            Route::get('/edit/{slug}', [SemesterController::class, 'edit']);
+            Route::put('/{slug}', [SemesterController::class, 'update']);
+            Route::delete('/{slug}', [SemesterController::class, 'destroy']);
         });
     });
