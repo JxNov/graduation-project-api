@@ -13,7 +13,6 @@ class AcademicYearResource extends JsonResource
   public function toArray(Request $request): array
   {
     return [
-      'id' => $this->id,
       'name' => $this->name,
       'slug' => $this->slug,
       'start_date' => Carbon::parse($this->start_date)->format('d/m/Y'),
