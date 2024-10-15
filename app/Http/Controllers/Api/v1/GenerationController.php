@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateGenerationRequest;
 use App\Http\Requests\GenerationRequest;
-use App\Http\Requests\UpdateGenerationRequest;
 use App\Http\Resources\GenerationCollection;
 use App\Http\Resources\GenerationResource;
 use App\Models\Generation;
