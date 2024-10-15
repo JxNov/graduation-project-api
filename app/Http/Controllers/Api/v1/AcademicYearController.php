@@ -155,4 +155,57 @@ class AcademicYearController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+    public function trash()
+    {
+        $academicYears = AcademicYear::onlyTrashed()
+            ->select('id', 'name', 'slug', 'start_date', 'end_date', 'generation_id')
+            ->latest('id')
+            ->with('generation')
+            ->paginate(6);
+
+        if ($academicYears->isEmpty()) {
+            return $this->successResponse(
+                null,
+                'Không có dữ liệu',
+                Response::HTTP_OK
+            );
+        }
+
+        return $this->successResponse(
+            new AcademicYearCollection($academicYears),
+            'Lấy tất cả thông tin năm học đã xóa thành công',
+            Response::HTTP_OK
+        );
+    }
+
+    public function restore($slug)
+    {
+        try {
+            $academicYear = $this->academicYearService->restoreAcademicYear($slug);
+
+            return $this->successResponse(
+                new AcademicYearResource($academicYear),
+                'Đã khôi phục năm học thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function forceDelete($slug)
+    {
+        try {
+            $this->academicYearService->forceDeleteAcademicYear($slug);
+
+            return $this->successResponse(
+                null,
+                'Đã xóa năm học vĩnh viễn',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }

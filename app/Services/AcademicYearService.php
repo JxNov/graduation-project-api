@@ -161,4 +161,38 @@ class AcademicYearService
             return $academicYear;
         });
     }
+
+    public function restoreAcademicYear($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $academicYear = AcademicYear::where('slug', $slug)
+                ->onlyTrashed()
+                ->first();
+
+            if ($academicYear === null) {
+                throw new Exception('Không tìm thấy năm học đã xóa');
+            }
+
+            $academicYear->restore();
+
+            return $academicYear;
+        });
+    }
+
+    public function forceDeleteAcademicYear($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $academicYear = AcademicYear::where('slug', $slug)
+                ->withTrashed()
+                ->first();
+
+            if ($academicYear === null) {
+                throw new Exception('Không tìm thấy năm học đã xóa');
+            }
+
+            $academicYear->forceDelete();
+
+            return $academicYear;
+        });
+    }
 }
