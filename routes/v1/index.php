@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\v1\AcademicYearController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,4 +19,15 @@ Route::prefix('admin')
             Route::delete('/force-delete/{slug}', [GenerationController::class, 'forceDelete']);
         });
 
+        // năm học
+        Route::prefix('academic-years')
+            ->group(function () {
+            Route::get('/', [AcademicYearController::class, 'index']);
+            Route::get('/create', [AcademicYearController::class, 'create']);
+            Route::post('/', [AcademicYearController::class, 'store']);
+            Route::get('/{slug}', [AcademicYearController::class, 'show']);
+            Route::get('/edit/{slug}', [AcademicYearController::class, 'edit']);
+            Route::patch('/{slug}', [AcademicYearController::class, 'update']);
+            Route::delete('/{slug}', [AcademicYearController::class, 'destroy']);
+        });
     });
