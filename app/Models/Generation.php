@@ -22,4 +22,26 @@ class Generation extends Model
     {
         return $this->hasMany(AcademicYear::class);
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($generation) {
+            $generation->academicYears()->each(function ($academicYear) {
+                $academicYear->semesters()->each(function ($semester) {
+                    $semester->delete();
+                });
+                $academicYear->delete();
+            });
+        });
+
+        static::restoring(function ($generation) {
+            $generation->academicYears()->withTrashed()->each(function ($academicYear) {
+                $academicYear->restore();
+
+                $academicYear->semesters()->withTrashed()->each(function ($semester) {
+                    $semester->restore();
+                });
+            });
+        });
+    }
 }

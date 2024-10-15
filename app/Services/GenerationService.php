@@ -160,4 +160,44 @@ class GenerationService
             throw $e;
         }
     }
+
+    public function restoreGeneration($slug)
+    {
+        DB::beginTransaction();
+        try {
+            $generation = Generation::onlyTrashed()->where('slug', $slug)->first();
+
+            if ($generation === null) {
+                throw new Exception('Không tìm thấy khóa học');
+            }
+
+            $generation->restore();
+
+            DB::commit();
+            return $generation;
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    // xóa vĩnh viễn
+    public function forceDeleteGeneration($slug)
+    {
+        try {
+            $generation = Generation::where('slug', $slug)
+                ->withTrashed()
+                ->first();
+
+            if ($generation === null) {
+                throw new Exception('Không tìm thấy khóa học');
+            }
+
+            $generation->forceDelete();
+
+            return $generation;
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
 }

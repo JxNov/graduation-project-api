@@ -112,4 +112,57 @@ class GenerationController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+    public function trash()
+    {
+        $generations = Generation::onlyTrashed()
+            ->select('id', 'name', 'slug', 'start_date', 'end_date')
+            ->paginate(6);
+
+        if ($generations->isEmpty()) {
+            return $this->successResponse(
+                null,
+                'Không có dữ liệu',
+                Response::HTTP_OK
+            );
+        }
+
+        return $this->successResponse(
+            new GenerationCollection($generations),
+            'Lấy tất cả thông tin khóa học đã xóa',
+            Response::HTTP_OK
+        );
+    }
+
+    public function restore($slug)
+    {
+        try {
+            $generation = $this->generationService->restoreGeneration($slug);
+
+            return $this->successResponse(
+                new GenerationResource($generation),
+                'Đã khôi phục khóa học thành công',
+                Response::HTTP_OK
+            );
+
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    // xóa vĩnh viễn
+    public function forceDelete($slug)
+    {
+        try {
+            $this->generationService->forceDeleteGeneration($slug);
+
+            return $this->successResponse(
+                null,
+                'Đã xóa khóa học vĩnh viễn',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }
