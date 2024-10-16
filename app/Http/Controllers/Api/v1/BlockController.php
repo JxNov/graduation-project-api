@@ -108,4 +108,57 @@ class BlockController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+    public function trash()
+    {
+        $blocks = Block::onlyTrashed()
+            ->select('id', 'name', 'slug')
+            ->latest('id')
+            ->paginate(6);
+
+        if ($blocks->isEmpty()) {
+            return $this->errorResponse(
+                'Không có dữ liệu',
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        return $this->successResponse(
+            new BlockCollection($blocks),
+            'Lấy tất cả thông tin khối đã xóa thành công',
+            Response::HTTP_OK
+        );
+    }
+
+    public function restore($slug)
+    {
+        try {
+            $this->blockService->restoreBlock($slug);
+
+            return $this->successResponse(
+                null,
+                'Khôi phục khối thành công',
+                Response::HTTP_OK
+            );
+
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function forceDelete($slug)
+    {
+        try {
+            $this->blockService->forceDeleteBlock($slug);
+
+            return $this->successResponse(
+                null,
+                'Xóa vĩnh viễn khối thành công',
+                Response::HTTP_OK
+            );
+
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }

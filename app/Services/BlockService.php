@@ -53,7 +53,7 @@ class BlockService
 
     public function deleteBlock($slug)
     {
-        try {
+        return DB::transaction(function () use ($slug) {
             $block = Block::where('slug', $slug)->first();
             if ($block === null) {
                 throw new Exception('Không tìm thấy khối');
@@ -61,8 +61,32 @@ class BlockService
 
             $block->delete();
             return $block;
-        } catch (Exception $e) {
-            throw $e;
-        }
+        });
+    }
+
+    public function restoreBlock($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $block = Block::onlyTrashed()->where('slug', $slug)->first();
+            if ($block === null) {
+                throw new Exception('Không tìm thấy khối');
+            }
+
+            $block->restore();
+            return $block;
+        });
+    }
+
+    public function forceDeleteBlock($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $block = Block::withTrashed()->where('slug', $slug)->first();
+            if ($block === null) {
+                throw new Exception('Không tìm thấy khối');
+            }
+
+            $block->forceDelete();
+            return $block;
+        });
     }
 }

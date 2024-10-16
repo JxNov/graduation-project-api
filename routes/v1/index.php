@@ -56,8 +56,11 @@ Route::prefix('admin')
             ->group(function () {
             Route::get('/', [BlockController::class, 'index']);
             Route::post('/', [BlockController::class, 'store']);
+            Route::get('/trash', [BlockController::class, 'trash']);
             Route::get('/{slug}', [BlockController::class, 'show']);
             Route::patch('/{slug}', [BlockController::class, 'update']);
             Route::delete('/{slug}', [BlockController::class, 'destroy']);
+            Route::get('/restore/{slug}', [BlockController::class, 'restore']);
+            Route::delete('/force-delete/{slug}', [BlockController::class, 'forceDelete']);
         });
     });
