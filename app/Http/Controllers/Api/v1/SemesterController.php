@@ -150,4 +150,56 @@ class SemesterController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+    public function trash()
+    {
+        $semesters = Semester::onlyTrashed()
+            ->select('id', 'name', 'slug', 'start_date', 'end_date', 'academic_year_id')
+            ->latest('id')
+            ->paginate(6);
+
+        if ($semesters->isEmpty()) {
+            return $this->successResponse(
+                null,
+                'Không có dữ liệu',
+                Response::HTTP_OK
+            );
+        }
+
+        return $this->successResponse(
+            new SemesterCollection($semesters),
+            'Lấy tất cả thông tin kỳ học đã xóa thành công',
+            Response::HTTP_OK
+        );
+    }
+
+    public function restore($slug)
+    {
+        try {
+            $semester = $this->semesterService->restoreSemester($slug);
+
+            return $this->successResponse(
+                new SemesterResource($semester),
+                'Đã khôi phục kỳ học thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function forceDelete($slug)
+    {
+        try {
+            $this->semesterService->forceDeleteSemester($slug);
+
+            return $this->successResponse(
+                null,
+                'Đã xóa vĩnh viễn kỳ học thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }

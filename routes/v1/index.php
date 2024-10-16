@@ -41,9 +41,12 @@ Route::prefix('admin')
             Route::get('/', [SemesterController::class, 'index']);
             Route::get('/create', [SemesterController::class, 'create']);
             Route::post('/', [SemesterController::class, 'store']);
+            Route::get('/trash', [SemesterController::class, 'trash']);
             Route::get('/{slug}', [SemesterController::class, 'show']);
             Route::get('/edit/{slug}', [SemesterController::class, 'edit']);
             Route::put('/{slug}', [SemesterController::class, 'update']);
             Route::delete('/{slug}', [SemesterController::class, 'destroy']);
+            Route::get('/restore/{slug}', [SemesterController::class, 'restore']);
+            Route::delete('/force-delete/{slug}', [SemesterController::class, 'forceDelete']);
         });
     });
