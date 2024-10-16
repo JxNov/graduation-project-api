@@ -86,4 +86,32 @@ class ClassService
             $class->delete();
         });
     }
+
+    public function restoreClass($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $class = Classes::onlyTrashed()->where('slug', $slug)->first();
+
+            if ($class === null) {
+                throw new Exception('Không tìm thấy lớp');
+            }
+
+            $class->restore();
+
+            return $class;
+        });
+    }
+
+    public function forceDeleteClass($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $class = Classes::withTrashed()->where('slug', $slug)->first();
+
+            if ($class === null) {
+                throw new Exception('Không tìm thấy lớp');
+            }
+
+            $class->forceDelete();
+        });
+    }
 }

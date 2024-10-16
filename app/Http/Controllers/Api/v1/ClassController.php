@@ -115,4 +115,58 @@ class ClassController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+    public function trash()
+    {
+        $classes = Classes::select('id', 'name', 'slug', 'teacher_id')
+            ->latest('id')
+            ->with('teacher')
+            ->onlyTrashed()
+            ->get();
+
+        if ($classes->isEmpty()) {
+            return $this->errorResponse(
+                'Không có dữ liệu',
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        return $this->successResponse(
+            ClassResource::collection($classes),
+            'Lấy tất cả thông tin lớp học đã xóa thành công',
+            Response::HTTP_OK
+        );
+    }
+
+    public function restore($slug)
+    {
+        try {
+            $class = $this->classService->restoreClass($slug);
+
+            return $this->successResponse(
+                new ClassResource($class),
+                'Phục hồi lớp học thành công',
+                Response::HTTP_OK
+            );
+
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function forceDelete($slug)
+    {
+        try {
+            $this->classService->forceDeleteClass($slug);
+
+            return $this->successResponse(
+                null,
+                'Xóa vĩnh viễn lớp học thành công',
+                Response::HTTP_OK
+            );
+
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }
