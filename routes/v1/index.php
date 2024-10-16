@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\v1\AcademicYearController;
+use App\Http\Controllers\Api\v1\BlockController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\SemesterController;
 use Illuminate\Support\Facades\Route;
@@ -48,5 +49,15 @@ Route::prefix('admin')
             Route::delete('/{slug}', [SemesterController::class, 'destroy']);
             Route::get('/restore/{slug}', [SemesterController::class, 'restore']);
             Route::delete('/force-delete/{slug}', [SemesterController::class, 'forceDelete']);
+        });
+
+        // khối
+        Route::prefix('blocks')
+            ->group(function () {
+            Route::get('/', [BlockController::class, 'index']);
+            Route::post('/', [BlockController::class, 'store']);
+            Route::get('/{slug}', [BlockController::class, 'show']);
+            Route::patch('/{slug}', [BlockController::class, 'update']);
+            Route::delete('/{slug}', [BlockController::class, 'destroy']);
         });
     });
