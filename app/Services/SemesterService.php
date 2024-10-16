@@ -138,4 +138,32 @@ class SemesterService
             return $semester;
         });
     }
+
+    public function restoreSemester($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $semester = Semester::onlyTrashed()->where('slug', $slug)->first();
+
+            if (!$semester) {
+                throw new Exception('Kỳ học đã khôi phục hoặc không tồn tại');
+            }
+
+            $semester->restore();
+            return $semester;
+        });
+    }
+
+    public function forceDeleteSemester($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $semester = Semester::withTrashed()->where('slug', $slug)->first();
+
+            if (!$semester) {
+                throw new Exception('Kỳ học đã khôi phục hoặc không tồn tại');
+            }
+
+            $semester->forceDelete();
+            return $semester;
+        });
+    }
 }
