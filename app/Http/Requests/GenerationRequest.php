@@ -30,8 +30,8 @@ class GenerationRequest extends FormRequest
             'name' => 'required|max:50|unique:generations,name',
             'slug' => 'max:70|unique:generations,slug',
             'year' => 'required|numeric',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date'
+            'start_date' => ['required', 'regex:/^\d{2}\/\d{2}\/\d{4}$/'],
+            'end_date' => ['required', 'regex:/^\d{2}\/\d{2}\/\d{4}$/'],
         ];
     }
 
@@ -48,8 +48,8 @@ class GenerationRequest extends FormRequest
                 'name' => 'required|max:50|unique:generations,name,' . $generation->id,
                 'slug' => 'max:70|unique:generations,slug,' . $generation->id,
                 'year' => 'required|numeric',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date'
+                'start_date' => ['required', 'regex:/^\d{2}\/\d{2}\/\d{4}$/'],
+                'end_date' => ['required', 'regex:/^\d{2}\/\d{2}\/\d{4}$/'],
             ];
         } catch (Exception $e) {
             return [
@@ -69,9 +69,9 @@ class GenerationRequest extends FormRequest
             'year.required' => 'Năm là bắt buộc.',
             'year.numeric' => 'Năm phải là một số.',
             'start_date.required' => 'Ngày bắt đầu là bắt buộc.',
-            'start_date.date' => 'Ngày bắt đầu không hợp lệ.',
+            'start_date.regex' => 'Ngày bắt đầu không hợp lệ.',
             'end_date.required' => 'Ngày kết thúc là bắt buộc.',
-            'end_date.date' => 'Ngày kết thúc không hợp lệ.',
+            'end_date.regex' => 'Ngày kết thúc không hợp lệ.',
         ];
     }
 }
