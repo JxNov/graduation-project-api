@@ -15,4 +15,8 @@ class Block extends Model
         'slug',
         'level'
     ];
+    public function subjects()
+    {
+        return $this->belongsToMany(Subject::class, 'block_subject');
+    }
 }

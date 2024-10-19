@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\v1\AcademicYearController;
 use App\Http\Controllers\Api\v1\BlockController;
+use App\Http\Controllers\Api\v1\BlockSubjectController;
 use App\Http\Controllers\Api\v1\ClassController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\SemesterController;
@@ -88,5 +89,14 @@ Route::prefix('admin')
                 Route::patch('/{id}', [SubjectController::class, 'update']);
                 Route::delete('/{id}', [SubjectController::class, 'destroy']);
                 Route::get('/restore/{id}', [SubjectController::class, 'restore']);
+            });
+
+        // môn học vào khoá học
+        Route::prefix('blocksubjects')
+            ->group(function () {
+                Route::get('/', [BlockSubjectController::class, 'index']);
+                Route::post('/', [BlockSubjectController::class, 'store']);
+                Route::delete('/{id}', [BlockSubjectController::class, 'destroy']);
+                Route::get('/restore/{id}', [BlockSubjectController::class, 'restore']);
             });
     });
