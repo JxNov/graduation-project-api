@@ -6,22 +6,16 @@ use App\Http\Controllers\Api\v1\RoleController;
 use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
 use App\Http\Controllers\Api\v1\BlockController;
+use App\Http\Controllers\Api\v1\BlockSubjectController;
 use App\Http\Controllers\Api\v1\ClassController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\SemesterController;
+use App\Http\Controllers\Api\v1\StudentExcelController;
 use App\Http\Controllers\Api\v1\SubjectController;
 use Illuminate\Support\Facades\Route;
 
 // Module Permissions
 Route::get('/modules', [ModuleController::class, 'index']);
-
-// Quyền
-Route::prefix('permissions')
-    ->group(function () {
-        Route::middleware('permission:users.read')->get('/', [PermissionController::class, 'index']);
-        Route::post('/', [PermissionController::class, 'store']);
-        Route::delete('/{slug}', [PermissionController::class, 'destroy']);
-    });
 
 // Vai trò
 Route::prefix('roles')
@@ -32,6 +26,15 @@ Route::prefix('roles')
         Route::delete('/{slug}', [RoleController::class, 'destroy']);
         Route::patch('/{name}/restore', [RoleController::class, 'restore']);
         Route::delete('/{slug}/force-delete', [RoleController::class, 'forceDelete']);
+    });
+
+
+// Quyền
+Route::prefix('permissions')
+    ->group(function () {
+        Route::middleware('permission:users.read')->get('/', [PermissionController::class, 'index']);
+        Route::post('/', [PermissionController::class, 'store']);
+        Route::delete('/{slug}', [PermissionController::class, 'destroy']);
     });
 
 // Người dùng
@@ -126,3 +129,16 @@ Route::prefix('subjects')
         Route::get('/restore/{id}', [SubjectController::class, 'restore']);
     });
 
+// môn học vào khoá học
+Route::prefix('blocksubjects')
+    ->group(function () {
+        Route::get('/', [BlockSubjectController::class, 'index']);
+        Route::post('/', [BlockSubjectController::class, 'store']);
+        Route::delete('/{id}', [BlockSubjectController::class, 'destroy']);
+        Route::get('/restore/{id}', [BlockSubjectController::class, 'restore']);
+    });
+
+Route::prefix('excel')
+    ->group(function () {
+        Route::get('export-student-form', [StudentExcelController::class, 'exportStudentForm']);
+    });

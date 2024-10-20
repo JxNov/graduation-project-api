@@ -26,7 +26,7 @@ class GenerationController extends Controller
 
     public function index()
     {
-        $generations = Generation::select('id', 'name', 'slug', 'start_date', 'end_date')->latest('id')->paginate(6);
+        $generations = Generation::select('id', 'name', 'slug', 'year', 'start_date', 'end_date')->latest('id')->paginate(6);
 
         if ($generations->isEmpty()) {
             return $this->errorResponse(
@@ -44,7 +44,7 @@ class GenerationController extends Controller
 
     public function show($slug)
     {
-        $generation = Generation::select('id', 'name', 'start_date', 'end_date')->where('slug', $slug)->first();
+        $generation = Generation::select('id', 'name', 'slug', 'year', 'start_date', 'end_date')->where('slug', $slug)->first();
 
         if ($generation === null) {
             return $this->errorResponse('Không tìm thấy khóa học', Response::HTTP_NOT_FOUND);
