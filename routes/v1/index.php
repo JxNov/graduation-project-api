@@ -125,3 +125,4 @@ Route::prefix('subjects')
         Route::delete('/{id}', [SubjectController::class, 'destroy']);
         Route::get('/restore/{id}', [SubjectController::class, 'restore']);
     });
+
