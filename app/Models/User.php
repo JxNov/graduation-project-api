@@ -4,13 +4,17 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable implements JWTSubject
 {
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+
     const _GENDERS = [
         'Male' => 'Male',
         'Female' => 'Female',
@@ -49,6 +53,7 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    private mixed $roles;
 
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
@@ -68,5 +73,31 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'user_roles');
+    }
+
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class, 'user_permissions');
+    }
+
+    public function hasPermission($permission): bool
+    {
+        if ($this->permissions()->where('value', $permission)->exists()) {
+            return true;
+        }
+
+        $roles = $this->roles()->get();
+        foreach ($roles as $role) {
+            if ($role->permissions()->where('value', $permission)->exists()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
