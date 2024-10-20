@@ -23,10 +23,13 @@ class ClassService
                 throw new Exception('Người này không phải giáo viên');
             }
 
-            $homeRoomTeacher = Classes::where('teacher_id', $data['teacher_id'])->first();
+            // kiểm tra nếu giáo viên đã có trong 1 lớp cùng năm học
+            $homeRoomTeacher = Classes::where('teacher_id', $data['teacher_id'])
+                ->where('academic_year_id', $data['academic_year_id'])
+                ->first();
 
             if ($homeRoomTeacher) {
-                throw new Exception('Giáo viên đã có trong một lớp');
+                throw new Exception('Giáo viên đã chủ nhiệm một lớp của năm học này');
             }
 
             $teacherName = $teachers->get($data['teacher_id']);
@@ -57,10 +60,12 @@ class ClassService
                 throw new Exception('Người này không phải giáo viên');
             }
 
-            $homeRoomTeacher = Classes::where('teacher_id', $data['teacher_id'])->first();
+            $homeRoomTeacher = Classes::where('teacher_id', $data['teacher_id'])
+                ->where('academic_year_id', $data['academic_year_id'])
+                ->first();
 
             if ($homeRoomTeacher && $homeRoomTeacher->id !== $class->id) {
-                throw new Exception('Giáo viên đã có trong 1 lớp');
+                throw new Exception('Giáo viên đã chủ nhiệm một lớp của năm học này');
             }
 
             $teacherName = $teachers->get($data['teacher_id']);
