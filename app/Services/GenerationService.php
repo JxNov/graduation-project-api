@@ -14,8 +14,8 @@ class GenerationService
         return DB::transaction(function () use ($data) {
             $generations = Generation::select('start_date')->get();
 
-            $startDate = Carbon::parse($data['start_date']);
-            $endDate = Carbon::parse($data['end_date']);
+            $startDate = Carbon::createFromFormat('d/m/Y', $data['start_date']);
+            $endDate = Carbon::createFromFormat('d/m/Y', $data['end_date']);
 
             $generationTotalYear = $endDate->year - $startDate->year;
             if ($generationTotalYear !== (int) $data['year']) {
@@ -49,8 +49,8 @@ class GenerationService
                 throw new Exception('Không tìm thấy khóa học này');
             }
 
-            $startDate = Carbon::parse($data['start_date']);
-            $endDate = Carbon::parse($data['end_date']);
+            $startDate = Carbon::createFromFormat('d/m/Y', $data['start_date']);
+            $endDate = Carbon::createFromFormat('d/m/Y', $data['end_date']);
 
             $generationTotalYear = $endDate->year - $startDate->year;
             if ($generationTotalYear !== (int) $data['year']) {
