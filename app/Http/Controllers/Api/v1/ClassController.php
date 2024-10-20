@@ -28,7 +28,7 @@ class ClassController extends Controller
         $classes = Classes::select('id', 'name', 'slug', 'teacher_id')
             ->latest('id')
             ->with('teacher')
-            ->get();
+            ->paginate(10);
 
         if ($classes->isEmpty()) {
             return $this->errorResponse(
@@ -122,7 +122,7 @@ class ClassController extends Controller
             ->latest('id')
             ->with('teacher')
             ->onlyTrashed()
-            ->get();
+            ->paginate(10);
 
         if ($classes->isEmpty()) {
             return $this->errorResponse(
