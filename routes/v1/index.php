@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\v1\BlockSubjectController;
 use App\Http\Controllers\Api\v1\ClassController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\SemesterController;
+use App\Http\Controllers\Api\v1\StudentExcelController;
 use App\Http\Controllers\Api\v1\SubjectController;
 
 use Illuminate\Support\Facades\Route;
@@ -98,5 +99,10 @@ Route::prefix('admin')
                 Route::post('/', [BlockSubjectController::class, 'store']);
                 Route::delete('/{id}', [BlockSubjectController::class, 'destroy']);
                 Route::get('/restore/{id}', [BlockSubjectController::class, 'restore']);
+            });
+
+        Route::prefix('excel')
+            ->group(function() {
+                Route::get('export-student-form', [StudentExcelController::class, 'exportStudentForm']);
             });
     });
