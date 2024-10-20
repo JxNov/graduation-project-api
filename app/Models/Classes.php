@@ -29,4 +29,26 @@ class Classes extends Model
     {
         return $this->belongsTo(AcademicYear::class);
     }
+
+    public function blocks()
+    {
+        return $this->belongsToMany(Block::class, 'block_classes', 'class_id', 'block_id');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($class) {
+            $blocks = $class->blocks;
+            if ($blocks->isNotEmpty()) {
+                $class->blocks()->updateExistingPivot($blocks->pluck('id'), ['deleted_at' => now()]);
+            }
+        });
+
+        static::restoring(function ($class) {
+            $blocks = $class->blocks;
+            if ($blocks->isNotEmpty()) {
+                $class->blocks()->updateExistingPivot($blocks->pluck('id'), ['deleted_at' => null]);
+            }
+        });
+    }
 }
