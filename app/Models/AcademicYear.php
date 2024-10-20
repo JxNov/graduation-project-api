@@ -39,11 +39,19 @@ class AcademicYear extends Model
             $academicYear->semesters()->each(function ($semester) {
                 $semester->delete();
             });
+
+            $academicYear->classes()->each(function ($class) {
+                $class->delete();
+            });
         });
 
         static::restoring(function ($academicYear) {
             $academicYear->semesters()->withTrashed()->each(function ($semester) {
                 $semester->restore();
+            });
+
+            $academicYear->classes()->withTrashed()->each(function ($class) {
+                $class->restore();
             });
         });
     }
