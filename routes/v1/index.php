@@ -76,7 +76,7 @@ Route::prefix('admin')
                 Route::post('/', [ClassController::class, 'store']);
                 Route::get('/trash', [ClassController::class, 'trash']);
                 Route::get('/{slug}', [ClassController::class, 'show']);
-                Route::put('/{slug}', [ClassController::class, 'update']);
+                Route::patch('/{slug}', [ClassController::class, 'update']);
                 Route::delete('/{slug}', [ClassController::class, 'destroy']);
                 Route::get('/restore/{slug}', [ClassController::class, 'restore']);
                 Route::delete('/force-delete/{slug}', [ClassController::class, 'forceDelete']);
