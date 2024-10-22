@@ -141,4 +141,5 @@ Route::prefix('blocksubjects')
 Route::prefix('excel')
     ->group(function () {
         Route::get('export-student-form', [StudentExcelController::class, 'exportStudentForm']);
+        Route::post('import-student', [StudentExcelController::class, 'importStudent']);
     });
