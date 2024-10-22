@@ -4,17 +4,15 @@ namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class StudentFormExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize, WithColumnWidths, WithColumnFormatting, WithEvents
+class StudentFormExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize, WithColumnWidths, WithEvents
 {
     public function collection()
     {
@@ -27,7 +25,7 @@ class StudentFormExport implements FromCollection, WithHeadings, WithStyles, Sho
     {
         return [
             'Full Name',
-            'Date Of Birth',
+            'Date Of Birth (yyyy-mm-dd)',
             'Gender',
             'Address',
             'Phone Number',
@@ -73,18 +71,15 @@ class StudentFormExport implements FromCollection, WithHeadings, WithStyles, Sho
         ];
     }
 
-    public function columnFormats(): array
-    {
-        return [
-            'B' => NumberFormat::FORMAT_DATE_DDMMYYYY
-        ];
-    }
-
     public function registerEvents(): array
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
+
+                $sheet->getStyle('B:B')
+                    ->getNumberFormat()
+                    ->setFormatCode('yyyy-mm-dd');
 
                 $dobValidation = $sheet->getCell('B2')->getDataValidation();
                 $dobValidation->setType(DataValidation::TYPE_DATE);
@@ -110,7 +105,6 @@ class StudentFormExport implements FromCollection, WithHeadings, WithStyles, Sho
                 $genderValidation->setError('Giá trị không tồn tại trong danh sách');
                 $genderValidation->setPromptTitle('Chọn 1 giá trị trong danh sách');
                 $genderValidation->setPrompt('Vui lòng hãy chọn 1 giá trị trong danh sách');
-
                 $sheet->setDataValidation('C2:C1048576', $genderValidation);
             },
         ];
