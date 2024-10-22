@@ -11,6 +11,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class StudentFormExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize, WithColumnWidths, WithEvents
 {
@@ -36,7 +37,7 @@ class StudentFormExport implements FromCollection, WithHeadings, WithStyles, Sho
     {
         return [
             'A' => 25,
-            'B' => 25,
+            'B' => 35,
             'C' => 10,
             'D' => 40,
             'E' => 20,
@@ -106,6 +107,10 @@ class StudentFormExport implements FromCollection, WithHeadings, WithStyles, Sho
                 $genderValidation->setPromptTitle('Chọn 1 giá trị trong danh sách');
                 $genderValidation->setPrompt('Vui lòng hãy chọn 1 giá trị trong danh sách');
                 $sheet->setDataValidation('C2:C1048576', $genderValidation);
+
+                $sheet->getStyle('E:E')
+                    ->getNumberFormat()
+                    ->setFormatCode(NumberFormat::FORMAT_TEXT);
             },
         ];
     }
