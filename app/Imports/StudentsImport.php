@@ -5,6 +5,7 @@ namespace App\Imports;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
 
 class StudentsImport implements ToCollection
@@ -13,6 +14,7 @@ class StudentsImport implements ToCollection
     {
         $data = [];
         $existingUsernames = User::pluck('username')->toArray();
+        $roleStudent = DB::table('roles')->select('id', 'slug')->where('slug', 'student')->first();
 
         foreach ($rows as $key => $row) {
             if ($key == 0) {
@@ -45,11 +47,33 @@ class StudentsImport implements ToCollection
                 'phone_number' => $phoneNumber,
                 'email' => $username . '@example.com',
                 'password' => bcrypt('abc123'),
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
             ];
         }
 
-        User::insert($data);
+        $inserted = User::insert($data);
+
+        if ($inserted) {
+            $emails = [];
+
+            foreach ($data as $email) {
+                $emails[] = $email['email'];
+            }
+
+            $users = User::whereIn('email', $emails)->get();
+
+            foreach ($users as $user) {
+                $userHasRole = DB::table('user_roles')
+                    ->where('user_id', $user->id)
+                    ->where('role_id', $roleStudent->id)
+                    ->exists();
+
+                if (!$userHasRole) {
+                    DB::table('user_roles')->insert([
+                        'user_id' => $user->id,
+                        'role_id' => $roleStudent->id,
+                    ]);
+                }
+            }
+        }
     }
 }
