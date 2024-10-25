@@ -16,10 +16,6 @@ return new class extends Migration {
                 ->constrained('users')
                 ->onDelete('cascade');
 
-            $table->foreignId('academic_year_id')
-                ->constrained('academic_years')
-                ->onDelete('cascade');
-
             $table->timestamps();
             $table->softDeletes();
         });
