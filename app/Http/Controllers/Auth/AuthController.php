@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -31,6 +33,19 @@ class AuthController extends Controller
         try {
             $user = JWTAuth::parseToken()->authenticate();
 
+            if (!$user) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            $user->roles = $user->roles()->get();
+
+            $permissions = [];
+            foreach ($user->roles as $role) {
+                $permissions = array_merge($permissions, $role->permissions()->pluck('value')->toArray());
+            }
+            $user->permissions = array_merge($permissions, $user->permissions()->pluck('value')->toArray());
+            $user->permissions = array_values(array_unique($user->permissions));
+
             $user = [
                 'name' => $user->name,
                 'username' => $user->username,
@@ -38,6 +53,8 @@ class AuthController extends Controller
                 'gender' => $user->gender,
                 'phone_number' => $user->phone_number,
                 'email' => $user->email,
+                'roles' => $user->roles->pluck('name'),
+                'permissions' => $user->permissions,
             ];
 
             return response()->json($user);

@@ -13,13 +13,20 @@ class UserService
     public function index()
     {
         try {
-            $users = User::select('username', 'email')->get();
+            $users = User::with('roles')->get();
 
             if ($users->isEmpty()) {
                 throw new \Exception('Không có người dùng nào', Response::HTTP_NOT_FOUND);
             }
 
-            return $users;
+            return $users->map(function ($user) {
+                return [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'gender' => $user->gender,
+                    'roles' => $user->roles->pluck('name'),
+                ];
+            });
         } catch (\Exception $e) {
             throw $e;
         }
