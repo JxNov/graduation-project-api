@@ -32,7 +32,7 @@ Route::prefix('roles')
 // Quyền
 Route::prefix('permissions')
     ->group(function () {
-        Route::middleware('permission:users.read')->get('/', [PermissionController::class, 'index']);
+        Route::middleware(['auth:api', 'permission:users.read'])->get('/', [PermissionController::class, 'index']);
         Route::post('/', [PermissionController::class, 'store']);
         Route::delete('/{slug}', [PermissionController::class, 'destroy']);
     });
