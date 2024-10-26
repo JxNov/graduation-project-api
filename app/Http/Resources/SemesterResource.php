@@ -13,11 +13,11 @@ class SemesterResource extends JsonResource
         return [
             'name' => $this->name,
             'slug' => $this->slug,
-            'start_date' => Carbon::parse($this->start_date)->format('d/m/Y'),
-            'end_date' => Carbon::parse($this->end_date)->format('d/m/Y'),
-            'academic_year_id' => $this->academic_year_id,
-            'generation_name' => optional($this->academicYear->generation)->name,
-            'academic_year_name' => optional($this->academicYear)->name
+            'startDate' => Carbon::parse($this->start_date)->format('d/m/Y'),
+            'endDate' => Carbon::parse($this->end_date)->format('d/m/Y'),
+            'academicYearId' => $this->academic_year_id,
+            'generationName' => optional($this->academicYear->generation)->name,
+            'academicYearName' => optional($this->academicYear)->name
         ];
     }
 }
