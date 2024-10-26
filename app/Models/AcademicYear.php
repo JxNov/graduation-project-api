@@ -30,7 +30,7 @@ class AcademicYear extends Model
 
     public function classes()
     {
-        return $this->hasMany(Classes::class);
+        return $this->belongsToMany(Classes::class, 'academic_year_classes', 'academic_year_id', 'class_id');
     }
 
     protected static function booted()
@@ -40,9 +40,12 @@ class AcademicYear extends Model
                 $semester->delete();
             });
 
-            $academicYear->classes()->each(function ($class) {
-                $class->delete();
-            });
+            $classes = $academicYear->classes;
+            if ($classes->isNotEmpty()) {
+                $academicYear->classes()->updateExistingPivot($classes->pluck('id'), ['deleted_at' => now()]);
+            }
+
+            $academicYear->classes()->delete();
         });
 
         static::restoring(function ($academicYear) {
@@ -50,9 +53,12 @@ class AcademicYear extends Model
                 $semester->restore();
             });
 
-            $academicYear->classes()->withTrashed()->each(function ($class) {
-                $class->restore();
-            });
+            $classes = $academicYear->classes;
+            if ($classes->isNotEmpty()) {
+                $academicYear->classes()->updateExistingPivot($classes->pluck('id'), ['deleted_at' => null]);
+            }
+
+            $academicYear->classes()->restore();
         });
     }
 }

@@ -25,7 +25,6 @@ class ClassService
 
             // kiểm tra nếu giáo viên đã có trong 1 lớp cùng năm học
             $homeRoomTeacher = Classes::where('teacher_id', $data['teacher_id'])
-                ->where('academic_year_id', $data['academic_year_id'])
                 ->first();
 
             if ($homeRoomTeacher) {
@@ -61,7 +60,6 @@ class ClassService
             }
 
             $homeRoomTeacher = Classes::where('teacher_id', $data['teacher_id'])
-                ->where('academic_year_id', $data['academic_year_id'])
                 ->first();
 
             if ($homeRoomTeacher && $homeRoomTeacher->id !== $class->id) {
