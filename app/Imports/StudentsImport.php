@@ -10,6 +10,15 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 
 class StudentsImport implements ToCollection
 {
+    private $generation_id;
+    private $academic_year_id;
+
+    public function __construct(int $generation_id, int $academic_year_id)
+    {
+        $this->generation_id = $generation_id;
+        $this->academic_year_id = $academic_year_id;
+    }
+
     public function collection(Collection $rows)
     {
         $data = [];
@@ -67,10 +76,24 @@ class StudentsImport implements ToCollection
                     ->where('role_id', $roleStudent->id)
                     ->exists();
 
+                $userHasGeneration = DB::table('user_generations')
+                    ->where('user_id', $user->id)
+                    ->where('generation_id', $this->generation_id)
+                    ->where('academic_year_id', $this->academic_year_id)
+                    ->exists();
+
                 if (!$userHasRole) {
                     DB::table('user_roles')->insert([
                         'user_id' => $user->id,
                         'role_id' => $roleStudent->id,
+                    ]);
+                }
+
+                if (!$userHasGeneration) {
+                    DB::table('user_generations')->insert([
+                        'user_id' => $user->id,
+                        'generation_id' => $this->generation_id,
+                        'academic_year_id' => $this->academic_year_id,
                     ]);
                 }
             }
