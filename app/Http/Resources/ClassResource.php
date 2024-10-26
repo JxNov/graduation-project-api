@@ -12,6 +12,7 @@ class ClassResource extends JsonResource
         return [
             'name' => $this->name,
             'slug' => $this->slug,
+            'code' => $this->code,
             'teacherName' => optional($this->teacher)->name,
         ];
     }

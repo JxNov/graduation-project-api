@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class Classes extends Model
 {
@@ -38,6 +38,14 @@ class Classes extends Model
 
     protected static function booted()
     {
+        static::creating(function ($class) {
+            do {
+                $code = strtolower(Str::random(7));
+            } while ($class::where('code', $code)->exists());
+
+            $class->code = $code;
+        });
+
         static::deleting(function ($class) {
             $blocks = $class->blocks;
             if ($blocks->isNotEmpty()) {

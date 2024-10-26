@@ -25,7 +25,7 @@ class ClassController extends Controller
 
     public function index()
     {
-        $classes = Classes::select('id', 'name', 'slug', 'teacher_id')
+        $classes = Classes::select('id', 'name', 'slug', 'code', 'teacher_id')
             ->latest('id')
             ->with('teacher')
             ->paginate(10);
