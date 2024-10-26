@@ -12,10 +12,7 @@ class ClassResource extends JsonResource
         return [
             'name' => $this->name,
             'slug' => $this->slug,
-            'teacher_id' => $this->teacher_id,
             'teacher_name' => optional($this->teacher)->name,
-            'academic_year_id' => $this->academic_year_id,
-            'academic_year_name' => optional($this->academicYear)->name
         ];
     }
 }
