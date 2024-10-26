@@ -14,8 +14,8 @@ class GenerationResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'year' => $this->year,
-            'start_date' => Carbon::parse($this->start_date)->format('d/m/Y'),
-            'end_date' => Carbon::parse($this->end_date)->format('d/m/Y')
+            'startDate' => Carbon::parse($this->start_date)->format('d/m/Y'),
+            'endDate' => Carbon::parse($this->end_date)->format('d/m/Y')
         ];
     }
 }
