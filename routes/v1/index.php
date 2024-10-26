@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\v1\AcademicYearClassController;
 use App\Http\Controllers\Api\v1\ModuleController;
 use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
@@ -113,10 +114,19 @@ Route::prefix('classes')
         Route::post('/', [ClassController::class, 'store']);
         Route::get('/trash', [ClassController::class, 'trash']);
         Route::get('/{slug}', [ClassController::class, 'show']);
-        Route::put('/{slug}', [ClassController::class, 'update']);
+        Route::patch('/{slug}', [ClassController::class, 'update']);
         Route::delete('/{slug}', [ClassController::class, 'destroy']);
         Route::get('/restore/{slug}', [ClassController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [ClassController::class, 'forceDelete']);
+    });
+
+Route::prefix('academic-year-classes')
+    ->group(function () {
+        Route::get('/', [AcademicYearClassController::class, 'index']);
+        Route::post('/', [AcademicYearClassController::class, 'store']);
+        Route::get('/{id}', [AcademicYearClassController::class, 'show']);
+        Route::patch('/{id}', [AcademicYearClassController::class, 'update']);
+        Route::delete('/{id}', [AcademicYearClassController::class, 'destroy']);
     });
 
 // môn học
