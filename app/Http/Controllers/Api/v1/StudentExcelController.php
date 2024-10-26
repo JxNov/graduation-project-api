@@ -31,12 +31,9 @@ class StudentExcelController extends Controller
     public function importStudent(StudentImportRequest $request)
     {
         try {
+            $data = $request->all();
 
-            if ($request->hasFile('file')) {
-                $file = $request->file('file');
-            }
-
-            $this->studentExcelService->importStudents($file);
+            $this->studentExcelService->importStudents($data);
 
             return $this->successResponse(
                 [],

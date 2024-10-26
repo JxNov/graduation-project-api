@@ -19,10 +19,15 @@ class StudentExcelService
         }
     }
 
-    public function importStudents($file)
+    public function importStudents(array $data)
     {
-        DB::transaction(function () use ($file) {
-            return Excel::import(new StudentsImport, $file);
+        DB::transaction(function () use ($data) {
+            $file = $data['file'];
+            $generation_id = $data['generation_id'];
+            $academic_year_id = $data['academic_year_id'];
+
+            return Excel::import(new StudentsImport($generation_id, $academic_year_id), $file);
         });
     }
+
 }
