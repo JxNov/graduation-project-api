@@ -14,7 +14,6 @@ class Generation extends Model
     protected $fillable = [
         'name',
         'slug',
-        'year',
         'start_date',
         'end_date',
     ];
@@ -28,20 +27,20 @@ class Generation extends Model
     {
         static::deleting(function ($generation) {
             $generation->academicYears()->each(function ($academicYear) {
-                $academicYear->semesters()->each(function ($semester) {
-                    $semester->delete();
-                });
+                if ($academicYear->classes()->exists()) {
+                    $academicYear->delete();
+                }
+
                 $academicYear->delete();
             });
         });
 
         static::restoring(function ($generation) {
             $generation->academicYears()->withTrashed()->each(function ($academicYear) {
+                if ($academicYear->classes()->exists()) {
+                    $academicYear->restore();
+                }
                 $academicYear->restore();
-
-                $academicYear->semesters()->withTrashed()->each(function ($semester) {
-                    $semester->restore();
-                });
             });
         });
     }

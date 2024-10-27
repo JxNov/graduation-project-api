@@ -29,7 +29,6 @@ class GenerationRequest extends FormRequest
         return [
             'name' => 'required|max:50|unique:generations,name',
             'slug' => 'max:70|unique:generations,slug',
-            'year' => 'required|numeric',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
         ];
@@ -47,7 +46,6 @@ class GenerationRequest extends FormRequest
             return [
                 'name' => 'required|max:50|unique:generations,name,' . $generation->id,
                 'slug' => 'max:70|unique:generations,slug,' . $generation->id,
-                'year' => 'required|numeric',
                 'start_date' => 'required|date',
                 'end_date' => 'required|date',
             ];
@@ -61,17 +59,15 @@ class GenerationRequest extends FormRequest
     public function messages()
     {
         return [
-            'name.required' => 'Tên là bắt buộc.',
-            'name.max' => 'Tên không được vượt quá 50 ký tự.',
-            'name.unique' => 'Tên đã tồn tại.',
-            'slug.max' => 'Slug không được vượt quá 70 ký tự.',
-            'slug.unique' => 'Slug đã tồn tại.',
-            'year.required' => 'Năm là bắt buộc.',
-            'year.numeric' => 'Năm phải là một số.',
-            'start_date.required' => 'Ngày bắt đầu là bắt buộc.',
-            'start_date.date' => 'Ngày bắt đầu không hợp lệ.',
-            'end_date.required' => 'Ngày kết thúc là bắt buộc.',
-            'end_date.date' => 'Ngày kết thúc không hợp lệ.',
+            'name.required' => 'Tên khóa học là bắt buộc',
+            'name.max' => 'Tên khóa học không được vượt quá 50 ký tự',
+            'name.unique' => 'Tên khóa học đã tồn tại',
+            'slug.max' => 'Slug không được vượt quá 70 ký tự',
+            'slug.unique' => 'Slug đã tồn tại',
+            'start_date.required' => 'Ngày bắt đầu là bắt buộc',
+            'start_date.date' => 'Ngày bắt đầu không hợp lệ',
+            'end_date.required' => 'Ngày kết thúc là bắt buộc',
+            'end_date.date' => 'Ngày kết thúc không hợp lệ',
         ];
     }
 }
