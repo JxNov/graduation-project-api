@@ -27,19 +27,12 @@ class Generation extends Model
     {
         static::deleting(function ($generation) {
             $generation->academicYears()->each(function ($academicYear) {
-                if ($academicYear->classes()->exists()) {
-                    $academicYear->delete();
-                }
-
                 $academicYear->delete();
             });
         });
 
         static::restoring(function ($generation) {
             $generation->academicYears()->withTrashed()->each(function ($academicYear) {
-                if ($academicYear->classes()->exists()) {
-                    $academicYear->restore();
-                }
                 $academicYear->restore();
             });
         });
