@@ -9,7 +9,7 @@ class AcademicYearClassService
 {
     public function createNewAcademicYearClass($data)
     {
-        DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data) {
             $academicYearClassExists = AcademicYearClass::where('academic_year_id', $data['academic_year_id'])
                 ->where('class_id', $data['class_id'])
                 ->first();
@@ -25,7 +25,7 @@ class AcademicYearClassService
 
     public function updateAcademicYearClass($data, $id)
     {
-        DB::transaction(function () use ($data, $id) {
+        return DB::transaction(function () use ($data, $id) {
             $academicYearClass = AcademicYearClass::find($id);
 
             if (!$academicYearClass) {
@@ -49,7 +49,7 @@ class AcademicYearClassService
 
     public function deleteAcademicYearClass($id)
     {
-        DB::transaction(function () use ($id) {
+        return DB::transaction(function () use ($id) {
             $academicYearClass = AcademicYearClass::find($id);
 
             if ($academicYearClass === null) {
