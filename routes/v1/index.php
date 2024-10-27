@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
 use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
+use App\Http\Controllers\Api\v1\BlockClassController;
 use App\Http\Controllers\Api\v1\BlockController;
 use App\Http\Controllers\Api\v1\BlockSubjectController;
 use App\Http\Controllers\Api\v1\ClassController;
@@ -127,6 +128,15 @@ Route::prefix('academic-year-classes')
         Route::get('/{id}', [AcademicYearClassController::class, 'show']);
         Route::patch('/{id}', [AcademicYearClassController::class, 'update']);
         Route::delete('/{id}', [AcademicYearClassController::class, 'destroy']);
+    });
+
+Route::prefix('block-classes')
+    ->group(function () {
+        Route::get('/', [BlockClassController::class, 'index']);
+        Route::post('/', [BlockClassController::class, 'store']);
+        Route::get('/{id}', [BlockClassController::class, 'show']);
+        Route::patch('/{id}', [BlockClassController::class, 'update']);
+        Route::delete('/{id}', [BlockClassController::class, 'destroy']);
     });
 
 // môn học
