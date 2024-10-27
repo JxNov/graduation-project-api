@@ -25,6 +25,11 @@ class SemesterService
                 ->select('id', 'name', 'slug', 'start_date', 'end_date')
                 ->first();
 
+
+            if (!$academicYear) {
+                throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
+            }
+
             $startAcademicYear = Carbon::parse($academicYear->start_date);
             $endAcademicYear = Carbon::parse($academicYear->end_date);
 
@@ -86,6 +91,10 @@ class SemesterService
             $academicYear = AcademicYear::where('id', $data['academic_year_id'])
                 ->select('id', 'name', 'slug', 'start_date', 'end_date')
                 ->first();
+
+            if (!$academicYear) {
+                throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
+            }
 
             $startAcademicYear = Carbon::parse($academicYear->start_date);
             $endAcademicYear = Carbon::parse($academicYear->end_date);
