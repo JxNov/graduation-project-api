@@ -29,7 +29,7 @@ class BlockRequest extends FormRequest
         return [
             'name' => 'required|max:50|unique:blocks,name',
             'slug' => 'max:70',
-            'level' => 'required'
+            'level' => 'required|integer|min:6|max:9'
         ];
     }
 
@@ -46,7 +46,7 @@ class BlockRequest extends FormRequest
             return [
                 'name' => 'required|max:50|unique:blocks,name,' . $block->id,
                 'slug' => 'max:70',
-                'level' => 'nullable'
+                'level' => 'required|integer|min:6|max:9'
             ];
         } catch (Exception $e) {
             return [
@@ -58,11 +58,14 @@ class BlockRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Tên là bắt buộc.',
-            'name.max' => 'Tên không được vượt quá 50 ký tự.',
-            'name.unique' => 'Tên đã tồn tại.',
-            'slug.max' => 'Slug không được vượt quá 70 ký tự.',
-            'level.required' => 'Cấp độ là bắt buộc.',
+            'name.required' => 'Tên là bắt buộc',
+            'name.max' => 'Tên không được vượt quá 50 ký tự',
+            'name.unique' => 'Tên đã tồn tại',
+            'slug.max' => 'Slug không được vượt quá 70 ký tự',
+            'level.required' => 'Cấp độ là bắt buộc',
+            'level.integer' => 'Cấp độ phải là 1 số',
+            'level.min' => 'Cấp độ tối thiểu là 6',
+            'level.max' => 'Cấp độ tối đa là 9',
         ];
     }
 
