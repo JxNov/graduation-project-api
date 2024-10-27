@@ -17,9 +17,8 @@ class GenerationService
             $startDate = Carbon::parse($data['start_date']);
             $endDate = Carbon::parse($data['end_date']);
 
-            $generationTotalYear = $endDate->year - $startDate->year;
-            if ($generationTotalYear !== (int) $data['year']) {
-                throw new Exception('Khóa học cần có độ dài là ' . $data['year'] . ' năm.');
+            if ($endDate->year - $startDate->year != 4) {
+                throw new Exception('Khóa học cần có độ dài là 4 năm');
             }
 
             if ($generations->isNotEmpty()) {
@@ -27,7 +26,7 @@ class GenerationService
                     $existingStart = Carbon::parse($generation->start_date);
 
                     if ($startDate->year <= $existingStart->year) {
-                        throw new Exception('Năm bắt đầu của khóa học mới phải lớn hơn năm bắt đầu của khóa học trước.');
+                        throw new Exception('Năm bắt đầu của khóa học mới phải lớn hơn năm bắt đầu của khóa học trước');
                     }
                 }
             }
@@ -52,9 +51,8 @@ class GenerationService
             $startDate = Carbon::parse($data['start_date']);
             $endDate = Carbon::parse($data['end_date']);
 
-            $generationTotalYear = $endDate->year - $startDate->year;
-            if ($generationTotalYear !== (int) $data['year']) {
-                throw new Exception('Khóa học cần có độ dài là ' . $data['year'] . ' năm.');
+            if ($endDate->year - $startDate->year != 4) {
+                throw new Exception('Khóa học cần có độ dài là 4 năm');
             }
 
             $generations = Generation::where('id', '<', $currentGeneration->id)
@@ -66,7 +64,7 @@ class GenerationService
                     $existingStart = Carbon::parse($generation->start_date);
 
                     if ($startDate->year <= $existingStart->year) {
-                        throw new Exception('Năm bắt đầu của khóa học mới phải lớn hơn năm bắt đầu của khóa học trước.');
+                        throw new Exception('Năm bắt đầu của khóa học mới phải lớn hơn năm bắt đầu của khóa học trước');
                     }
                 }
             }
