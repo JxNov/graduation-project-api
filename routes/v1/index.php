@@ -162,4 +162,5 @@ Route::prefix('excel')
     ->group(function () {
         Route::get('export-student-form', [StudentExcelController::class, 'exportStudentForm']);
         Route::post('import-student', [StudentExcelController::class, 'importStudent']);
+        Route::get('export-student-by-generation/{slug}', [StudentExcelController::class, 'exportStudentByGeneration']);
     });
