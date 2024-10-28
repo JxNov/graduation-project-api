@@ -27,6 +27,14 @@ class Generation extends Model
     {
         static::deleting(function ($generation) {
             $generation->academicYears()->each(function ($academicYear) {
+                foreach ($academicYear->classes as $class) {
+                    $blocks = $class->blocks;
+
+                    foreach ($blocks as $block) {
+                        $block->delete();
+                    }
+                }
+
                 $academicYear->delete();
             });
         });
