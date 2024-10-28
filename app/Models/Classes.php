@@ -47,31 +47,13 @@ class Classes extends Model
         });
 
         static::deleting(function ($class) {
-            $blocks = $class->blocks;
-            if ($blocks->isNotEmpty()) {
-                $class->blocks()->updateExistingPivot($blocks->pluck('id'), ['deleted_at' => now()]);
+            if ($class->blocks->isNotEmpty()) {
+                $class->blocks()->updateExistingPivot($class->blocks->pluck('id'), ['deleted_at' => now()]);
             }
-            $class->blocks()->delete();
 
-            $academicYears = $class->academicYears;
-            if ($academicYears->isNotEmpty()) {
-                $class->academicYears()->updateExistingPivot($academicYears->pluck('id'), ['deleted_at' => now()]);
+            if ($class->academicYears->isNotEmpty()) {
+                $class->academicYears()->updateExistingPivot($class->academicYears->pluck('id'), ['deleted_at' => now()]);
             }
-            $class->academicYears()->delete();
-        });
-
-        static::restoring(function ($class) {
-            $blocks = $class->blocks;
-            if ($blocks->isNotEmpty()) {
-                $class->blocks()->updateExistingPivot($blocks->pluck('id'), ['deleted_at' => null]);
-            }
-            $class->blocks()->restore();
-
-            $academicYears = $class->academicYears;
-            if ($academicYears->isNotEmpty()) {
-                $class->academicYears()->updateExistingPivot($academicYears->pluck('id'), ['deleted_at' => null]);
-            }
-            $class->academicYears()->restore();
         });
     }
 }
