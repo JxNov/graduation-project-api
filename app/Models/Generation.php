@@ -40,7 +40,17 @@ class Generation extends Model
         });
 
         static::restoring(function ($generation) {
-            $generation->academicYears()->withTrashed()->each(function ($academicYear) {
+            $academicYearTrash = $generation->academicYears()->withTrashed();
+
+            $academicYearTrash->each(function ($academicYear) {
+                $classes = $academicYear->classes()->withTrashed()->get();
+                foreach ($classes as $class) {
+                    $blocks = $class->blocks()->withTrashed()->get();
+                    foreach ($blocks as $block) {
+                        $block->restore();
+                    }
+                }
+
                 $academicYear->restore();
             });
         });

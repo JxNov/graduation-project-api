@@ -55,5 +55,17 @@ class Classes extends Model
                 $class->academicYears()->updateExistingPivot($class->academicYears->pluck('id'), ['deleted_at' => now()]);
             }
         });
+
+        static::restoring(function ($class) {
+            $blockClass = $class->blocks()->withTrashed()->get();
+            if ($blockClass->isNotEmpty()) {
+                $class->blocks()->updateExistingPivot($blockClass->pluck('id'), ['deleted_at' => null]);
+            }
+
+            $academicYearClass = $class->academicYears()->withTrashed()->get();
+            if ($academicYearClass->isNotEmpty()) {
+                $class->academicYears()->updateExistingPivot($academicYearClass->pluck('id'), ['deleted_at' => null]);
+            }
+        });
     }
 }
