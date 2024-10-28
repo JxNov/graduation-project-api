@@ -32,6 +32,12 @@ class Block extends Model
             if ($classes->isNotEmpty()) {
                 $block->classes()->updateExistingPivot($classes->pluck('id'), ['deleted_at' => now()]);
             }
+
+            $block->classes()->each(function ($class) {
+                $class->academicYears()->updateExistingPivot($class->academicYears->pluck('id'), ['deleted_at' => now()]);
+            });
+
+            $block->classes()->delete();
         });
 
         static::restoring(function ($block) {

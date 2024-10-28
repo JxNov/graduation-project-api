@@ -25,16 +25,16 @@ class AcademicYearClass extends Model
         return $this->belongsTo(Classes::class);
     }
 
-    public static function booted()
+    protected static function booted()
     {
         static::deleting(function ($academicYearClass) {
-            $academicYearClass->academicYear()->delete();
-            $academicYearClass->class()->delete();
-        });
+            if ($academicYearClass->class) {
+                $academicYearClass->class()->delete();
+            }
 
-        static::restoring(function ($academicYearClass) {
-            $academicYearClass->academicYear()->withTrashed()->restore();
-            $academicYearClass->class()->withTrashed()->restore();
+            if ($academicYearClass->academicYear) {
+                $academicYearClass->academicYear()->delete();
+            }
         });
     }
 }
