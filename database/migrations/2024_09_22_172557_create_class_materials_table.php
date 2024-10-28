@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('material_classes', function (Blueprint $table) {
+        Schema::create('class_materials', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('material_id')
