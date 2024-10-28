@@ -41,10 +41,17 @@ class Block extends Model
         });
 
         static::restoring(function ($block) {
-            $classes = $block->classes;
-            if ($classes->isNotEmpty()) {
-                $block->classes()->updateExistingPivot($classes->pluck('id'), ['deleted_at' => null]);
+            $blockClass = $block->classes()->withTrashed()->get();
+            if ($blockClass->isNotEmpty()) {
+                $block->classes()->updateExistingPivot($blockClass->pluck('id'), ['deleted_at' => null]);
             }
+
+            $classTrash = $block->classes()->withTrashed();
+            $classTrash->each(function ($class) {
+                $class->academicYears()->updateExistingPivot($class->academicYears->pluck('id'), ['deleted_at' => null]);
+
+                $class->restore();
+            });
         });
     }
 }

@@ -51,5 +51,26 @@ class AcademicYear extends Model
             $academicYear->classes()->delete();
 
         });
+
+        static::restoring(function ($academicYear) {
+            $semesterTrash = $academicYear->semesters()->withTrashed();
+
+            $semesterTrash->each(function ($semester) {
+                $semester->restore();
+            });
+
+            $academicYearClass = $academicYear->classes()->withTrashed()->get();
+            if ($academicYearClass->isNotEmpty()) {
+                $academicYear->classes()->updateExistingPivot($academicYearClass->pluck('id'), ['deleted_at' => null]);
+            }
+
+            $classTrash = $academicYear->classes()->withTrashed();
+            $classTrash->each(function ($class) {
+                $class->blocks()->updateExistingPivot($class->blocks->pluck('id'), ['deleted_at' => null]);
+
+                $class->restore();
+            });
+
+        });
     }
 }
