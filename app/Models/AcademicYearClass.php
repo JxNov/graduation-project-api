@@ -24,17 +24,4 @@ class AcademicYearClass extends Model
     {
         return $this->belongsTo(Classes::class);
     }
-
-    protected static function booted()
-    {
-        static::deleting(function ($academicYearClass) {
-            if ($academicYearClass->class) {
-                $academicYearClass->class()->delete();
-            }
-
-            if ($academicYearClass->academicYear) {
-                $academicYearClass->academicYear()->delete();
-            }
-        });
-    }
 }
