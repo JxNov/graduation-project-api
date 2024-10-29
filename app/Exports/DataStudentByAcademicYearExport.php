@@ -4,7 +4,6 @@ namespace App\Exports;
 
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -12,7 +11,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DataStudentByGenerationExport implements
+class DataStudentByAcademicYearExport implements
     FromCollection,
     WithMapping,
     WithHeadings,
@@ -37,7 +36,7 @@ class DataStudentByGenerationExport implements
         $students = User::whereHas('roles', function ($query) use ($roleStudent) {
             $query->where('role_id', $roleStudent->id);
         })
-            ->whereHas('generations', function ($query) {
+            ->whereHas('academicYears', function ($query) {
                 $query->where('slug', $this->slug);
             })
             ->get();

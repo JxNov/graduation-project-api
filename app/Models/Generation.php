@@ -58,7 +58,7 @@ class Generation extends Model
         });
     }
 
-    public function generations(): BelongsToMany
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_generations');
     }

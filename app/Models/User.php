@@ -106,4 +106,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Generation::class, 'user_generations');
     }
+
+    public function academicYears(): BelongsToMany
+    {
+        return $this->belongsToMany(AcademicYear::class, 'user_generations');
+    }
 }

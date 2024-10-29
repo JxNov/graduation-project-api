@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AcademicYear extends Model
@@ -31,6 +32,11 @@ class AcademicYear extends Model
     public function classes()
     {
         return $this->belongsToMany(Classes::class, 'academic_year_classes', 'academic_year_id', 'class_id');
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_generations');
     }
 
     protected static function booted()
