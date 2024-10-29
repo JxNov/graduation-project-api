@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SubjectRequest;
 use App\Http\Resources\SubjectResource;
 use App\Models\Subject;
 use App\Services\SubjectService;
@@ -27,27 +28,8 @@ class SubjectController extends Controller
         return SubjectResource::collection($list);
     }
 
-    public function store(Request $request)
+    public function store(SubjectRequest $request)
     {
-        $request->validate([
-            'name' => ['required', 'max:50', 'unique:subjects'],
-            'description' => ['required', 'max:500', 'string', 'min:10'],
-            'block_level' => ['required', 'integer', 'between:6,9']
-        ], [
-            'name.required' => 'Tên môn học là bắt buộc.',
-            'name.max' => 'Tên môn học không được vượt quá 50 ký tự.',
-            'name.unique' => 'Tên môn học đã tồn tại, vui lòng chọn tên khác.',
-
-            'description.required' => 'Mô tả là bắt buộc.',
-            'description.string' => 'Mô tả phải là chuỗi ký tự.',
-            'description.min' => 'Mô tả phải có ít nhất 10 ký tự.',
-            'description.max' => 'Mô tả không được vượt quá 500 ký tự.',
-
-            'block_level.required' => 'Khối là bắt buộc.',
-            'block_level.integer' => 'Khối phải là số nguyên.',
-            'block_level.between' => 'Khối chỉ được nhập số từ 6 đến 9.'
-        ]);
-
         $data = [
             'name' => $request->name,
             'description' => $request->description,
@@ -62,26 +44,8 @@ class SubjectController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(SubjectRequest $request, $id)
     {
-        $request->validate([
-            'name' => ['required', 'max:50', 'unique:subjects'],
-            'description' => ['required', 'max:500', 'string', 'min:10'],
-            'block_level' => ['required', 'numeric', 'between:6,9']
-        ], [
-            'name.required' => 'Tên môn học là bắt buộc.',
-            'name.max' => 'Tên môn học không được vượt quá 50 ký tự.',
-            'name.unique' => 'Tên môn học đã tồn tại, vui lòng chọn tên khác.',
-
-            'description.required' => 'Mô tả là bắt buộc.',
-            'description.string' => 'Mô tả phải là chuỗi ký tự.',
-            'description.min' => 'Mô tả phải có ít nhất 10 ký tự.',
-            'description.max' => 'Mô tả không được vượt quá 500 ký tự.',
-
-            'block_level.required' => 'Khối là bắt buộc.',
-            'block_level.numeric' => 'Khối phải là số nguyên.',
-            'block_level.between' => 'Khối chỉ được nhập số từ 6 đến 9.'
-        ]);
 
         $data = [
             'name' => $request->name,

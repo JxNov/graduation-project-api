@@ -29,7 +29,6 @@ class BlockSubjectService
 
             // Thêm môn học vào khối
             $block->subjects()->attach($subject->id);
-            DB::commit();
 
             return [
                 'status' => true,
@@ -50,9 +49,7 @@ class BlockSubjectService
             $blockSubject = Block::findOrFail($id);
             // Xóa đối tượng
             $blockSubject->subjects()->detach();
-            DB::commit();
-            throw new Exception('Xoá môn học khỏi khối thành công');
+            return $blockSubject;
         });
     }
-    
 }
