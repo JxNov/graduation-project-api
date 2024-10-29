@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\v1\BlockController;
 use App\Http\Controllers\Api\v1\BlockSubjectController;
 use App\Http\Controllers\Api\v1\ClassController;
 use App\Http\Controllers\Api\v1\GenerationController;
+use App\Http\Controllers\Api\v1\MaterialController;
 use App\Http\Controllers\Api\v1\SemesterController;
 use App\Http\Controllers\Api\v1\StudentExcelController;
 use App\Http\Controllers\Api\v1\SubjectController;
@@ -138,6 +139,11 @@ Route::prefix('block-classes')
         Route::get('/{id}', [BlockClassController::class, 'show']);
         Route::patch('/{id}', [BlockClassController::class, 'update']);
         Route::delete('/{id}', [BlockClassController::class, 'destroy']);
+    });
+
+Route::prefix('materials')
+    ->group(function () {
+        Route::get('/', [MaterialController::class, 'index']);
     });
 
 // môn học
