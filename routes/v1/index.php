@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\SemesterController;
 use App\Http\Controllers\Api\v1\StudentExcelController;
 use App\Http\Controllers\Api\v1\SubjectController;
+use App\Http\Controllers\Api\v1\TeacherExcelController;
 use Illuminate\Support\Facades\Route;
 
 // Module Permissions
@@ -158,9 +159,19 @@ Route::prefix('blocksubjects')
         Route::get('/restore/{id}', [BlockSubjectController::class, 'restore']);
     });
 
-Route::prefix('excel')
+Route::prefix('excels')
     ->group(function () {
-        Route::get('export-student-form', [StudentExcelController::class, 'exportStudentForm']);
-        Route::post('import-student', [StudentExcelController::class, 'importStudent']);
-        Route::get('export-student-by-generation/{slug}', [StudentExcelController::class, 'exportStudentByGeneration']);
+
+        Route::prefix('students')
+            ->group(function () {
+                Route::get('export-form', [StudentExcelController::class, 'exportStudentForm']);
+                Route::post('import', [StudentExcelController::class, 'importStudent']);
+                Route::get('export-by-generation/{slug}', [StudentExcelController::class, 'exportStudentByGeneration']);
+            });
+
+        Route::prefix('teachers')
+            ->group(function () {
+                Route::get('export-form', [TeacherExcelController::class, 'exportTeacherForm']);
+                Route::post('import', [TeacherExcelController::class, 'importTeacher']);
+            });
     });
