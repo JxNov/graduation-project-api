@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\v1\AcademicYearClassController;
 use App\Http\Controllers\Api\v1\ModuleController;
 use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
+use App\Http\Controllers\Api\v1\StudentController;
+use App\Http\Controllers\Api\v1\StudentRoleController;
 use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
 use App\Http\Controllers\Api\v1\BlockClassController;
@@ -174,6 +176,7 @@ Route::prefix('excels')
                 Route::post('import', [StudentExcelController::class, 'importStudent']);
                 Route::get('export-by-generation/{slug}', [StudentExcelController::class, 'exportStudentByGeneration']);
                 Route::get('export-by-academic-year/{slug}', [StudentExcelController::class, 'exportStudentByAcademicYear']);
+                
             });
 
         Route::prefix('teachers')
@@ -181,4 +184,19 @@ Route::prefix('excels')
                 Route::get('export-form', [TeacherExcelController::class, 'exportTeacherForm']);
                 Route::post('import', [TeacherExcelController::class, 'importTeacher']);
             });
+    });
+    Route::prefix('students')
+    ->group(function () {
+        Route::get('/', [StudentController::class, 'index']); // Lấy danh sách học sinh
+        Route::post('/', [StudentController::class, 'store']); // Tạo học sinh mới
+        Route::put('/{username}', [StudentController::class, 'update']); // Cập nhật học sinh theo id
+        Route::delete('/{username}', [StudentController::class, 'destroy']); // Xóa mềm học sinh theo id
+        Route::get('/restore/{username}', [StudentController::class, 'restore']); // Khôi phục học sinh đã xóa mềm
+    });
+    Route::prefix('students-role')
+    ->group(function () {
+        Route::get('/', [StudentRoleController::class, 'index']);
+        Route::post('/', [StudentRoleController::class, 'store']);
+        Route::put('/{username}', [StudentRoleController::class, 'update']);
+        Route::delete('/{username}/{slugRole}', [StudentRoleController::class, 'destroy']);
     });
