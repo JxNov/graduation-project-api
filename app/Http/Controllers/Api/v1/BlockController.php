@@ -24,7 +24,7 @@ class BlockController extends Controller
 
     public function index()
     {
-        $blocks = Block::select('id', 'name', 'slug')
+        $blocks = Block::select('id', 'name', 'slug', 'level')
             ->latest('id')
             ->paginate(6);
 
@@ -61,7 +61,7 @@ class BlockController extends Controller
 
     public function show($slug)
     {
-        $block = Block::select('id', 'name', 'slug')
+        $block = Block::select('id', 'name', 'slug',  'level')
             ->where('slug', $slug)
             ->first();
 
@@ -112,7 +112,7 @@ class BlockController extends Controller
     public function trash()
     {
         $blocks = Block::onlyTrashed()
-            ->select('id', 'name', 'slug')
+            ->select('id', 'name', 'slug',  'level')
             ->latest('id')
             ->paginate(6);
 
