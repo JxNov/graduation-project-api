@@ -167,6 +167,7 @@ Route::prefix('excels')
                 Route::get('export-form', [StudentExcelController::class, 'exportStudentForm']);
                 Route::post('import', [StudentExcelController::class, 'importStudent']);
                 Route::get('export-by-generation/{slug}', [StudentExcelController::class, 'exportStudentByGeneration']);
+                Route::get('export-by-academic-year/{slug}', [StudentExcelController::class, 'exportStudentByAcademicYear']);
             });
 
         Route::prefix('teachers')
