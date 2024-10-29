@@ -20,6 +20,7 @@ return new class extends Migration {
 
             $table->unique(['block_id', 'material_id']);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
