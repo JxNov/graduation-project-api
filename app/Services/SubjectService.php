@@ -11,29 +11,23 @@ class SubjectService
 
     public function store(array $data)
     {
-        DB::beginTransaction();
-        try {
+        return DB::transaction(function () use ($data) {
+
             // Kiểm tra tên môn học có chứa số lớp tương ứng với block_level
             $gradeLevelFromName = $this->extractGradeLevel($data['name']);
 
             if ($gradeLevelFromName !== intval($data['block_level'])) {
                 throw new Exception('Tên môn học và mã khối không khớp nhau.');
             }
-
             // Tạo môn học mới
             $subject = Subject::create($data);
-            DB::commit();
             return $subject;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        });
     }
 
     public function update(array $data, $id)
     {
-        DB::beginTransaction();
-        try {
+        return DB::transaction(function () use ($data, $id) {
             $subject = Subject::findOrFail($id);
 
             // Kiểm tra tên môn học có chứa số lớp tương ứng với block_level
@@ -42,53 +36,38 @@ class SubjectService
             if ($gradeLevelFromName !== intval($data['block_level'])) {
                 throw new Exception('Tên môn học và mã khối không khớp nhau.');
             }
-
             $subject->update([
                 'name' => $data['name'],
                 'description' => $data['description'],
                 'block_level' => $data['block_level'],
             ]);
-
-            DB::commit();
             return $subject;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        });
     }
 
 
     public function destroy($id)
     {
-        DB::beginTransaction();
-        try {
+        return DB::transaction(function () use ($id) {
+
             $subject = Subject::findOrFail($id);
             $subject->delete();
-            DB::commit();
+
             return null; // Trả về null để chỉ ra việc xóa thành công
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e; // Ném ra lỗi nếu có
-        }
+
+        });
     }
 
     public function backup($id)
     {
-        DB::beginTransaction();
-        try {
+        return DB::transaction(function () use ($id) {
             // Lấy môn học đã bị xóa
             $subject = Subject::withTrashed()->findOrFail($id);
-
             // Khôi phục môn học
             $subject->restore();
-
-            DB::commit();
-
             return $subject; // Trả về môn học đã được khôi phục
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e; // Ném ra lỗi để controller xử lý
-        }
+
+        });
     }
     // Phương thức để trích xuất số lớp từ tên môn học
     private function extractGradeLevel($name)

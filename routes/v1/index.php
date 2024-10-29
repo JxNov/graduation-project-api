@@ -157,7 +157,7 @@ Route::prefix('subjects')
     });
 
 // môn học vào khoá học
-Route::prefix('blocksubjects')
+Route::prefix('block-subjects')
     ->group(function () {
         Route::get('/', [BlockSubjectController::class, 'index']);
         Route::post('/', [BlockSubjectController::class, 'store']);
