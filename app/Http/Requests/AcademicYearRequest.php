@@ -62,16 +62,16 @@ class AcademicYearRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Tên năm học là bắt buộc.',
-            'name.max' => 'Tên năm học không được vượt quá 50 ký tự.',
-            'name.unique' => 'Tên năm học đã tồn tại.',
-            'slug.max' => 'Slug không được vượt quá 70 ký tự.',
-            'slug.unique' => 'Slug đã tồn tại.',
-            'start_date.required' => 'Ngày bắt đầu là bắt buộc.',
-            'start_date.date' => 'Ngày bắt đầu phải là một ngày hợp lệ.',
-            'end_date.required' => 'Ngày kết thúc là bắt buộc.',
-            'end_date.date' => 'Ngày kết thúc phải là một ngày hợp lệ.',
-            'generation_slug.required' => 'ID thế hệ là bắt buộc.',
+            'name.required' => 'Tên năm học đang trống',
+            'name.max' => 'Tên năm học không được vượt quá 50 ký tự',
+            'name.unique' => 'Tên năm học đã tồn tại',
+            'slug.max' => 'Slug không được vượt quá 70 ký tự',
+            'slug.unique' => 'Slug đã tồn tại',
+            'start_date.required' => 'Ngày bắt đầu đang trống',
+            'start_date.date' => 'Ngày bắt đầu phải là một ngày hợp lệ',
+            'end_date.required' => 'Ngày kết thúc đang trống',
+            'end_date.date' => 'Ngày kết thúc phải là một ngày hợp lệ',
+            'generation_slug.required' => 'Khóa học sinh đang trống',
         ];
     }
 
