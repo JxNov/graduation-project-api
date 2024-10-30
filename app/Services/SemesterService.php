@@ -21,12 +21,11 @@ class SemesterService
                 throw new Exception('Thời gian bắt đầu của kỳ học phải nhỏ hơn thời gian kết thúc');
             }
 
-            $academicYear = AcademicYear::where('id', $data['academic_year_id'])
+            $academicYear = AcademicYear::where('slug', $data['academic_year_slug'])
                 ->select('id', 'name', 'slug', 'start_date', 'end_date')
                 ->first();
 
-
-            if (!$academicYear) {
+            if ($academicYear === null) {
                 throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
             }
 
@@ -46,7 +45,7 @@ class SemesterService
                 throw new Exception('Thời gian của kỳ học không được quá 5 tháng');
             }
 
-            $previousSemester = Semester::where('academic_year_id', $data['academic_year_id'])
+            $previousSemester = Semester::where('academic_year_id', $academicYear->id)
                 ->orderBy('end_date', 'desc')
                 ->first();
 
@@ -58,12 +57,13 @@ class SemesterService
                 }
             }
 
-            $countYearOfSemester = Semester::where('academic_year_id', $data['academic_year_id'])->count();
+            $countYearOfSemester = Semester::where('academic_year_id', $academicYear->id)->count();
 
             if ($countYearOfSemester >= 2) {
                 throw new Exception('1 năm chỉ có ' . $countYearOfSemester . ' kỳ học');
             }
 
+            $data['academic_year_id'] = $academicYear->id;
             $academicYearSlug = $academicYear->slug;
             $data['slug'] = Str::slug($data['name']);
             $data['slug'] = $academicYearSlug . '-' . $data['slug'] . '-' . rand(333, 999);
@@ -88,11 +88,11 @@ class SemesterService
                 throw new Exception('Thời gian bắt đầu của kỳ học phải nhỏ hơn thời gian kết thúc');
             }
 
-            $academicYear = AcademicYear::where('id', $data['academic_year_id'])
+            $academicYear = AcademicYear::where('slug', $data['academic_year_slug'])
                 ->select('id', 'name', 'slug', 'start_date', 'end_date')
                 ->first();
 
-            if (!$academicYear) {
+            if ($academicYear === null) {
                 throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
             }
 
@@ -112,7 +112,7 @@ class SemesterService
                 throw new Exception('Thời gian của kỳ học không được quá 5 tháng.');
             }
 
-            $previousSemester = Semester::where('academic_year_id', $data['academic_year_id'])
+            $previousSemester = Semester::where('academic_year_id', $academicYear->id)
                 ->where('id', '<', $semester->id)
                 ->orderBy('end_date', 'desc')
                 ->first();
@@ -125,6 +125,7 @@ class SemesterService
                 }
             }
 
+            $data['academic_year_id'] = $academicYear->id;
             $academicYearSlug = $academicYear->slug;
             $data['slug'] = Str::slug($data['name']);
             $data['slug'] = $academicYearSlug . '-' . $data['slug'] . '-' . rand(333, 999);
