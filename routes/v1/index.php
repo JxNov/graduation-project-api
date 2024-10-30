@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\v1\AcademicYearClassController;
+use App\Http\Controllers\Api\v1\ClassMaterialController;
 use App\Http\Controllers\Api\v1\ModuleController;
 use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
@@ -172,6 +173,18 @@ Route::prefix('block-materials')
         Route::delete('/{id}', [BlockMaterialController::class, 'destroy']);
         Route::get('/restore/{id}', [BlockMaterialController::class, 'restore']);
         Route::delete('/force-delete/{id}', [BlockMaterialController::class, 'forceDelete']);
+    });
+
+Route::prefix('class-materials')
+    ->group(function () {
+        Route::get('/', [ClassMaterialController::class, 'index']);
+        Route::post('/', [ClassMaterialController::class, 'store']);
+        Route::get('/trash', [ClassMaterialController::class, 'trash']);
+        Route::get('/{id}', [ClassMaterialController::class, 'show']);
+        Route::patch('/{id}', [ClassMaterialController::class, 'update']);
+        Route::delete('/{id}', [ClassMaterialController::class, 'destroy']);
+        Route::get('/restore/{id}', [ClassMaterialController::class, 'restore']);
+        Route::delete('/force-delete/{id}', [ClassMaterialController::class, 'forceDelete']);
     });
 
 // môn học
