@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\SemesterController;
 use App\Http\Controllers\Api\v1\StudentExcelController;
 use App\Http\Controllers\Api\v1\SubjectController;
+use App\Http\Controllers\Api\v1\ScheduleController;
 use Illuminate\Support\Facades\Route;
 
 // Module Permissions
@@ -162,4 +163,14 @@ Route::prefix('excel')
     ->group(function () {
         Route::get('export-student-form', [StudentExcelController::class, 'exportStudentForm']);
         Route::post('import-student', [StudentExcelController::class, 'importStudent']);
+    });
+
+// Thời khóa biểu
+Route::prefix('schedules')
+    ->group(function () {
+        Route::get('/', [ScheduleController::class, 'index']);
+        Route::post('/', [ScheduleController::class, 'store']);
+        Route::get('/{id}', [ScheduleController::class, 'show']);
+        Route::patch('/{id}', [ScheduleController::class, 'update']);
+        Route::delete('/{id}', [ScheduleController::class, 'destroy']);
     });

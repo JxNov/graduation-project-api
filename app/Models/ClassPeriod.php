@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ClassPeriod extends Model
 {
@@ -62,4 +63,15 @@ class ClassPeriod extends Model
             'end_time' => '17:00'
         ],
     ];
+
+    protected $fillable = [
+        'lesson',
+        'start_time',
+        'end_time',
+    ];
+
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
+    }
 }

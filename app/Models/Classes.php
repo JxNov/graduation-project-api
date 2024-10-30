@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -21,22 +24,27 @@ class Classes extends Model
     ];
 
     // giáo viên chủ nhiệm
-    public function teacher()
+    public function teacher(): HasOne
     {
         return $this->hasOne(User::class, 'id', 'teacher_id');
     }
 
-    public function academicYears()
+    public function academicYears(): BelongsToMany
     {
         return $this->belongsToMany(AcademicYear::class, 'academic_year_classes', 'class_id', 'academic_year_id');
     }
 
-    public function blocks()
+    public function blocks(): BelongsToMany
     {
         return $this->belongsToMany(Block::class, 'block_classes', 'class_id', 'block_id');
     }
 
-    protected static function booted()
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
+    }
+
+    protected static function booted(): void
     {
         static::creating(function ($class) {
             do {
