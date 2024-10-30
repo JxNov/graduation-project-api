@@ -21,7 +21,7 @@ class TeacherImportRequest extends FormRequest
     public function messages()
     {
         return [
-            'file.required' => 'Hãy chọn danh sách học sinh',
+            'file.required' => 'Hãy chọn danh sách giáo viên',
             'file.file' => 'Tập tin phải là một file hợp lệ',
             'file.mimes' => 'Tập tin phải có định dạng .xlsx',
         ];

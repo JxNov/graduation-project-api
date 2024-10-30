@@ -9,6 +9,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToCollection;
 
 class StudentsImport implements ToCollection
@@ -63,8 +64,8 @@ class StudentsImport implements ToCollection
                 'gender' => $gender,
                 'address' => $address,
                 'phone_number' => $phoneNumber,
-                'email' => $username . '@example.com',
-                'password' => bcrypt('abc123'),
+                'email' => $this-> generateEmail($username) ,
+                'password' => Hash::make('abc123'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
