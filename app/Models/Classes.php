@@ -36,6 +36,11 @@ class Classes extends Model
         return $this->belongsToMany(Block::class, 'block_classes', 'class_id', 'block_id');
     }
 
+    public function materials()
+    {
+        return $this->belongsToMany(Material::class, 'class_materials', 'class_id', 'material_id');
+    }
+
     protected static function booted()
     {
         static::creating(function ($class) {
@@ -54,6 +59,10 @@ class Classes extends Model
             if ($class->academicYears->isNotEmpty()) {
                 $class->academicYears()->updateExistingPivot($class->academicYears->pluck('id'), ['deleted_at' => now()]);
             }
+
+            if ($class->materials->isNotEmpty()) {
+                $class->materials()->updateExistingPivot($class->materials->pluck('id'), ['deleted_at' => now()]);
+            }
         });
 
         static::restoring(function ($class) {
@@ -65,6 +74,11 @@ class Classes extends Model
             $academicYearClass = $class->academicYears()->withTrashed()->get();
             if ($academicYearClass->isNotEmpty()) {
                 $class->academicYears()->updateExistingPivot($academicYearClass->pluck('id'), ['deleted_at' => null]);
+            }
+
+            $materialClass = $class->materials()->withTrashed()->get();
+            if ($materialClass->isNotEmpty()) {
+                $class->materials()->updateExistingPivot($materialClass->pluck('id'), ['deleted_at' => null]);
             }
         });
     }
