@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
 use App\Http\Controllers\Api\v1\BlockClassController;
 use App\Http\Controllers\Api\v1\BlockController;
+use App\Http\Controllers\Api\v1\BlockMaterialController;
 use App\Http\Controllers\Api\v1\BlockSubjectController;
 use App\Http\Controllers\Api\v1\ClassController;
 use App\Http\Controllers\Api\v1\GenerationController;
@@ -153,6 +154,18 @@ Route::prefix('materials')
         Route::delete('/{slug}', [MaterialController::class, 'destroy']);
         Route::get('/restore/{slug}', [MaterialController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [MaterialController::class, 'forceDelete']);
+    });
+
+Route::prefix('block-materials')
+    ->group(function () {
+        Route::get('/', [BlockMaterialController::class, 'index']);
+        Route::post('/', [BlockMaterialController::class, 'store']);
+        Route::get('/trash', [BlockMaterialController::class, 'trash']);
+        Route::get('/{id}', [BlockMaterialController::class, 'show']);
+        Route::patch('/{id}', [BlockMaterialController::class, 'update']);
+        Route::delete('/{id}', [BlockMaterialController::class, 'destroy']);
+        Route::get('/restore/{id}', [BlockMaterialController::class, 'restore']);
+        Route::delete('/force-delete/{id}', [BlockMaterialController::class, 'forceDelete']);
     });
 
 // môn học

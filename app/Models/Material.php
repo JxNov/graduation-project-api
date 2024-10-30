@@ -28,4 +28,9 @@ class Material extends Model
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
+
+    public function blocks()
+    {
+        return $this->belongsToMany(Block::class, 'block_materials', 'material_id', 'block_id');
+    }
 }

@@ -25,6 +25,11 @@ class Block extends Model
         return $this->belongsToMany(Classes::class, 'block_classes', 'block_id', 'class_id');
     }
 
+    public function classFromMaterials()
+    {
+        return $this->belongsToMany(Classes::class, 'block_materials', 'block_id', 'class_id');
+    }
+
     protected static function booted()
     {
         static::deleting(function ($block) {
