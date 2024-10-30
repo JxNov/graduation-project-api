@@ -15,11 +15,11 @@ class BlockSubjectResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name_block' => $this->name,
+            'nameBlock' => $this->name,
             'subjects' => $this->subjects->map(function ($subject) {
                 return [
                     'id' => $subject->id,
-                    'name_subject' => $subject->name,
+                    'nameSubject' => $subject->name,
                 ];
             }),
         ];

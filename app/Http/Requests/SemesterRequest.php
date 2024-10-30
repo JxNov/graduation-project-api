@@ -32,7 +32,7 @@ class SemesterRequest extends FormRequest
             'slug' => 'max:70|unique:semesters,slug',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
-            'academic_year_id' => 'required|exists:academic_years,id'
+            'academic_year_slug' => 'required'
         ];
     }
 
@@ -51,7 +51,7 @@ class SemesterRequest extends FormRequest
                 'slug' => 'max:70|unique:semesters,slug,' . $semester->id,
                 'start_date' => 'required|date',
                 'end_date' => 'required|date',
-                'academic_year_id' => 'required|exists:academic_years,id'
+                'academic_year_slug' => 'required'
             ];
         } catch (Exception $e) {
             return [
@@ -71,8 +71,7 @@ class SemesterRequest extends FormRequest
             'start_date.date' => 'Ngày bắt đầu không hợp lệ.',
             'end_date.required' => 'Ngày kết thúc là bắt buộc.',
             'end_date.date' => 'Ngày kết thúc không hợp lệ.',
-            'academic_year_id.required' => 'ID năm học là bắt buộc.',
-            'academic_year_id.exists' => 'Năm học không tồn tại.',
+            'academic_year_slug.required' => 'Năm học là bắt buộc.',
         ];
     }
 

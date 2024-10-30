@@ -13,7 +13,7 @@ class Subject extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable =[
-        'id','name','description','block_level'
+        'id','slug','name','description','block_level'
     ];
 
     protected $table = 'subjects';

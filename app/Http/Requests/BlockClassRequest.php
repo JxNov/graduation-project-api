@@ -25,26 +25,24 @@ class BlockClassRequest extends FormRequest
     public function rulesForCreate(): array
     {
         return [
-            'block_id' => 'required|exists:blocks,id',
-            'class_id' => 'required|exists:classes,id',
+            'block_slug' => 'required',
+            'class_slug' => 'required',
         ];
     }
 
     public function rulesForUpdate(): array
     {
         return [
-            'block_id' => 'required|exists:blocks,id',
-            'class_id' => 'required|exists:classes,id',
+            'block_slug' => 'required',
+            'class_slug' => 'required',
         ];
     }
 
     public function messages()
     {
         return [
-            'block_id.required' => 'Khối đang trống',
-            'block_id.exists' => 'Khối không tồn tại hoặc đã bị xóa',
-            'class_id.required' => 'Lớp đang trống',
-            'class_id.exists' => 'Lớp không tồn tại hoặc đã bị xóa',
+            'block_slug.required' => 'Khối đang trống',
+            'class_slug.required' => 'Lớp đang trống',
         ];
     }
 }

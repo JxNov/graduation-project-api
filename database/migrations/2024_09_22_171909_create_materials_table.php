@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('materials', function (Blueprint $table) {
             $table->id();
             $table->string('title', 100);
+            $table->string('slug', 130);
             $table->text('description')->nullable();
             $table->text('file_path');
 

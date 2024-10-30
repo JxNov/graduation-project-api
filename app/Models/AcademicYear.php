@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AcademicYear extends Model
@@ -33,6 +34,11 @@ class AcademicYear extends Model
         return $this->belongsToMany(Classes::class, 'academic_year_classes', 'academic_year_id', 'class_id');
     }
 
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_generations');
+    }
+
     protected static function booted()
     {
         static::deleting(function ($academicYear) {
@@ -40,25 +46,41 @@ class AcademicYear extends Model
                 $semester->delete();
             });
 
-            $classes = $academicYear->classes;
-            if ($classes->isNotEmpty()) {
-                $academicYear->classes()->updateExistingPivot($classes->pluck('id'), ['deleted_at' => now()]);
+            if ($academicYear->classes->isNotEmpty()) {
+                $academicYear->classes()->updateExistingPivot($academicYear->classes->pluck('id'), ['deleted_at' => now()]);
             }
 
+            $academicYear->classes()->each(function ($class) {
+                $class->blocks()->updateExistingPivot($class->blocks->pluck('id'), ['deleted_at' => now()]);
+            });
+
+            $academicYear->classes()->each(function ($class) {
+                $class->materials()->updateExistingPivot($class->materials->pluck('id'), ['deleted_at' => now()]);
+            });
+
             $academicYear->classes()->delete();
+
         });
 
         static::restoring(function ($academicYear) {
-            $academicYear->semesters()->withTrashed()->each(function ($semester) {
+            $semesterTrash = $academicYear->semesters()->withTrashed();
+
+            $semesterTrash->each(function ($semester) {
                 $semester->restore();
             });
 
-            $classes = $academicYear->classes;
-            if ($classes->isNotEmpty()) {
-                $academicYear->classes()->updateExistingPivot($classes->pluck('id'), ['deleted_at' => null]);
+            $academicYearClass = $academicYear->classes()->withTrashed()->get();
+            if ($academicYearClass->isNotEmpty()) {
+                $academicYear->classes()->updateExistingPivot($academicYearClass->pluck('id'), ['deleted_at' => null]);
             }
 
-            $academicYear->classes()->restore();
+            $classTrash = $academicYear->classes()->withTrashed();
+            $classTrash->each(function ($class) {
+                $class->blocks()->updateExistingPivot($class->blocks->pluck('id'), ['deleted_at' => null]);
+                $class->materials()->updateExistingPivot($class->materials->pluck('id'), ['deleted_at' => null]);
+                $class->restore();
+            });
+
         });
     }
 }

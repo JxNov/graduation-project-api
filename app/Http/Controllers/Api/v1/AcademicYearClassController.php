@@ -96,7 +96,7 @@ class AcademicYearClassController extends Controller
             $academicYearClass = $this->academicYearClassService->updateAcademicYearClass($data, $id);
 
             return $this->successResponse(
-                $academicYearClass,
+                new AcademicYearClassResource($academicYearClass),
                 'Cập nhật lớp học vào năm học thành công',
                 Response::HTTP_OK
             );
@@ -113,7 +113,61 @@ class AcademicYearClassController extends Controller
             return $this->successResponse(
                 null,
                 'Xóa lớp học của năm học thành công',
+                Response::HTTP_NO_CONTENT
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function trash()
+    {
+        try {
+            $academicYearClasses = AcademicYearClass::select('id', 'academic_year_id', 'class_id')
+                ->latest('id')
+                ->onlyTrashed()
+                ->paginate(10);
+
+            if ($academicYearClasses->isEmpty()) {
+                return $this->errorResponse(
+                    'Không có dữ liệu',
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            return $this->successResponse(
+                new AcademicYearClassCollection($academicYearClasses),
+                'Lấy danh sách lớp học đã xóa của các năm thành công',
                 Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function restore($id)
+    {
+        try {
+            $academicYearClass = $this->academicYearClassService->restoreAcademicYearClass($id);
+
+            return $this->successResponse(
+                new AcademicYearClassResource($academicYearClass),
+                'Khôi phục lớp học của năm học thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function forceDelete($id){
+        try {
+            $this->academicYearClassService->forceDeleteAcademicYearClass($id);
+
+            return $this->successResponse(
+                null,
+                'Xóa vĩnh viễn lớp học của năm học thành công',
+                Response::HTTP_NO_CONTENT
             );
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);

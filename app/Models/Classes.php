@@ -19,8 +19,8 @@ class Classes extends Model
     protected $fillable = [
         'name',
         'slug',
-        'teacher_id',
-        'academic_year_id',
+        'code',
+        'teacher_id'
     ];
 
     // giáo viên chủ nhiệm
@@ -44,7 +44,12 @@ class Classes extends Model
         return $this->hasMany(Schedule::class);
     }
 
-    protected static function booted(): void
+    public function materials()
+    {
+        return $this->belongsToMany(Material::class, 'class_materials', 'class_id', 'material_id');
+    }
+
+    protected static function booted()
     {
         static::creating(function ($class) {
             do {
@@ -55,31 +60,34 @@ class Classes extends Model
         });
 
         static::deleting(function ($class) {
-            $blocks = $class->blocks;
-            if ($blocks->isNotEmpty()) {
-                $class->blocks()->updateExistingPivot($blocks->pluck('id'), ['deleted_at' => now()]);
+            if ($class->blocks->isNotEmpty()) {
+                $class->blocks()->updateExistingPivot($class->blocks->pluck('id'), ['deleted_at' => now()]);
             }
-            $class->blocks()->delete();
 
-            $academicYears = $class->academicYears;
-            if ($academicYears->isNotEmpty()) {
-                $class->academicYears()->updateExistingPivot($academicYears->pluck('id'), ['deleted_at' => now()]);
+            if ($class->academicYears->isNotEmpty()) {
+                $class->academicYears()->updateExistingPivot($class->academicYears->pluck('id'), ['deleted_at' => now()]);
             }
-            $class->academicYears()->delete();
+
+            if ($class->materials->isNotEmpty()) {
+                $class->materials()->updateExistingPivot($class->materials->pluck('id'), ['deleted_at' => now()]);
+            }
         });
 
         static::restoring(function ($class) {
-            $blocks = $class->blocks;
-            if ($blocks->isNotEmpty()) {
-                $class->blocks()->updateExistingPivot($blocks->pluck('id'), ['deleted_at' => null]);
+            $blockClass = $class->blocks()->withTrashed()->get();
+            if ($blockClass->isNotEmpty()) {
+                $class->blocks()->updateExistingPivot($blockClass->pluck('id'), ['deleted_at' => null]);
             }
-            $class->blocks()->restore();
 
-            $academicYears = $class->academicYears;
-            if ($academicYears->isNotEmpty()) {
-                $class->academicYears()->updateExistingPivot($academicYears->pluck('id'), ['deleted_at' => null]);
+            $academicYearClass = $class->academicYears()->withTrashed()->get();
+            if ($academicYearClass->isNotEmpty()) {
+                $class->academicYears()->updateExistingPivot($academicYearClass->pluck('id'), ['deleted_at' => null]);
             }
-            $class->academicYears()->restore();
+
+            $materialClass = $class->materials()->withTrashed()->get();
+            if ($materialClass->isNotEmpty()) {
+                $class->materials()->updateExistingPivot($materialClass->pluck('id'), ['deleted_at' => null]);
+            }
         });
     }
 }

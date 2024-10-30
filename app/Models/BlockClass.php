@@ -26,17 +26,4 @@ class BlockClass extends Model
     {
         return $this->belongsTo(Classes::class);
     }
-
-    public static function booted()
-    {
-        static::deleting(function ($blockClass) {
-            $blockClass->block()->delete();
-            $blockClass->class()->delete();
-        });
-
-        static::restoring(function ($blockClass) {
-            $blockClass->block()->restore();
-            $blockClass->class()->restore();
-        });
-    }
 }

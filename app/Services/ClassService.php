@@ -13,25 +13,27 @@ class ClassService
     {
         return DB::transaction(function () use ($data) {
             // lấy tất cả giáo viên
-            $teachers = User::with('roles')
-                ->whereHas('roles', function ($role) {
-                    $role->where('slug', 'like', 'teacher');
-                })
-                ->pluck('name', 'id');
+            $teacher = User::whereHas('roles', function ($role) {
+                $role->where('slug', 'like', 'teacher');
+            })
+                ->where('username', $data['username'])
+                ->first();
 
-            if (!$teachers->has($data['teacher_id'])) {
+            if ($teacher === null) {
                 throw new Exception('Người này không phải giáo viên');
             }
 
             // kiểm tra nếu giáo viên đã có trong 1 lớp cùng năm học
-            $homeRoomTeacher = Classes::where('teacher_id', $data['teacher_id'])
+            $homeRoomTeacher = Classes::where('teacher_id', $teacher->id)
                 ->first();
 
             if ($homeRoomTeacher) {
                 throw new Exception('Giáo viên đã chủ nhiệm một lớp của năm học này');
             }
 
-            $teacherName = $teachers->get($data['teacher_id']);
+            $data['teacher_id'] = $teacher->id;
+
+            $teacherName = $teacher->name;
             $teacherSlug = Str::slug($teacherName);
             $classSlug = Str::slug($data['name']);
             $data['slug'] = $teacherSlug . '-' . $classSlug;
@@ -49,26 +51,28 @@ class ClassService
                 throw new Exception('Không tìm thấy lớp');
             }
 
-            $teachers = User::with('roles')
-                ->whereHas('roles', function ($role) {
-                    $role->where('slug', 'like', 'teacher');
-                })
-                ->pluck('name', 'id');
+            $teacher = User::whereHas('roles', function ($role) {
+                $role->where('slug', 'like', 'teacher');
+            })
+                ->where('username', $data['username'])
+                ->first();
 
-            if (!$teachers->has($data['teacher_id'])) {
+            if ($teacher === null) {
                 throw new Exception('Người này không phải giáo viên');
             }
 
-            $homeRoomTeacher = Classes::where('teacher_id', $data['teacher_id'])
+            $homeRoomTeacher = Classes::where('teacher_id', $teacher->id)
                 ->first();
 
             if ($homeRoomTeacher && $homeRoomTeacher->id !== $class->id) {
                 throw new Exception('Giáo viên đã chủ nhiệm một lớp của năm học này');
             }
 
-            $teacherName = $teachers->get($data['teacher_id']);
+            $data['teacher_id'] = $teacher->id;
+
+            $teacherName = $teacher->name;
             $teacherSlug = Str::slug($teacherName);
-            $classSlug = Str::slug($data['name'] ?? $class->name);
+            $classSlug = Str::slug($data['name']);
             $data['slug'] = $teacherSlug . '-' . $classSlug;
 
             $class->update($data);

@@ -44,4 +44,22 @@ class StudentExcelController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+    public function exportStudentByGeneration($slug)
+    {
+        try {
+            return $this->studentExcelService->exportStudentByGeneration($slug);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function exportStudentByAcademicYear($slug)
+    {
+        try {
+            return $this->studentExcelService->exportStudentByAcademicYear($slug);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }

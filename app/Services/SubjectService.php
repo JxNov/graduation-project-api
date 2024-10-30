@@ -5,36 +5,34 @@ namespace App\Services;
 use App\Models\Subject;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
 
 class SubjectService
 {
 
     public function store(array $data)
     {
-        DB::beginTransaction();
-        try {
+        return DB::transaction(function () use ($data) {
+
             // Kiểm tra tên môn học có chứa số lớp tương ứng với block_level
             $gradeLevelFromName = $this->extractGradeLevel($data['name']);
 
             if ($gradeLevelFromName !== intval($data['block_level'])) {
                 throw new Exception('Tên môn học và mã khối không khớp nhau.');
             }
-
+            //tạo slug
+            $data['slug'] = Str::slug($data['name'], '-');
             // Tạo môn học mới
             $subject = Subject::create($data);
-            DB::commit();
             return $subject;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        });
     }
 
-    public function update(array $data, $id)
+    public function update(array $data,$slug)
     {
-        DB::beginTransaction();
-        try {
-            $subject = Subject::findOrFail($id);
+        return DB::transaction(function () use ($data,$slug) {
+            $subject = Subject::where('slug',$slug)->first();
 
             // Kiểm tra tên môn học có chứa số lớp tương ứng với block_level
             $gradeLevelFromName = $this->extractGradeLevel($data['name']);
@@ -42,53 +40,42 @@ class SubjectService
             if ($gradeLevelFromName !== intval($data['block_level'])) {
                 throw new Exception('Tên môn học và mã khối không khớp nhau.');
             }
+
+            $data['slug'] = Str::slug($data['name'], '-');
 
             $subject->update([
                 'name' => $data['name'],
                 'description' => $data['description'],
                 'block_level' => $data['block_level'],
+                'slug' => $data['slug'],
             ]);
-
-            DB::commit();
             return $subject;
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        });
     }
 
 
-    public function destroy($id)
-    {
-        DB::beginTransaction();
-        try {
-            $subject = Subject::findOrFail($id);
-            $subject->delete();
-            DB::commit();
-            return null; // Trả về null để chỉ ra việc xóa thành công
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e; // Ném ra lỗi nếu có
-        }
-    }
+    public function destroy($slug)
+{
+    return DB::transaction(function () use ($slug) {
 
-    public function backup($id)
+        $subject = Subject::where('slug', $slug)->firstOrFail();
+        $subject->delete();
+
+        return null; 
+    });
+}
+
+
+    public function backup($slug)
     {
-        DB::beginTransaction();
-        try {
+        return DB::transaction(function () use ($slug) {
             // Lấy môn học đã bị xóa
-            $subject = Subject::withTrashed()->findOrFail($id);
-
+            $subject = Subject::withTrashed()->where('slug',$slug);
             // Khôi phục môn học
             $subject->restore();
-
-            DB::commit();
-
             return $subject; // Trả về môn học đã được khôi phục
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e; // Ném ra lỗi để controller xử lý
-        }
+
+        });
     }
     // Phương thức để trích xuất số lớp từ tên môn học
     private function extractGradeLevel($name)

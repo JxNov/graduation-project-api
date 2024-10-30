@@ -25,26 +25,24 @@ class AcademicYearClassRequest extends FormRequest
     public function rulesForCreate(): array
     {
         return [
-            'academic_year_id' => 'required|exists:academic_years,id',
-            'class_id' => 'required|exists:classes,id'
+            'academic_year_slug' => 'required',
+            'class_slug' => 'required'
         ];
     }
 
     public function rulesForUpdate(): array
     {
         return [
-            'academic_year_id' => 'required|exists:academic_years,id',
-            'class_id' => 'required|exists:classes,id'
+            'academic_year_slug' => 'required',
+            'class_slug' => 'required'
         ];
     }
 
     public function messages(): array
     {
         return [
-            'academic_year_id.required' => 'Năm học không được bỏ trống',
-            'academic_year_id.exists' => 'Năm học không tồn tại',
-            'class_id.required' => 'Lớp không được bỏ trống',
-            'class_id.exists' => 'Lớp không tồn tại'
+            'academic_year_slug.required' => 'Năm học không được bỏ trống',
+            'class_slug.required' => 'Lớp không được bỏ trống',
         ];
     }
 }
