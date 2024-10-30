@@ -29,7 +29,7 @@ class BlockMaterialService
                 ->first();
 
             if ($blockMaterialExists) {
-                throw new Exception('Tài liệu đã có trong khối này');
+                throw new Exception('Tài liệu này đã có trong khối này');
             }
 
             $data['material_id'] = $material->id;
@@ -63,7 +63,7 @@ class BlockMaterialService
                 ->first();
 
             if ($blockMaterialExists) {
-                throw new Exception('Tài liệu đã có trong khối này');
+                throw new Exception('Tài liệu này đã có trong khối này');
             }
 
             $data['material_id'] = $material->id;
