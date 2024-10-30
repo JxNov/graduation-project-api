@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Subject;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
 
 class SubjectService
 {
@@ -19,16 +21,18 @@ class SubjectService
             if ($gradeLevelFromName !== intval($data['block_level'])) {
                 throw new Exception('Tên môn học và mã khối không khớp nhau.');
             }
+            //tạo slug
+            $data['slug'] = Str::slug($data['name'], '-');
             // Tạo môn học mới
             $subject = Subject::create($data);
             return $subject;
         });
     }
 
-    public function update(array $data, $id)
+    public function update(array $data,$slug)
     {
-        return DB::transaction(function () use ($data, $id) {
-            $subject = Subject::findOrFail($id);
+        return DB::transaction(function () use ($data,$slug) {
+            $subject = Subject::where('slug',$slug)->first();
 
             // Kiểm tra tên môn học có chứa số lớp tương ứng với block_level
             $gradeLevelFromName = $this->extractGradeLevel($data['name']);
@@ -36,33 +40,37 @@ class SubjectService
             if ($gradeLevelFromName !== intval($data['block_level'])) {
                 throw new Exception('Tên môn học và mã khối không khớp nhau.');
             }
+
+            $data['slug'] = Str::slug($data['name'], '-');
+
             $subject->update([
                 'name' => $data['name'],
                 'description' => $data['description'],
                 'block_level' => $data['block_level'],
+                'slug' => $data['slug'],
             ]);
             return $subject;
         });
     }
 
 
-    public function destroy($id)
+    public function destroy($slug)
+{
+    return DB::transaction(function () use ($slug) {
+
+        $subject = Subject::where('slug', $slug)->firstOrFail();
+        $subject->delete();
+
+        return null; 
+    });
+}
+
+
+    public function backup($slug)
     {
-        return DB::transaction(function () use ($id) {
-
-            $subject = Subject::findOrFail($id);
-            $subject->delete();
-
-            return null; // Trả về null để chỉ ra việc xóa thành công
-
-        });
-    }
-
-    public function backup($id)
-    {
-        return DB::transaction(function () use ($id) {
+        return DB::transaction(function () use ($slug) {
             // Lấy môn học đã bị xóa
-            $subject = Subject::withTrashed()->findOrFail($id);
+            $subject = Subject::withTrashed()->where('slug',$slug);
             // Khôi phục môn học
             $subject->restore();
             return $subject; // Trả về môn học đã được khôi phục

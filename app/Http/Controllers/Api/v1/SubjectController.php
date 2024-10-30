@@ -44,7 +44,7 @@ class SubjectController extends Controller
         }
     }
 
-    public function update(SubjectRequest $request, $id)
+    public function update(SubjectRequest $request, $slug)
     {
 
         $data = [
@@ -54,27 +54,27 @@ class SubjectController extends Controller
         ];
 
         try {
-            $subject = $this->subjectservice->update($data, $id);
+            $subject = $this->subjectservice->update($data, $slug);
             return $this->successResponse($subject, 'SUCCESS', Response::HTTP_ACCEPTED);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function destroy($id)
+    public function destroy($slug)
     {
         try {
-            $this->subjectservice->destroy($id);
+            $this->subjectservice->destroy($slug);
             return $this->successResponse(null, "Xóa thành công môn học", Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function restore($id)
+    public function restore($slug)
     {
         try {
-            $subject = $this->subjectservice->backup($id);
+            $subject = $this->subjectservice->backup($slug);
             return $this->successResponse($subject, "Khôi phục thành công", Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
