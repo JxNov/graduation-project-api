@@ -7,9 +7,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
-class StudentService
+class TeacherService
 {
-    public function createStudent(array $data)
+    public function createTeacher(array $data)
     {
         return DB::transaction(function () use ($data) {
             // Tạo username duy nhất
@@ -18,8 +18,8 @@ class StudentService
             // Tạo email dựa trên tên và username
             $data['email'] = $this->generateEmail($username);
 
-            // Lưu thông tin học sinh vào cơ sở dữ liệu
-            $student = User::create([
+            // Lưu thông tin giáo viên vào cơ sở dữ liệu
+            $teacher = User::create([
                 'name' => $data['name'],
                 'username' => $username,
                 'email' => $data['email'],
@@ -30,52 +30,53 @@ class StudentService
                 'phone_number' => $data['phone_number'],
             ]);
 
-            // Lấy ID role cho học sinh
-            $roleStudent = Role::where('slug', 'student')->first();
+            // Lấy ID role cho giáo viên
+            $roleTeacher = Role::where('slug', 'teacher')->first();
 
-            if (!$roleStudent) {
-                throw new \Exception("Quyền 'student' không tồn tại trong hệ thống.");
+            if (!$roleTeacher) {
+                throw new \Exception("Quyền 'teacher' không tồn tại trong hệ thống.");
             }
-            // Gắn role 'student' cho học sinh
-            if ($roleStudent) {
+            // Gắn role 'teacher' cho giáo viên
+            if ($roleTeacher) {
                 DB::table('user_roles')->insert([
-                    'user_id' => $student->id,
-                    'role_id' => $roleStudent->id,
+                    'user_id' => $teacher->id,
+                    'role_id' => $roleTeacher->id,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
             }
 
-            return $student;
+            return $teacher;
         });
     }
 
-    public function updateStudent($data, $username)
+    public function updateTeacher($data, $username)
     {
         return DB::transaction(function () use ($data, $username) {
             $user = User::where('username', $username)->firstOrFail();
 
-            // Tách phần đuôi `ps` + 5 số ngẫu nhiên từ `username` hiện tại
+            // Tách phần đuôi `ps` + số ngẫu nhiên hiện tại từ `username`
             if (str_starts_with($user->username, strtolower($this->removeAccents($data['name'])))) {
-                $username = $user->username;
+                // Giữ nguyên `username` nếu tên chưa thay đổi
+                $newUsername = $user->username;
             } else {
-                // Nếu thay đổi tên, tạo username mới nhưng giữ lại phần đuôi `ps` + 5 số ngẫu nhiên
+                // Tạo phần base mới của `username` từ tên mới
                 $usernameBase = $this->generateUsernameBase($data['name']);
 
-                // Tách phần đuôi `ps` + 5 số từ username hiện tại
-                $suffix = substr($user->username, strpos($user->username, 'ps'));
+                // Giữ lại phần số ngẫu nhiên hiện tại nếu có
+                $suffix = substr($user->username, strlen($usernameBase));
 
-                // Ghép phần mới với đuôi cũ
-                $username = $usernameBase . $suffix;
+                // Tạo `username` mới với phần base mới và số ngẫu nhiên
+                $newUsername = $usernameBase . (is_numeric($suffix) ? $suffix : rand(10, 999));
             }
 
+            // Cập nhật email dựa trên `username` mới
+            $data['email'] = $this->generateEmail($newUsername);
 
             // Cập nhật thông tin người dùng
-            $data['email'] = $this->generateEmail($username);
-
             $user->update([
                 'name' => $data['name'],
-                'username' => $username,
+                'username' => $newUsername,
                 'email' => $data['email'],
                 'password' => Hash::make('abc123456'), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],
@@ -88,32 +89,31 @@ class StudentService
         });
     }
 
+
     public function destroy($username)
     {
         return DB::transaction(function () use ($username) {
-            $user = User::where('username', $username)->firstOrFail();
+            // Tìm người dùng theo username
+            $userTeacher = User::where('username', $username)->firstOrFail();
 
-            // Xóa mềm người dùng
-            $user->delete();
-
-            // Xóa mềm các vai trò trong bảng `user_role`
-            $user->roles()->each(function ($role) use ($user) {
-                $user->roles()->updateExistingPivot($role->id, ['deleted_at' => now()]);
+            // Lấy các vai trò của người dùng đã bị xóa mềm (nếu có) từ bảng user_role
+            $userTeacher->roles()->each(function ($role) use ($userTeacher) {
+                $userTeacher->roles()->updateExistingPivot($role->id, ['deleted_at' => now()]);
             });
 
-            return $user;
+            return $userTeacher;
         });
     }
-
     public function backup($username)
     {
         return DB::transaction(function () use ($username) {
-            $user = User::where('username', $username)->withTrashed()->firstOrFail();
+            // Find the user with trashed data
+            $user = User::withTrashed()->where('username', $username)->firstOrFail();
 
-            // Khôi phục người dùng
+            // Restore the user record
             $user->restore();
 
-            // Khôi phục các vai trò trong bảng `user_role`
+            // Retrieve and restore the roles associated with the user in the pivot table
             $user->roles()->withTrashed()->each(function ($role) use ($user) {
                 $user->roles()->updateExistingPivot($role->id, ['deleted_at' => null]);
             });
@@ -121,6 +121,7 @@ class StudentService
             return $user;
         });
     }
+
 
     public function generateUsername($fullName)
     {
@@ -141,9 +142,12 @@ class StudentService
         // Tạo phần gốc của username
         $usernameBase = strtolower($firstName . $lastNameInitial . $middleNameInitials);
 
-        // Thêm "ps" và 5 chữ số ngẫu nhiên
-        return $usernameBase . 'ps' . rand(10000, 99999);
+        // Thêm 2 đến 3 chữ số ngẫu nhiên
+        $randomNumber = rand(10, 999);
+
+        return $usernameBase . $randomNumber;
     }
+
 
     public function generateEmail($username)
     {
