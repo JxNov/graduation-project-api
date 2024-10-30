@@ -153,9 +153,9 @@ Route::prefix('subjects')
     ->group(function () {
         Route::get('/', [SubjectController::class, 'index']);
         Route::post('/', [SubjectController::class, 'store']);
-        Route::patch('/{id}', [SubjectController::class, 'update']);
-        Route::delete('/{id}', [SubjectController::class, 'destroy']);
-        Route::get('/restore/{id}', [SubjectController::class, 'restore']);
+        Route::patch('/{slug}', [SubjectController::class, 'update']);
+        Route::delete('/{slug}', [SubjectController::class, 'destroy']);
+        Route::get('/restore/{slug}', [SubjectController::class, 'restore']);
     });
 
 // môn học vào khoá học

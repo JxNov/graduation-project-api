@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Subject;
+use Exception;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SubjectRequest extends FormRequest
@@ -36,9 +38,14 @@ class SubjectRequest extends FormRequest
 
     public function rulesForUpdate(): array
     {
+        $slug = $this->route('slug');
+            $subject = Subject::where('slug', $slug)->select('id', 'slug')->first();
 
+            if (!$subject) {
+                throw new Exception('Không tìm thấy môn học');
+            } 
         return [
-            'name' => ['required', 'max:50', 'unique:subjects'],
+            'name' => ['required', 'max:50', 'unique:subjects,slug,'.$subject->id],
             'description' => ['required', 'max:500', 'string', 'min:10'],
             'block_level' => ['required', 'numeric', 'between:6,9']
         ];

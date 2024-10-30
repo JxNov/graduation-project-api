@@ -17,6 +17,7 @@ class SubjectResource extends JsonResource
         return [
             'id'=>$this->id,
             'name'=>$this->name,
+            'slug'=>$this->slug,
             'description'=>$this->description,
             'blockLevel'=>$this->blockevel
         ];
