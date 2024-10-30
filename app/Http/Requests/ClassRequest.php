@@ -30,7 +30,7 @@ class ClassRequest extends FormRequest
         return [
             'name' => 'required|max:50',
             'slug' => 'max:70|unique:classes,slug',
-            'teacher_id' => 'required|exists:users,id',
+            'username' => 'required',
         ];
     }
 
@@ -47,7 +47,7 @@ class ClassRequest extends FormRequest
             return [
                 'name' => 'required|max:50',
                 'slug' => 'max:70|unique:classes,slug,' . $class->id,
-                'teacher_id' => 'required|exists:users,id',
+                'username' => 'required',
             ];
         } catch (Exception $e) {
             return [
@@ -63,8 +63,7 @@ class ClassRequest extends FormRequest
             'name.max' => 'Tên lớp không được vượt quá 50 ký tự.',
             'slug.max' => 'Slug không được vượt quá 70 ký tự.',
             'slug.unique' => 'Slug đã tồn tại.',
-            'teacher_id.required' => 'Giáo viên là bắt buộc.',
-            'teacher_id.exists' => 'Giáo viên không tồn tại.',
+            'username.required' => 'Giáo viên là bắt buộc.',
         ];
     }
 

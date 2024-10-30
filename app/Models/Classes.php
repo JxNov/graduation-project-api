@@ -16,8 +16,8 @@ class Classes extends Model
     protected $fillable = [
         'name',
         'slug',
-        'teacher_id',
-        'academic_year_id',
+        'code',
+        'teacher_id'
     ];
 
     // giáo viên chủ nhiệm
