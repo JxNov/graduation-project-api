@@ -2,11 +2,9 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Generation extends Model
@@ -30,6 +28,12 @@ class Generation extends Model
         static::deleting(function ($generation) {
             $generation->academicYears()->each(function ($academicYear) {
                 foreach ($academicYear->classes as $class) {
+                    $materials = $class->materials;
+
+                    foreach ($materials as $material) {
+                        $material->delete();
+                    }
+
                     $blocks = $class->blocks;
 
                     foreach ($blocks as $block) {
@@ -47,8 +51,17 @@ class Generation extends Model
             $academicYearTrash->each(function ($academicYear) {
                 $classes = $academicYear->classes()->withTrashed()->get();
                 foreach ($classes as $class) {
+                    $materials = $class->materials()->withTrashed()->get();
+                    foreach ($materials as $material) {
+                        $material->restore();
+                    }
+
                     $blocks = $class->blocks()->withTrashed()->get();
                     foreach ($blocks as $block) {
+                        $materialBlock = $block->classFromMaterials()->withTrashed()->get();
+                        if ($materialBlock->isNotEmpty()) {
+                            $block->classFromMaterials()->updateExistingPivot($materialBlock->pluck('id'), ['deleted_at' => null]);
+                        }
                         $block->restore();
                     }
                 }

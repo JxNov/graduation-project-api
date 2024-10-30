@@ -29,9 +29,13 @@ class AcademicYearService
                 throw new Exception('Năm học chỉ có 1 năm');
             }
 
-            $generation = Generation::where('id', $data['generation_id'])
+            $generation = Generation::where('slug', $data['generation_slug'])
                 ->select('id', 'name', 'slug', 'start_date', 'end_date')
                 ->first();
+
+            if ($generation === null) {
+                throw new Exception('Không tìm thấy khóa học');
+            }
 
             $startGenerationDate = Carbon::parse($generation->start_date);
             $endGenerationDate = Carbon::parse($generation->end_date);
@@ -45,14 +49,14 @@ class AcademicYearService
                 throw new Exception('Ngày kết thúc phải nằm trong khoảng: ' . $startGenerationDate->toDateString() . ' đến: ' . $endGenerationDate->toDateString());
             }
 
-            $countYearOfGeneration = AcademicYear::where('generation_id', $data['generation_id'])->count();
+            $countYearOfGeneration = AcademicYear::where('generation_id', $generation->id)->count();
 
-            if ($countYearOfGeneration >= 4) {
+            if ($countYearOfGeneration && $countYearOfGeneration >= 4) {
                 throw new Exception('Khóa học đã có đủ: ' . $countYearOfGeneration . ' năm học');
             }
 
             if ($countYearOfGeneration) {
-                $lastAcademicYear = AcademicYear::where('generation_id', $data['generation_id'])
+                $lastAcademicYear = AcademicYear::where('generation_id', $generation->id)
                     ->select('id', 'end_date', 'generation_id')
                     ->orderBy('end_date', 'desc')
                     ->first();
@@ -66,6 +70,7 @@ class AcademicYearService
                 }
             }
 
+            $data['generation_id'] = $generation->id;
             $generationSlug = Str::slug($generation->slug);
             $data['slug'] = Str::slug($data['name']);
             $data['slug'] = $generationSlug . '-' . $data['slug'];
@@ -82,9 +87,13 @@ class AcademicYearService
                 throw new Exception('Năm học không tồn tại');
             }
 
-            $generation = Generation::where('id', $data['generation_id'])
+            $generation = Generation::where('slug', $data['generation_slug'])
                 ->select('id', 'name', 'slug', 'start_date', 'end_date')
                 ->first();
+
+            if ($generation === null) {
+                throw new Exception('Không tìm thấy khóa học');
+            }
 
             $startDate = Carbon::parse($data['start_date']);
             $endDate = Carbon::parse($data['end_date']);
@@ -125,7 +134,7 @@ class AcademicYearService
             }
 
             // lấy những năm học trước năm học hiện tại để so sánh
-            $lastAcademicYear = AcademicYear::where('generation_id', $data['generation_id'])
+            $lastAcademicYear = AcademicYear::where('generation_id', $generation->id)
                 ->select('id', 'end_date', 'generation_id')
                 ->where('id', '<', $academicYear->id)
                 ->orderBy('end_date', 'desc')
@@ -139,6 +148,7 @@ class AcademicYearService
                 }
             }
 
+            $data['generation_id'] = $generation->id;
             $generationSlug = Str::slug($generation->slug);
             $data['slug'] = $generationSlug . '-' . Str::slug($data['name']);
 

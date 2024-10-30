@@ -10,6 +10,7 @@ class AcademicYearClassResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'academicYearName' => optional($this->academicYear)->name,
             'className' => optional($this->class)->name
         ];

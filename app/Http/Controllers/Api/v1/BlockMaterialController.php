@@ -1,41 +1,43 @@
 <?php
+
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\BlockClassRequest;
-use App\Http\Resources\BlockClassCollection;
-use App\Http\Resources\BlockClassResource;
-use App\Models\BlockClass;
-use App\Services\BlockClassService;
+use App\Http\Requests\BlockMaterialRequest;
+use App\Http\Resources\BlockMaterialCollection;
+use App\Http\Resources\BlockMaterialResource;
+use App\Models\BlockMaterial;
+use App\Services\BlockMaterialService;
 use App\Traits\ApiResponseTrait;
 use Exception;
 use Illuminate\Http\Response;
 
-class BlockClassController extends Controller
+class BlockMaterialController extends Controller
 {
     use ApiResponseTrait;
 
-    protected $blockClassService;
+    protected $blockMaterialService;
 
-    public function __construct(BlockClassService $blockClassService)
+    public function __construct(BlockMaterialService $blockMaterialService)
     {
-        $this->blockClassService = $blockClassService;
+        $this->blockMaterialService = $blockMaterialService;
     }
 
     public function index()
     {
         try {
-            $blockClasses = BlockClass::select('id', 'block_id', 'class_id')
-                ->latest('id')
+            $blockMaterials = BlockMaterial::latest('id')
+                ->select('id', 'material_id', 'block_id')
+                ->with(['material', 'block'])
                 ->paginate(10);
 
-            if ($blockClasses->isEmpty()) {
+            if ($blockMaterials->isEmpty()) {
                 return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
             }
 
             return $this->successResponse(
-                new BlockClassCollection($blockClasses),
-                'Lấy tất cả thông tin lớp học của khối học thành công',
+                new BlockMaterialCollection($blockMaterials),
+                'Lấy tất cả thông tin tài liệu của khối thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
@@ -43,14 +45,16 @@ class BlockClassController extends Controller
         }
     }
 
-    public function store(BlockClassRequest $request)
+    public function store(BlockMaterialRequest $request)
     {
         try {
             $data = $request->validated();
-            $blockClass = $this->blockClassService->createNewBlockClass($data);
+
+            $blockMaterial = $this->blockMaterialService->createNewBlockMaterial($data);
+
             return $this->successResponse(
-                new BlockClassResource($blockClass),
-                'Thêm mới lớp học vào khối thành công',
+                new BlockMaterialResource($blockMaterial),
+                'Thêm tài liệu vào khối thành công',
                 Response::HTTP_CREATED
             );
         } catch (Exception $e) {
@@ -61,15 +65,18 @@ class BlockClassController extends Controller
     public function show($id)
     {
         try {
-            $blockClass = BlockClass::where('id', $id)->first();
+            $blockMaterial = BlockMaterial::where('id', $id)
+                ->select('id', 'material_id', 'block_id')
+                ->with(['material', 'block'])
+                ->first();
 
-            if ($blockClass === null) {
-                return $this->errorResponse('Không tìm thấy lớp học của khối', Response::HTTP_NOT_FOUND);
+            if ($blockMaterial === null) {
+                return $this->errorResponse('Dữ liệu không tồn tại hoặc đã bị xóa', Response::HTTP_NOT_FOUND);
             }
 
             return $this->successResponse(
-                new BlockClassResource($blockClass),
-                'Lấy thông tin lớp học của khối thành công',
+                new BlockMaterialResource($blockMaterial),
+                'Lấy thông tin tài liệu của khối thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
@@ -77,15 +84,16 @@ class BlockClassController extends Controller
         }
     }
 
-    public function update(BlockClassRequest $request, $id)
+    public function update(BlockMaterialRequest $request, $id)
     {
         try {
             $data = $request->validated();
-            $blockClass = $this->blockClassService->updateBlockClass($id, $data);
+
+            $blockMaterial = $this->blockMaterialService->updateBlockMaterial($data, $id);
 
             return $this->successResponse(
-                new BlockClassResource($blockClass),
-                'Cập nhật lớp học thành công',
+                new BlockMaterialResource($blockMaterial),
+                'Cập nhật tài liệu vào khối thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
@@ -96,10 +104,11 @@ class BlockClassController extends Controller
     public function destroy($id)
     {
         try {
-            $this->blockClassService->deleteBlockClass($id);
+            $this->blockMaterialService->deleteBlockMaterial($id);
+
             return $this->successResponse(
                 null,
-                'Xóa lớp học thành công',
+                'Xóa tài liệu khối thành công',
                 Response::HTTP_NO_CONTENT
             );
         } catch (Exception $e) {
@@ -110,18 +119,19 @@ class BlockClassController extends Controller
     public function trash()
     {
         try {
-            $blockClasses = BlockClass::select('id', 'block_id', 'class_id')
-                ->latest('id')
+            $blockMaterials = BlockMaterial::latest('id')
+                ->select('id', 'material_id', 'block_id')
+                ->with(['material', 'block'])
                 ->onlyTrashed()
                 ->paginate(10);
 
-            if ($blockClasses->isEmpty()) {
+            if ($blockMaterials->isEmpty()) {
                 return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
             }
 
             return $this->successResponse(
-                new BlockClassCollection($blockClasses),
-                'Lấy tất cả thông tin lớp học đã xóa của khối học thành công',
+                new BlockMaterialCollection($blockMaterials),
+                'Lấy tất cả thông tin tài liệu đã xóa của khối thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
@@ -132,10 +142,11 @@ class BlockClassController extends Controller
     public function restore($id)
     {
         try {
-            $blockClass = $this->blockClassService->restoreBlockClass($id);
+            $blockMaterial = $this->blockMaterialService->restoreBlockMaterial($id);
+
             return $this->successResponse(
-                new BlockClassResource($blockClass),
-                'Khôi phục lớp học của khối thành công',
+                new BlockMaterialResource($blockMaterial),
+                'Khôi phục tài liệu vào khối thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
@@ -146,10 +157,11 @@ class BlockClassController extends Controller
     public function forceDelete($id)
     {
         try {
-            $this->blockClassService->forceDeleteBlockClass($id);
+            $this->blockMaterialService->forceDeleteBlockMaterial($id);
+
             return $this->successResponse(
                 null,
-                'Xóa vĩnh viễn lớp học thành công',
+                'Xóa vĩnh viễn tài liệu khối thành công',
                 Response::HTTP_NO_CONTENT
             );
         } catch (Exception $e) {

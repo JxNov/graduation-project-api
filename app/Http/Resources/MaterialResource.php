@@ -11,6 +11,7 @@ class MaterialResource extends JsonResource
     {
         return [
             'title' => $this->title,
+            'slug' => $this->slug,
             'description' => $this->description,
             'filePath' => $this->file_path,
             'subjectName' => optional($this->subject)->name,
