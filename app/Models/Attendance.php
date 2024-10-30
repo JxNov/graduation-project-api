@@ -4,16 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Attendance extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
-    const _STATUS = [
-        'Present' => 'Present',
-        'Absent' => 'Absent',
-        'Late' => 'Late',
-        'Excused' => 'Excused',
-        'Medical Leave' => 'Medical Leave'
+    const _SHIFTS = [
+        'Morning' => 'Morning',
+        'Afternoon' => 'Afternoon'
+    ];
+
+    protected $fillable = [
+        'date',
+        'shifts',
+        'reason',
+        'class_id',
     ];
 }
