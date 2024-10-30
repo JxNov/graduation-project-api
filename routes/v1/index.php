@@ -146,6 +146,13 @@ Route::prefix('block-classes')
 Route::prefix('materials')
     ->group(function () {
         Route::get('/', [MaterialController::class, 'index']);
+        Route::post('/', [MaterialController::class, 'store']);
+        Route::get('/trash', [MaterialController::class, 'trash']);
+        Route::get('/{slug}', [MaterialController::class, 'show']);
+        Route::patch('/{slug}', [MaterialController::class, 'update']);
+        Route::delete('/{slug}', [MaterialController::class, 'destroy']);
+        Route::get('/restore/{slug}', [MaterialController::class, 'restore']);
+        Route::delete('/force-delete/{slug}', [MaterialController::class, 'forceDelete']);
     });
 
 // môn học
@@ -176,7 +183,7 @@ Route::prefix('excels')
                 Route::post('import', [StudentExcelController::class, 'importStudent']);
                 Route::get('export-by-generation/{slug}', [StudentExcelController::class, 'exportStudentByGeneration']);
                 Route::get('export-by-academic-year/{slug}', [StudentExcelController::class, 'exportStudentByAcademicYear']);
-                
+
             });
 
         Route::prefix('teachers')
@@ -185,7 +192,7 @@ Route::prefix('excels')
                 Route::post('import', [TeacherExcelController::class, 'importTeacher']);
             });
     });
-    Route::prefix('students')
+Route::prefix('students')
     ->group(function () {
         Route::get('/', [StudentController::class, 'index']); // Lấy danh sách học sinh
         Route::post('/', [StudentController::class, 'store']); // Tạo học sinh mới
@@ -193,7 +200,7 @@ Route::prefix('excels')
         Route::delete('/{username}', [StudentController::class, 'destroy']); // Xóa mềm học sinh theo id
         Route::get('/restore/{username}', [StudentController::class, 'restore']); // Khôi phục học sinh đã xóa mềm
     });
-    Route::prefix('students-role')
+Route::prefix('students-role')
     ->group(function () {
         Route::get('/', [StudentRoleController::class, 'index']);
         Route::post('/', [StudentRoleController::class, 'store']);
