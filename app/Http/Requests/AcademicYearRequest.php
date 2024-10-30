@@ -31,7 +31,7 @@ class AcademicYearRequest extends FormRequest
             'slug' => 'max:70|unique:academic_years,slug',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
-            'generation_id' => 'required|exists:generations,id'
+            'generation_slug' => 'required'
         ];
     }
 
@@ -50,7 +50,7 @@ class AcademicYearRequest extends FormRequest
                 'slug' => 'max:70|unique:academic_years,slug,' . $academicYear->id,
                 'start_date' => 'required|date',
                 'end_date' => 'required|date',
-                'generation_id' => 'required|exists:generations,id'
+                'generation_slug' => 'required'
             ];
         } catch (Exception $e) {
             return [
@@ -71,8 +71,7 @@ class AcademicYearRequest extends FormRequest
             'start_date.date' => 'Ngày bắt đầu phải là một ngày hợp lệ.',
             'end_date.required' => 'Ngày kết thúc là bắt buộc.',
             'end_date.date' => 'Ngày kết thúc phải là một ngày hợp lệ.',
-            'generation_id.required' => 'ID thế hệ là bắt buộc.',
-            'generation_id.exists' => 'ID thế hệ không tồn tại.'
+            'generation_slug.required' => 'ID thế hệ là bắt buộc.',
         ];
     }
 
