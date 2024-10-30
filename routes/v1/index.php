@@ -130,9 +130,12 @@ Route::prefix('academic-year-classes')
     ->group(function () {
         Route::get('/', [AcademicYearClassController::class, 'index']);
         Route::post('/', [AcademicYearClassController::class, 'store']);
+        Route::get('/trash', [AcademicYearClassController::class, 'trash']);
         Route::get('/{id}', [AcademicYearClassController::class, 'show']);
         Route::patch('/{id}', [AcademicYearClassController::class, 'update']);
         Route::delete('/{id}', [AcademicYearClassController::class, 'destroy']);
+        Route::get('/restore/{slug}', [AcademicYearClassController::class, 'restore']);
+        Route::delete('/force-delete/{slug}', [AcademicYearClassController::class, 'forceDelete']);
     });
 
 Route::prefix('block-classes')
