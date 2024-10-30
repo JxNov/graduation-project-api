@@ -5,8 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,15 +14,12 @@ return new class extends Migration
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->enum('status', Attendance::_STATUS)->default(Attendance::_STATUS['Absent']);
-            $table->text('reason')->nullable();
+            
+            $table->enum('shifts', Attendance::_SHIFTS)
+            ->default(Attendance::_SHIFTS['Morning']);
 
-            $table->foreignId('student_id')
-                ->constrained('users')
-                ->onDelete('cascade');
-
-            $table->foreignId('semester_id')
-                ->constrained('semesters')
+            $table->foreignId('class_id')
+                ->constrained('classes')
                 ->onDelete('cascade');
 
             $table->timestamps();
