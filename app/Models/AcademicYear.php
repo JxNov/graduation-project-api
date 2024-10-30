@@ -54,6 +54,10 @@ class AcademicYear extends Model
                 $class->blocks()->updateExistingPivot($class->blocks->pluck('id'), ['deleted_at' => now()]);
             });
 
+            $academicYear->classes()->each(function ($class) {
+                $class->materials()->updateExistingPivot($class->materials->pluck('id'), ['deleted_at' => now()]);
+            });
+
             $academicYear->classes()->delete();
 
         });
@@ -73,7 +77,7 @@ class AcademicYear extends Model
             $classTrash = $academicYear->classes()->withTrashed();
             $classTrash->each(function ($class) {
                 $class->blocks()->updateExistingPivot($class->blocks->pluck('id'), ['deleted_at' => null]);
-
+                $class->materials()->updateExistingPivot($class->materials->pluck('id'), ['deleted_at' => null]);
                 $class->restore();
             });
 
