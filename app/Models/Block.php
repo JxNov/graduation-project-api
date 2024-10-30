@@ -38,6 +38,11 @@ class Block extends Model
                 $block->classes()->updateExistingPivot($classes->pluck('id'), ['deleted_at' => now()]);
             }
 
+            $classFromMaterials = $block->classFromMaterials;
+            if ($classFromMaterials->isNotEmpty()) {
+                $block->classFromMaterials()->updateExistingPivot($classFromMaterials->pluck('id'), ['deleted_at' => now()]);
+            }
+
             $block->classes()->each(function ($class) {
                 $class->academicYears()->updateExistingPivot($class->academicYears->pluck('id'), ['deleted_at' => now()]);
             });
@@ -49,6 +54,11 @@ class Block extends Model
             $blockClass = $block->classes()->withTrashed()->get();
             if ($blockClass->isNotEmpty()) {
                 $block->classes()->updateExistingPivot($blockClass->pluck('id'), ['deleted_at' => null]);
+            }
+
+            $blockMaterial = $block->classFromMaterials()->withTrashed()->get();
+            if ($blockMaterial->isNotEmpty()) {
+                $block->classFromMaterials()->updateExistingPivot($blockMaterial->pluck('id'), ['deleted_at' => null]);
             }
 
             $classTrash = $block->classes()->withTrashed();
