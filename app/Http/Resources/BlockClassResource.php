@@ -10,6 +10,7 @@ class BlockClassResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'blockName' => optional($this->block)->name,
             'className' => optional($this->class)->name,
         ];

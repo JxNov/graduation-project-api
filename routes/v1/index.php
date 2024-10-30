@@ -142,9 +142,12 @@ Route::prefix('block-classes')
     ->group(function () {
         Route::get('/', [BlockClassController::class, 'index']);
         Route::post('/', [BlockClassController::class, 'store']);
+        Route::get('/trash', [BlockClassController::class, 'trash']);
         Route::get('/{id}', [BlockClassController::class, 'show']);
         Route::patch('/{id}', [BlockClassController::class, 'update']);
         Route::delete('/{id}', [BlockClassController::class, 'destroy']);
+        Route::get('/restore/{slug}', [BlockClassController::class, 'restore']);
+        Route::delete('/force-delete/{slug}', [BlockClassController::class, 'forceDelete']);
     });
 
 Route::prefix('materials')
