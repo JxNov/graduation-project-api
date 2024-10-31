@@ -61,8 +61,25 @@ class AttendanceController extends Controller
 
             return $this->successResponse(
                 null,
-                'Đã lưu thông tin điểm danh ngày: ' . now(),
+                'Đã lưu kết quả điểm danh ngày: ' . now()->format('d/m/Y'),
                 Response::HTTP_CREATED
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function update(AttendanceRequest $request, $id)
+    {
+        try {
+            $data = $request->validated();
+
+            $this->attendanceService->updateAttendance($data, $id);
+
+            return $this->successResponse(
+                null,
+                'Đã cập nhật kết quả điểm danh ngày: ' . now()->format('d/m/Y'),
+                Response::HTTP_OK
             );
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
