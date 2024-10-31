@@ -32,9 +32,20 @@ class MaterialService
             $data['slug'] = $subject->slug . '-' . Str::slug($data['title']);
 
             if (isset($data['file_path'])) {
-                $data['file_path'] = Storage::put('materials', $data['file_path']);
+                $firebase = app('firebase.storage');
+                $storage = $firebase->getBucket();
+
+                $firebasePath = 'materials/' . $data['file_path']->getClientOriginalName();
+
+                $storage->upload(
+                    file_get_contents($data['file_path']->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
             }
 
+            $data['file_path'] = $firebasePath;
             $material = Material::create($data);
 
             return $material;
@@ -69,11 +80,28 @@ class MaterialService
             $data['slug'] = $subject->slug . '-' . Str::slug($data['title']);
 
             if (isset($data['file_path'])) {
-                $data['file_path'] = Storage::put('materials', $data['file_path']);
+                $firebase = app('firebase.storage');
+                $storage = $firebase->getBucket();
 
-                if ($material->file_path && Storage::exists($material->file_path)) {
-                    Storage::delete($material->file_path);
+                $firebasePath = 'materials/' . $data['file_path']->getClientOriginalName();
+
+                if ($material->file_path) {
+                    $oldFirebasePath = $material->file_path;
+
+                    $oldFile = $storage->object($oldFirebasePath);
+
+                    if ($oldFile->exists()) {
+                        $oldFile->delete();
+                    }
                 }
+
+                $storage->upload(
+                    file_get_contents($data['file_path']->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
+                $data['file_path'] = $firebasePath;
             }
 
             $material->update($data);
