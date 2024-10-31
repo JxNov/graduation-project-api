@@ -9,9 +9,16 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class TeachersImport implements ToCollection
+class TeachersImport implements ToCollection, WithChunkReading, ShouldQueue
 {
+    public function chunkSize(): int
+    {
+        return 100;
+    }
+
     public function collection(Collection $rows)
     {
         $data = [];
@@ -113,7 +120,7 @@ class TeachersImport implements ToCollection
     $usernameBase = $firstName . $lastNameInitial . $middleNameInitials; // Tên + chữ cái đầu của họ + chữ cái đầu tên đệm
 
     // Đảm bảo username là duy nhất
-    $username = $usernameBase . rand(10, 100);
+    $username = $usernameBase . rand(10, 999);
     while (in_array($username, $existingUsernames)) {
         $username = $usernameBase . rand(10, 999);
     }
