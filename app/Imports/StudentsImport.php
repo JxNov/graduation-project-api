@@ -11,8 +11,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class StudentsImport implements ToCollection
+class StudentsImport implements ToCollection, WithChunkReading, ShouldQueue
 {
     private $generationSlug;
     private $academicYearSlug;
@@ -21,6 +23,11 @@ class StudentsImport implements ToCollection
     {
         $this->generationSlug = $generationSlug;
         $this->academicYearSlug = $academicYearSlug;
+    }
+
+    public function chunkSize(): int
+    {
+        return 300;
     }
 
     public function collection(Collection $rows)
