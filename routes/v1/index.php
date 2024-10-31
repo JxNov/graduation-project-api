@@ -137,8 +137,8 @@ Route::prefix('academic-year-classes')
         Route::get('/{id}', [AcademicYearClassController::class, 'show']);
         Route::patch('/{id}', [AcademicYearClassController::class, 'update']);
         Route::delete('/{id}', [AcademicYearClassController::class, 'destroy']);
-        Route::get('/restore/{slug}', [AcademicYearClassController::class, 'restore']);
-        Route::delete('/force-delete/{slug}', [AcademicYearClassController::class, 'forceDelete']);
+        Route::get('/restore/{id}', [AcademicYearClassController::class, 'restore']);
+        Route::delete('/force-delete/{id}', [AcademicYearClassController::class, 'forceDelete']);
     });
 
 Route::prefix('block-classes')
@@ -149,8 +149,8 @@ Route::prefix('block-classes')
         Route::get('/{id}', [BlockClassController::class, 'show']);
         Route::patch('/{id}', [BlockClassController::class, 'update']);
         Route::delete('/{id}', [BlockClassController::class, 'destroy']);
-        Route::get('/restore/{slug}', [BlockClassController::class, 'restore']);
-        Route::delete('/force-delete/{slug}', [BlockClassController::class, 'forceDelete']);
+        Route::get('/restore/{id}', [BlockClassController::class, 'restore']);
+        Route::delete('/force-delete/{id}', [BlockClassController::class, 'forceDelete']);
     });
 
 Route::prefix('materials')
