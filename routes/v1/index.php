@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\v1\StudentRoleController;
 use App\Http\Controllers\Api\v1\TeacherController;
 use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
+use App\Http\Controllers\Api\v1\AttendanceController;
 use App\Http\Controllers\Api\v1\BlockClassController;
 use App\Http\Controllers\Api\v1\BlockController;
 use App\Http\Controllers\Api\v1\BlockMaterialController;
@@ -248,3 +249,9 @@ Route::prefix('students-role')
         Route::put('/{username}', [StudentRoleController::class, 'update']);
         Route::delete('/{username}/{slugRole}', [StudentRoleController::class, 'destroy']);
     });
+
+Route::prefix('attendances')
+    ->group(function () {
+        Route::get('/{classSlug}', [AttendanceController::class, 'studentInClass']);
+        Route::post('/save', [AttendanceController::class, 'save']);
+    }); 
