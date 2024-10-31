@@ -254,4 +254,5 @@ Route::prefix('attendances')
     ->group(function () {
         Route::get('/{classSlug}', [AttendanceController::class, 'studentInClass']);
         Route::post('/save', [AttendanceController::class, 'save']);
-    }); 
+        Route::patch('/update/{id}', [AttendanceController::class, 'update']);
+    });
