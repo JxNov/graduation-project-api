@@ -41,6 +41,16 @@ class Classes extends Model
         return $this->belongsToMany(Material::class, 'class_materials', 'class_id', 'material_id');
     }
 
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'class_students', 'class_id', 'student_id');
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     protected static function booted()
     {
         static::creating(function ($class) {
