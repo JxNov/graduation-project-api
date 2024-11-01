@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AttendanceRequest;
+use App\Http\Resources\AttendanceCollection;
+use App\Models\Attendance;
 use App\Models\Classes;
 use App\Services\AttendanceService;
 use App\Traits\ApiResponseTrait;
@@ -22,6 +24,27 @@ class AttendanceController extends Controller
         $this->attendanceService = $attendanceService;
     }
 
+    public function index()
+    {
+        try {
+            $attendances = Attendance::latest('id')
+                ->select('id', 'date', 'shifts', 'class_id')
+                ->paginate(10);
+
+            if ($attendances->isEmpty()) {
+                return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
+            }
+
+            return $this->successResponse(
+                new AttendanceCollection($attendances),
+                'Lấy tất cả kết quả điểm danh thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     public function studentInClass(Request $request)
     {
         try {
@@ -32,6 +55,10 @@ class AttendanceController extends Controller
             }
 
             $students = $class->students;
+            $teacherName = $class->teacher->name;
+            $className = $class->name;
+            $numberStudentInClass = $students->count();
+
             $result = [];
 
             foreach ($students as $student) {
@@ -43,8 +70,13 @@ class AttendanceController extends Controller
             }
 
             return $this->successResponse(
-                $result,
-                'Danh sách học sinh của lớp: ' . $class->name,
+                [
+                    'className' => $className,
+                    'teacherName' => $teacherName,
+                    'numberStudentInClass' => $numberStudentInClass,
+                    $result
+                ],
+                'Danh sách học sinh của lớp: ' . $className,
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
