@@ -77,8 +77,6 @@ class MaterialService
             $data['subject_id'] = $subject->id;
             $data['teacher_id'] = $teacher->id;
 
-            $data['slug'] = $subject->slug . '-' . Str::slug($data['title']);
-
             if (isset($data['file_path'])) {
                 $firebase = app('firebase.storage');
                 $storage = $firebase->getBucket();
