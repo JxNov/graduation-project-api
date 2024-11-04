@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\MaterialController;
 use App\Http\Controllers\Api\v1\SemesterController;
 use App\Http\Controllers\Api\v1\StudentExcelController;
+use App\Http\Controllers\Api\v1\SubjectClassController;
 use App\Http\Controllers\Api\v1\SubjectController;
 use App\Http\Controllers\Api\v1\TeacherExcelController;
 use Illuminate\Support\Facades\Route;
@@ -247,4 +248,15 @@ Route::prefix('students-role')
         Route::post('/', [StudentRoleController::class, 'store']);
         Route::put('/{username}', [StudentRoleController::class, 'update']);
         Route::delete('/{username}/{slugRole}', [StudentRoleController::class, 'destroy']);
+    });
+Route::prefix('classes-subject')
+    ->group(function () {
+        Route::get('/', [SubjectClassController::class, 'index']);
+        Route::post('/', [SubjectClassController::class, 'store']);
+        Route::put('/{id}', [SubjectClassController::class, 'update']);
+        Route::delete('/{id}', [SubjectClassController::class, 'destroy']);
+        Route::get('/restore/{id}', [SubjectClassController::class, 'restore']);
+        Route::get('/trash', [SubjectClassController::class, 'trash']);
+        Route::get('/{id}', [SubjectClassController::class, 'show']);
+        Route::delete('/force-delete/{id}', [SubjectClassController::class, 'forceDelete']);
     });
