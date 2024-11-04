@@ -104,9 +104,7 @@ class AcademicYearService
             );
 
             if (!$hasDateChanged) {
-                $generationSlug = Str::slug($generation->slug);
-                $data['slug'] = $generationSlug . '-' . Str::slug($data['name']);
-                $academicYear->update(['slug' => $data['slug']]);
+                $academicYear->update($data);
                 return $academicYear;
             }
 
