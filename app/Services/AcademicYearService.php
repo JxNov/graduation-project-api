@@ -98,15 +98,15 @@ class AcademicYearService
             $startDate = Carbon::parse($data['start_date']);
             $endDate = Carbon::parse($data['end_date']);
 
-            $hasDateChanged = (
-                Carbon::parse($academicYear->start_date)->toDateString() !== $startDate->toDateString() ||
-                Carbon::parse($academicYear->end_date)->toDateString() !== $endDate->toDateString()
-            );
+            // $hasDateChanged = (
+            //     Carbon::parse($academicYear->start_date)->toDateString() !== $startDate->toDateString() ||
+            //     Carbon::parse($academicYear->end_date)->toDateString() !== $endDate->toDateString()
+            // );
 
-            if (!$hasDateChanged) {
-                $academicYear->update($data);
-                return $academicYear;
-            }
+            // if (!$hasDateChanged) {
+            //     $academicYear->update($data);
+            //     return $academicYear;
+            // }
 
             $startYear = $startDate->year;
             $endYear = $endDate->year;
@@ -147,8 +147,6 @@ class AcademicYearService
             }
 
             $data['generation_id'] = $generation->id;
-            $generationSlug = Str::slug($generation->slug);
-            $data['slug'] = $generationSlug . '-' . Str::slug($data['name']);
 
             $academicYear->update($data);
             return $academicYear;
