@@ -28,13 +28,13 @@ class NotifyStudentsAcademicYearStart extends Command
             return;
         }
 
-        $students = User::whereHas('academicYears', function ($query) use ($academicYear) {
+        User::whereHas('academicYears', function ($query) use ($academicYear) {
             $query->where('academic_year_id', $academicYear->id);
-        })->get();
-
-        foreach ($students as $student) {
-            NotifyStudentsAcademicYearStartJob::dispatch($student, $academicYear);
-        }
+        })->chunk(100, function ($students) use ($academicYear) {
+            foreach ($students as $student) {
+                NotifyStudentsAcademicYearStartJob::dispatch($student, $academicYear);
+            }
+        });
 
         $this->info('Đã gửi thông báo nhắc nhở cho các học sinh cho năm học sắp tới');
     }
