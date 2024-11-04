@@ -5,71 +5,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thông Báo Năm Học Mới</title>
-    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100">
-    <div class="max-w-2xl mx-auto p-6">
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div class="relative h-48">
+<body style="background-color: #f3f4f6; font-family: Arial, sans-serif;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 24px;">
+        <div
+            style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+            <div style="position: relative; height: 192px;">
                 <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1" alt="Trường Học"
-                    class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 flex items-end p-6">
-                    <h1 class="text-white text-3xl font-bold">Chào mừng trở lại <span
-                            class="text-yellow-300">Tech4School</span></h1>
+                    style="width: 100%; height: 100%; object-fit: cover;">
+                <div
+                    style="position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.5)); display: flex; align-items: flex-end; padding: 24px;">
+                    <h1 style="color: #ffffff; font-size: 24px; font-weight: bold;">Chào mừng trở lại <span
+                            style="color: #fbbf24;">Tech4School</span></h1>
                 </div>
             </div>
 
-            <div class="p-6 space-y-6">
-                <div class="space-y-2">
-                    <p class="text-gray-700">Kính gửi <span
-                            class="font-semibold text-blue-600">{{ $student->name }}</span>,
+            <div style="padding: 24px; line-height: 1.6;">
+                <div>
+                    <p style="color: #4b5563;">Kính gửi
+                        <span style="font-weight: 600; color: #3b82f6;">
+                            {{ $student->name }}
+                        </span>,
                     </p>
-                    <p class="text-gray-600">Chúng tôi hy vọng bạn nhận được email này trong tình trạng tốt! Chúng tôi
+                    <p style="color: #6b7280;">Chúng tôi hy vọng bạn nhận được email này trong tình trạng tốt! Chúng tôi
                         rất vui mừng chào đón bạn quay trở lại cho năm học mới.</p>
                 </div>
 
-                <div class="bg-blue-50 p-4 rounded-lg space-y-2">
-                    <h2 class="text-lg font-semibold text-blue-800">Thông Tin Của Bạn</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                            </svg>
-                            <span class="text-gray-600">{{ $student->email }}</span>
+                <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin-top: 16px;">
+                    <h2 style="font-size: 16px; font-weight: 600; color: #1e3a8a;">Thông Tin Của Bạn</h2>
+                    <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #3b82f6; font-size: 16px;">📧</span>
+                            <span style="color: #6b7280;"> {{ $student->email }}</span>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span class="text-gray-600">{{ $student->date_of_birth }}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #3b82f6; font-size: 16px;">📅</span>
+                            <span style="color: #6b7280;"> {{ $student->date_of_birth }}</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-yellow-50 p-4 rounded-lg">
-                    <h2 class="text-lg font-semibold text-yellow-800 mb-2">Ngày Quan Trọng</h2>
-                    <p class="text-yellow-700">Năm Học Bắt Đầu: <span
-                            class="font-semibold">{{ \Carbon\Carbon::parse($academicYear->start_date)->format('d/m/Y') }}</span>
+                <div style="background-color: #fef3c7; padding: 16px; border-radius: 8px; margin-top: 16px;">
+                    <h2 style="font-size: 16px; font-weight: 600; color: #b45309; margin-bottom: 8px;">Ngày Quan Trọng
+                    </h2>
+                    <p style="color: #92400e;">Năm Học Bắt Đầu: <span
+                            style="font-weight: 600;">{{ $academicYear->start_date }}</span>
                     </p>
                 </div>
 
-                <div class="space-y-4">
-                    <h2 class="text-lg font-semibold text-gray-800">Sắp Tới Là Gì?</h2>
-                    <ul class="list-disc list-inside text-gray-600 space-y-2">
+                <div style="margin-top: 16px;">
+                    <h2 style="font-size: 16px; font-weight: 600; color: #111827;">Sắp Tới Là Gì?</h2>
+                    <ul style="list-style-type: disc; padding-left: 20px; color: #6b7280;">
                         <li>Xem lại lịch học của bạn</li>
                         <li>Chuẩn bị dụng cụ học tập</li>
                         <li>Tham gia các buổi định hướng</li>
                     </ul>
                 </div>
 
-                <div class="border-t pt-6">
-                    <p class="text-sm text-gray-500 text-center">Nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại liên hệ
-                        với chúng tôi.</p>
+                <div style="border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: 16px;">
+                    <p style="font-size: 14px; color: #9ca3af; text-align: center;">Nếu bạn có bất kỳ câu hỏi nào, đừng
+                        ngần ngại liên hệ với chúng tôi.</p>
                 </div>
             </div>
         </div>
