@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\v1\StudentRoleController;
 use App\Http\Controllers\Api\v1\TeacherController;
 use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
+use App\Http\Controllers\Api\v1\AttendanceController;
 use App\Http\Controllers\Api\v1\BlockClassController;
 use App\Http\Controllers\Api\v1\BlockController;
 use App\Http\Controllers\Api\v1\BlockMaterialController;
@@ -139,8 +140,8 @@ Route::prefix('academic-year-classes')
         Route::get('/{id}', [AcademicYearClassController::class, 'show']);
         Route::patch('/{id}', [AcademicYearClassController::class, 'update']);
         Route::delete('/{id}', [AcademicYearClassController::class, 'destroy']);
-        Route::get('/restore/{slug}', [AcademicYearClassController::class, 'restore']);
-        Route::delete('/force-delete/{slug}', [AcademicYearClassController::class, 'forceDelete']);
+        Route::get('/restore/{id}', [AcademicYearClassController::class, 'restore']);
+        Route::delete('/force-delete/{id}', [AcademicYearClassController::class, 'forceDelete']);
     });
 
 Route::prefix('block-classes')
@@ -151,8 +152,8 @@ Route::prefix('block-classes')
         Route::get('/{id}', [BlockClassController::class, 'show']);
         Route::patch('/{id}', [BlockClassController::class, 'update']);
         Route::delete('/{id}', [BlockClassController::class, 'destroy']);
-        Route::get('/restore/{slug}', [BlockClassController::class, 'restore']);
-        Route::delete('/force-delete/{slug}', [BlockClassController::class, 'forceDelete']);
+        Route::get('/restore/{id}', [BlockClassController::class, 'restore']);
+        Route::delete('/force-delete/{id}', [BlockClassController::class, 'forceDelete']);
     });
 
 Route::prefix('materials')
@@ -252,6 +253,13 @@ Route::prefix('students-role')
         Route::delete('/{username}/{slugRole}', [StudentRoleController::class, 'destroy']);
     });
 
+Route::prefix('attendances')
+    ->group(function () {
+        Route::get('/', [AttendanceController::class, 'index']);
+        Route::get('/{classSlug}', [AttendanceController::class, 'studentInClass']);
+        Route::post('/save', [AttendanceController::class, 'save']);
+        Route::patch('/update/{id}', [AttendanceController::class, 'update']);
+    });
 // Thời khóa biểu
 Route::prefix('schedules')
     ->group(function () {

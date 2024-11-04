@@ -37,7 +37,7 @@ class StudentExcelController extends Controller
 
             return $this->successResponse(
                 [],
-                'Đã nhập danh sách học sinh thành công',
+                'Danh sách học sinh đang được nhập, hãy đợi chút',
                 Response::HTTP_CREATED
             );
         } catch (Exception $e) {

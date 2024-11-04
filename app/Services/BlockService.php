@@ -43,8 +43,6 @@ class BlockService
                 throw new Exception('Khối: ' . $numberInName . ' không phù hợp với : ' . $data['level']);
             }
 
-            $data['slug'] = Str::slug($data['name']);
-
             $block->update($data);
 
             return $block;
