@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\v1\MaterialController;
 use App\Http\Controllers\Api\v1\SemesterController;
 use App\Http\Controllers\Api\v1\StudentExcelController;
 use App\Http\Controllers\Api\v1\SubjectController;
+use App\Http\Controllers\Api\v1\ScheduleController;
 use App\Http\Controllers\Api\v1\TeacherExcelController;
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +59,8 @@ Route::prefix('users')
         Route::get('/{username}/permissions', [UserController::class, 'getUserPermissions']);
         Route::patch('/{username}/permissions', [UserController::class, 'assignPermissions']);
         Route::delete('/{username}/permissions', [UserController::class, 'revokePermissions']);
+        Route::patch('/assign-roles-permissions', [UserController::class, 'assignRolesAndPermissions']);
+        Route::delete('/assign-roles-permissions', [UserController::class, 'revokeRolesAndPermissions']);
     });
 
 // khóa học sinh
@@ -256,4 +259,13 @@ Route::prefix('attendances')
         Route::get('/{classSlug}', [AttendanceController::class, 'studentInClass']);
         Route::post('/save', [AttendanceController::class, 'save']);
         Route::patch('/update/{id}', [AttendanceController::class, 'update']);
+    });
+// Thời khóa biểu
+Route::prefix('schedules')
+    ->group(function () {
+        Route::get('/', [ScheduleController::class, 'index']);
+        Route::post('/', [ScheduleController::class, 'store']);
+        Route::get('/{id}', [ScheduleController::class, 'show']);
+        Route::patch('/{id}', [ScheduleController::class, 'update']);
+        Route::delete('/{id}', [ScheduleController::class, 'destroy']);
     });
