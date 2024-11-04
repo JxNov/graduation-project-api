@@ -58,6 +58,8 @@ Route::prefix('users')
         Route::get('/{username}/permissions', [UserController::class, 'getUserPermissions']);
         Route::patch('/{username}/permissions', [UserController::class, 'assignPermissions']);
         Route::delete('/{username}/permissions', [UserController::class, 'revokePermissions']);
+        Route::patch('/assign-roles-permissions', [UserController::class, 'assignRolesAndPermissions']);
+        Route::delete('/assign-roles-permissions', [UserController::class, 'revokeRolesAndPermissions']);
     });
 
 // khóa học sinh

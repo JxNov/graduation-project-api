@@ -49,9 +49,9 @@ class AuthController extends Controller
             $user = [
                 'name' => $user->name,
                 'username' => $user->username,
-                'date_of_birth' => $user->date_of_birth,
+                'dateOfBirth' => $user->date_of_birth,
                 'gender' => $user->gender,
-                'phone_number' => $user->phone_number,
+                'phoneNumber' => $user->phone_number,
                 'email' => $user->email,
                 'roles' => $user->roles->pluck('name'),
                 'permissions' => $user->permissions,
