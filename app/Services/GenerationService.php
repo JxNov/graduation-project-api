@@ -69,8 +69,6 @@ class GenerationService
                 }
             }
 
-            $data['slug'] = Str::slug($data['name']);
-
             $currentGeneration->update($data);
 
             return $currentGeneration;
