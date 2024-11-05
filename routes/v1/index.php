@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\v1\ClassMaterialController;
 use App\Http\Controllers\Api\v1\ModuleController;
 use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
@@ -11,8 +10,6 @@ use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
 use App\Http\Controllers\Api\v1\AttendanceController;
 use App\Http\Controllers\Api\v1\BlockController;
-use App\Http\Controllers\Api\v1\BlockMaterialController;
-use App\Http\Controllers\Api\v1\BlockSubjectController;
 use App\Http\Controllers\Api\v1\ClassController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\MaterialController;
@@ -150,15 +147,6 @@ Route::prefix('subjects')
         Route::patch('/{slug}', [SubjectController::class, 'update']);
         Route::delete('/{slug}', [SubjectController::class, 'destroy']);
         Route::get('/restore/{slug}', [SubjectController::class, 'restore']);
-    });
-
-// môn học vào khoá học
-Route::prefix('block-subjects')
-    ->group(function () {
-        Route::get('/', [BlockSubjectController::class, 'index']);
-        Route::post('/', [BlockSubjectController::class, 'store']);
-        Route::delete('/{id}', [BlockSubjectController::class, 'destroy']);
-        Route::get('/restore/{id}', [BlockSubjectController::class, 'restore']);
     });
 
 Route::prefix('excels')

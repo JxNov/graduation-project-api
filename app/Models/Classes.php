@@ -38,6 +38,10 @@ class Classes extends Model
     {
         return $this->belongsToMany(Block::class, 'block_classes', 'class_id', 'block_id');
     }
+    public function subjects()
+{
+    return $this->belongsToMany(Subject::class, 'subject_classes', 'class_id', 'subject_id');
+}
 
     public function schedules(): HasMany
     {
