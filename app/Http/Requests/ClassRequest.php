@@ -31,6 +31,8 @@ class ClassRequest extends FormRequest
             'name' => 'required|max:50',
             'slug' => 'max:70|unique:classes,slug',
             'username' => 'required',
+            'academic_year_slug' => 'required',
+            'block_slug' => 'required',
         ];
     }
 
@@ -48,6 +50,8 @@ class ClassRequest extends FormRequest
                 'name' => 'required|max:50',
                 'slug' => 'max:70|unique:classes,slug,' . $class->id,
                 'username' => 'required',
+                'academic_year_slug' => 'required',
+                'block_slug' => 'required',
             ];
         } catch (Exception $e) {
             return [
@@ -59,11 +63,13 @@ class ClassRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Tên lớp là bắt buộc.',
-            'name.max' => 'Tên lớp không được vượt quá 50 ký tự.',
-            'slug.max' => 'Slug không được vượt quá 70 ký tự.',
-            'slug.unique' => 'Slug đã tồn tại.',
-            'username.required' => 'Giáo viên là bắt buộc.',
+            'name.required' => 'Tên lớp là bắt buộc',
+            'name.max' => 'Tên lớp không được vượt quá 50 ký tự',
+            'slug.max' => 'Slug không được vượt quá 70 ký tự',
+            'slug.unique' => 'Slug đã tồn tại',
+            'username.required' => 'Giáo viên là bắt buộc',
+            'academic_year_slug.required' => 'Hãy chọn 1 năm học',
+            'block_slug.required' => 'Hãy chọn 1 khối',
         ];
     }
 

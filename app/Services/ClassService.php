@@ -1,6 +1,8 @@
 <?php
 namespace App\Services;
 
+use App\Models\AcademicYear;
+use App\Models\Block;
 use App\Models\Classes;
 use App\Models\User;
 use Exception;
@@ -12,6 +14,17 @@ class ClassService
     public function createNewClass(array $data)
     {
         return DB::transaction(function () use ($data) {
+            $academicYear = AcademicYear::where('slug', $data['academic_year_slug'])->first();
+
+            if ($academicYear === null) {
+                throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
+            }
+
+            $block = Block::where('slug', $data['block_slug'])->first();
+            if ($block === null) {
+                throw new Exception('Khối không tồn tại hoặc đã bị xóa');
+            }
+
             // lấy tất cả giáo viên
             $teacher = User::whereHas('roles', function ($role) {
                 $role->where('slug', 'like', 'teacher');
@@ -38,13 +51,29 @@ class ClassService
             $classSlug = Str::slug($data['name']);
             $data['slug'] = $teacherSlug . '-' . $classSlug;
 
-            return Classes::create($data);
+            $class = Classes::create($data);
+
+            $class->academicYears()->sync($academicYear->id);
+            $class->blocks()->sync($block->id);
+
+            return $class;
         });
     }
 
     public function updateClass(array $data, $slug)
     {
         return DB::transaction(function () use ($data, $slug) {
+            $academicYear = AcademicYear::where('slug', $data['academic_year_slug'])->first();
+
+            if ($academicYear === null) {
+                throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
+            }
+
+            $block = Block::where('slug', $data['block_slug'])->first();
+            if ($block === null) {
+                throw new Exception('Khối không tồn tại hoặc đã bị xóa');
+            }
+
             $class = Classes::where('slug', $slug)->first();
 
             if ($class === null) {
@@ -71,6 +100,9 @@ class ClassService
             $data['teacher_id'] = $teacher->id;
 
             $class->update($data);
+
+            $class->academicYears()->sync($academicYear->id);
+            $class->blocks()->sync($block->id);
 
             return $class;
         });
