@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\v1\AcademicYearClassController;
 use App\Http\Controllers\Api\v1\ClassMaterialController;
 use App\Http\Controllers\Api\v1\ModuleController;
 use App\Http\Controllers\Api\v1\PermissionController;
@@ -11,7 +10,6 @@ use App\Http\Controllers\Api\v1\TeacherController;
 use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
 use App\Http\Controllers\Api\v1\AttendanceController;
-use App\Http\Controllers\Api\v1\BlockClassController;
 use App\Http\Controllers\Api\v1\BlockController;
 use App\Http\Controllers\Api\v1\BlockMaterialController;
 use App\Http\Controllers\Api\v1\BlockSubjectController;
@@ -142,30 +140,6 @@ Route::prefix('materials')
         Route::delete('/{slug}', [MaterialController::class, 'destroy']);
         Route::get('/restore/{slug}', [MaterialController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [MaterialController::class, 'forceDelete']);
-    });
-
-Route::prefix('block-materials')
-    ->group(function () {
-        Route::get('/', [BlockMaterialController::class, 'index']);
-        Route::post('/', [BlockMaterialController::class, 'store']);
-        Route::get('/trash', [BlockMaterialController::class, 'trash']);
-        Route::get('/{id}', [BlockMaterialController::class, 'show']);
-        Route::patch('/{id}', [BlockMaterialController::class, 'update']);
-        Route::delete('/{id}', [BlockMaterialController::class, 'destroy']);
-        Route::get('/restore/{id}', [BlockMaterialController::class, 'restore']);
-        Route::delete('/force-delete/{id}', [BlockMaterialController::class, 'forceDelete']);
-    });
-
-Route::prefix('class-materials')
-    ->group(function () {
-        Route::get('/', [ClassMaterialController::class, 'index']);
-        Route::post('/', [ClassMaterialController::class, 'store']);
-        Route::get('/trash', [ClassMaterialController::class, 'trash']);
-        Route::get('/{id}', [ClassMaterialController::class, 'show']);
-        Route::patch('/{id}', [ClassMaterialController::class, 'update']);
-        Route::delete('/{id}', [ClassMaterialController::class, 'destroy']);
-        Route::get('/restore/{id}', [ClassMaterialController::class, 'restore']);
-        Route::delete('/force-delete/{id}', [ClassMaterialController::class, 'forceDelete']);
     });
 
 // môn học

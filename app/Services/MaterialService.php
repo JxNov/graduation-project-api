@@ -1,6 +1,8 @@
 <?php
 namespace App\Services;
 
+use App\Models\Block;
+use App\Models\Classes;
 use App\Models\Material;
 use App\Models\Subject;
 use App\Models\User;
@@ -20,6 +22,18 @@ class MaterialService
                 throw new Exception('Môn học không tồn tại hoặc đã bị xóa');
             }
 
+            $block = Block::where('slug', $data['block_slug'])->first();
+
+            if ($block === null) {
+                throw new Exception('Khối không tồn tại hoặc đã bị xóa');
+            }
+
+            $class = Classes::where('slug', $data['class_slug'])->first();
+
+            if ($class === null) {
+                throw new Exception('Lớp không tồn tại hoặc đã bị xóa');
+            }
+
             $teacher = User::where('username', $data['username'])->first();
 
             if ($teacher === null) {
@@ -35,7 +49,7 @@ class MaterialService
                 $firebase = app('firebase.storage');
                 $storage = $firebase->getBucket();
 
-                $firebasePath = 'materials/' . $data['file_path']->getClientOriginalName();
+                $firebasePath = 'materials/' . Str::random(9) . $data['file_path']->getClientOriginalName();
 
                 $storage->upload(
                     file_get_contents($data['file_path']->getRealPath()),
@@ -47,6 +61,9 @@ class MaterialService
 
             $data['file_path'] = $firebasePath;
             $material = Material::create($data);
+
+            $material->blocks()->sync($block->id);
+            $material->classes()->sync($class->id);
 
             return $material;
         });
@@ -66,6 +83,18 @@ class MaterialService
 
             if ($subject === null) {
                 throw new Exception('Môn học không tồn tại hoặc đã bị xóa');
+            }
+
+            $block = Block::where('slug', $data['block_slug'])->first();
+
+            if ($block === null) {
+                throw new Exception('Khối không tồn tại hoặc đã bị xóa');
+            }
+
+            $class = Classes::where('slug', $data['class_slug'])->first();
+
+            if ($class === null) {
+                throw new Exception('Lớp không tồn tại hoặc đã bị xóa');
             }
 
             $teacher = User::where('username', $data['username'])->first();
@@ -103,6 +132,9 @@ class MaterialService
             }
 
             $material->update($data);
+
+            $material->blocks()->sync($block->id);
+            $material->classes()->sync($class->id);
 
             return $material;
         });
@@ -147,8 +179,17 @@ class MaterialService
                 throw new Exception('Tài liệu không tồn tại hoặc đã bị xóa');
             }
 
-            if ($material->file_path && Storage::exists($material->file_path)) {
-                Storage::delete($material->file_path);
+            $firebase = app('firebase.storage');
+            $storage = $firebase->getBucket();
+
+            if ($material->file_path) {
+                $oldFirebasePath = $material->file_path;
+
+                $oldFile = $storage->object($oldFirebasePath);
+
+                if ($oldFile->exists()) {
+                    $oldFile->delete();
+                }
             }
 
             $material->forceDelete();
