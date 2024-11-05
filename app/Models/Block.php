@@ -17,7 +17,7 @@ class Block extends Model
     ];
     public function subjects()
     {
-        return $this->belongsToMany(Subject::class, 'block_subject');
+        return $this->belongsToMany(Subject::class, 'block_subjects');
     }
 
     public function classes()

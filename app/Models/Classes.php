@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -21,17 +24,17 @@ class Classes extends Model
     ];
 
     // giáo viên chủ nhiệm
-    public function teacher()
+    public function teacher(): HasOne
     {
         return $this->hasOne(User::class, 'id', 'teacher_id');
     }
 
-    public function academicYears()
+    public function academicYears(): BelongsToMany
     {
         return $this->belongsToMany(AcademicYear::class, 'academic_year_classes', 'class_id', 'academic_year_id');
     }
 
-    public function blocks()
+    public function blocks(): BelongsToMany
     {
         return $this->belongsToMany(Block::class, 'block_classes', 'class_id', 'block_id');
     }
@@ -40,9 +43,24 @@ class Classes extends Model
     return $this->belongsToMany(Subject::class, 'subject_classes', 'class_id', 'subject_id');
 }
 
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
+    }
+
     public function materials()
     {
         return $this->belongsToMany(Material::class, 'class_materials', 'class_id', 'material_id');
+    }
+
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'class_students', 'class_id', 'student_id');
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
     }
 
     protected static function booted()

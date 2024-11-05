@@ -126,9 +126,6 @@ class SemesterService
             }
 
             $data['academic_year_id'] = $academicYear->id;
-            $academicYearSlug = $academicYear->slug;
-            $data['slug'] = Str::slug($data['name']);
-            $data['slug'] = $academicYearSlug . '-' . $data['slug'] . '-' . rand(333, 999);
 
             $semester->update($data);
             return $semester;

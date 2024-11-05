@@ -4,23 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Subject extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $fillable = [
-        'id',
-        'slug',
-        'name',
-        'description',
-        'block_level'
+
+    protected $fillable =[
+        'id','slug','name','description','block_level'
     ];
+
     protected $table = 'subjects';
-    public function blocks()
+
+    public function blocks(): BelongsToMany
     {
-        return $this->belongsToMany(Block::class, 'block_subject');
+        return $this->belongsToMany(Block::class, 'block_subjects');
     }
+
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
+    }
+
     public function classes()
 {
     return $this->belongsToMany(Classes::class, 'subject_classes', 'subject_id', 'class_id');

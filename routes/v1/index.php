@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\v1\AcademicYearClassController;
-use App\Http\Controllers\Api\v1\ClassMaterialController;
 use App\Http\Controllers\Api\v1\ModuleController;
 use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
@@ -10,17 +8,15 @@ use App\Http\Controllers\Api\v1\StudentRoleController;
 use App\Http\Controllers\Api\v1\TeacherController;
 use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
-use App\Http\Controllers\Api\v1\BlockClassController;
+use App\Http\Controllers\Api\v1\AttendanceController;
 use App\Http\Controllers\Api\v1\BlockController;
-use App\Http\Controllers\Api\v1\BlockMaterialController;
-use App\Http\Controllers\Api\v1\BlockSubjectController;
 use App\Http\Controllers\Api\v1\ClassController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\MaterialController;
 use App\Http\Controllers\Api\v1\SemesterController;
 use App\Http\Controllers\Api\v1\StudentExcelController;
-use App\Http\Controllers\Api\v1\SubjectClassController;
 use App\Http\Controllers\Api\v1\SubjectController;
+use App\Http\Controllers\Api\v1\ScheduleController;
 use App\Http\Controllers\Api\v1\TeacherExcelController;
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +54,8 @@ Route::prefix('users')
         Route::get('/{username}/permissions', [UserController::class, 'getUserPermissions']);
         Route::patch('/{username}/permissions', [UserController::class, 'assignPermissions']);
         Route::delete('/{username}/permissions', [UserController::class, 'revokePermissions']);
+        Route::patch('/assign-roles-permissions', [UserController::class, 'assignRolesAndPermissions']);
+        Route::delete('/assign-roles-permissions', [UserController::class, 'revokeRolesAndPermissions']);
     });
 
 // khóa học sinh
@@ -129,30 +127,6 @@ Route::prefix('classes')
         Route::delete('/force-delete/{slug}', [ClassController::class, 'forceDelete']);
     });
 
-Route::prefix('academic-year-classes')
-    ->group(function () {
-        Route::get('/', [AcademicYearClassController::class, 'index']);
-        Route::post('/', [AcademicYearClassController::class, 'store']);
-        Route::get('/trash', [AcademicYearClassController::class, 'trash']);
-        Route::get('/{id}', [AcademicYearClassController::class, 'show']);
-        Route::patch('/{id}', [AcademicYearClassController::class, 'update']);
-        Route::delete('/{id}', [AcademicYearClassController::class, 'destroy']);
-        Route::get('/restore/{slug}', [AcademicYearClassController::class, 'restore']);
-        Route::delete('/force-delete/{slug}', [AcademicYearClassController::class, 'forceDelete']);
-    });
-
-Route::prefix('block-classes')
-    ->group(function () {
-        Route::get('/', [BlockClassController::class, 'index']);
-        Route::post('/', [BlockClassController::class, 'store']);
-        Route::get('/trash', [BlockClassController::class, 'trash']);
-        Route::get('/{id}', [BlockClassController::class, 'show']);
-        Route::patch('/{id}', [BlockClassController::class, 'update']);
-        Route::delete('/{id}', [BlockClassController::class, 'destroy']);
-        Route::get('/restore/{slug}', [BlockClassController::class, 'restore']);
-        Route::delete('/force-delete/{slug}', [BlockClassController::class, 'forceDelete']);
-    });
-
 Route::prefix('materials')
     ->group(function () {
         Route::get('/', [MaterialController::class, 'index']);
@@ -165,30 +139,6 @@ Route::prefix('materials')
         Route::delete('/force-delete/{slug}', [MaterialController::class, 'forceDelete']);
     });
 
-Route::prefix('block-materials')
-    ->group(function () {
-        Route::get('/', [BlockMaterialController::class, 'index']);
-        Route::post('/', [BlockMaterialController::class, 'store']);
-        Route::get('/trash', [BlockMaterialController::class, 'trash']);
-        Route::get('/{id}', [BlockMaterialController::class, 'show']);
-        Route::patch('/{id}', [BlockMaterialController::class, 'update']);
-        Route::delete('/{id}', [BlockMaterialController::class, 'destroy']);
-        Route::get('/restore/{id}', [BlockMaterialController::class, 'restore']);
-        Route::delete('/force-delete/{id}', [BlockMaterialController::class, 'forceDelete']);
-    });
-
-Route::prefix('class-materials')
-    ->group(function () {
-        Route::get('/', [ClassMaterialController::class, 'index']);
-        Route::post('/', [ClassMaterialController::class, 'store']);
-        Route::get('/trash', [ClassMaterialController::class, 'trash']);
-        Route::get('/{id}', [ClassMaterialController::class, 'show']);
-        Route::patch('/{id}', [ClassMaterialController::class, 'update']);
-        Route::delete('/{id}', [ClassMaterialController::class, 'destroy']);
-        Route::get('/restore/{id}', [ClassMaterialController::class, 'restore']);
-        Route::delete('/force-delete/{id}', [ClassMaterialController::class, 'forceDelete']);
-    });
-
 // môn học
 Route::prefix('subjects')
     ->group(function () {
@@ -197,15 +147,6 @@ Route::prefix('subjects')
         Route::patch('/{slug}', [SubjectController::class, 'update']);
         Route::delete('/{slug}', [SubjectController::class, 'destroy']);
         Route::get('/restore/{slug}', [SubjectController::class, 'restore']);
-    });
-
-// môn học vào khoá học
-Route::prefix('block-subjects')
-    ->group(function () {
-        Route::get('/', [BlockSubjectController::class, 'index']);
-        Route::post('/', [BlockSubjectController::class, 'store']);
-        Route::delete('/{id}', [BlockSubjectController::class, 'destroy']);
-        Route::get('/restore/{id}', [BlockSubjectController::class, 'restore']);
     });
 
 Route::prefix('excels')
@@ -249,14 +190,20 @@ Route::prefix('students-role')
         Route::put('/{username}', [StudentRoleController::class, 'update']);
         Route::delete('/{username}/{slugRole}', [StudentRoleController::class, 'destroy']);
     });
-Route::prefix('classes-subject')
+
+Route::prefix('attendances')
     ->group(function () {
-        Route::get('/', [SubjectClassController::class, 'index']);
-        Route::post('/', [SubjectClassController::class, 'store']);
-        Route::put('/{id}', [SubjectClassController::class, 'update']);
-        Route::delete('/{id}', [SubjectClassController::class, 'destroy']);
-        Route::get('/restore/{id}', [SubjectClassController::class, 'restore']);
-        Route::get('/trash', [SubjectClassController::class, 'trash']);
-        Route::get('/{id}', [SubjectClassController::class, 'show']);
-        Route::delete('/force-delete/{id}', [SubjectClassController::class, 'forceDelete']);
+        Route::get('/', [AttendanceController::class, 'index']);
+        Route::get('/{classSlug}', [AttendanceController::class, 'studentInClass']);
+        Route::post('/save', [AttendanceController::class, 'save']);
+        Route::patch('/update/{id}', [AttendanceController::class, 'update']);
+    });
+// Thời khóa biểu
+Route::prefix('schedules')
+    ->group(function () {
+        Route::get('/', [ScheduleController::class, 'index']);
+        Route::post('/', [ScheduleController::class, 'store']);
+        Route::get('/{id}', [ScheduleController::class, 'show']);
+        Route::patch('/{id}', [ScheduleController::class, 'update']);
+        Route::delete('/{id}', [ScheduleController::class, 'destroy']);
     });

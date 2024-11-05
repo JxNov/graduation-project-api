@@ -5,12 +5,12 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ClassMaterialCollection extends ResourceCollection
+class AttendanceCollection extends ResourceCollection
 {
     public function toArray(Request $request): array
     {
         return [
-            'data' => ClassMaterialResource::collection($this->collection),
+            'data' => AttendanceResource::collection($this->collection),
             'meta' => [
                 'current_page' => $this->currentPage(), // trang hiện tại
                 'last_page' => $this->lastPage(), // trang cuối cùng

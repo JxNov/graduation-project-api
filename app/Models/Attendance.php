@@ -18,7 +18,16 @@ class Attendance extends Model
     protected $fillable = [
         'date',
         'shifts',
-        'reason',
         'class_id',
     ];
+
+    public function class()
+    {
+        return $this->belongsTo(Classes::class);
+    }
+
+    public function attendanceDetails()
+    {
+        return $this->hasMany(AttendanceDetail::class);
+    }
 }

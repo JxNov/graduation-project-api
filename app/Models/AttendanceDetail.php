@@ -24,4 +24,9 @@ class AttendanceDetail extends Model
         'status',
         'reason',
     ];
+
+    public function attendance()
+    {
+        return $this->belongsTo(Attendance::class);
+    }
 }

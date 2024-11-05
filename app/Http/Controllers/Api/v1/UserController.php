@@ -107,4 +107,50 @@ class UserController extends Controller
             return $this->errorResponse($e->getMessage(), $e->getCode());
         }
     }
+
+    public function assignRolesAndPermissions(Request $request): JsonResponse
+    {
+        if ($request->username) {
+            $request->validate([
+                'username' => 'required|exists:users,username',
+            ]);
+        }
+
+        if ($request->roles_slug) {
+            $request->validate([
+                'roles_slug' => 'required|exists:roles,slug',
+            ]);
+        }
+
+        if ($request->permissions_slug) {
+            $request->validate([
+                'permissions_slug' => 'required|exists:permissions,slug',
+            ]);
+        }
+
+        try {
+            $user = $this->userService->assignRolesAndPermissions($request->input('username'), $request->input('roles_slug'), $request->input('permissions_slug'));
+
+            return $this->successResponse($user, 'Gán quyền và quyền cho người dùng thành công.');
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    public function revokeRolesAndPermissions(Request $request): JsonResponse
+    {
+        if ($request->username) {
+            $request->validate([
+                'username' => 'required|exists:users,username',
+            ]);
+        }
+
+        try {
+            $user = $this->userService->revokeRolesAndPermissions($request->input('username'));
+
+            return $this->successResponse($user, 'Thu hồi quyền và quyền của người dùng thành công.');
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
 }

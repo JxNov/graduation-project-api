@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ClassMaterialRequest extends FormRequest
+class AttendanceRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -25,24 +25,28 @@ class ClassMaterialRequest extends FormRequest
     public function rulesForCreate(): array
     {
         return [
-            'material_slug' => 'required',
-            'class_slug' => 'required'
+            'date' => 'nullable|date',
+            'shifts' => 'nullable',
+            'class_slug' => 'required',
+            'students' => 'required',
         ];
     }
 
     public function rulesForUpdate(): array
     {
         return [
-            'material_slug' => 'required',
-            'class_slug' => 'required'
+            'date' => 'required|date',
+            'shifts' => 'nullable',
+            'class_slug' => 'required',
+            'students' => 'required',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'material_slug.required' => 'Tài liệu không được bỏ trống',
-            'class_slug.required' => 'Lớp không được bỏ trống',
+            'date.date' => 'Ngày phải là định dạng Năm/Tháng/Ngày',
+            'class_slug' => 'Lớp học là bắt buộc'
         ];
     }
 }

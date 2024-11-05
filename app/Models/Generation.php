@@ -26,6 +26,10 @@ class Generation extends Model
     protected static function booted()
     {
         static::deleting(function ($generation) {
+            if ($generation->users->isNotEmpty()) {
+                $generation->users()->updateExistingPivot($generation->users->pluck('id'), ['deleted_at' => now()]);
+            }
+
             $generation->academicYears()->each(function ($academicYear) {
                 foreach ($academicYear->classes as $class) {
                     $materials = $class->materials;
@@ -46,6 +50,11 @@ class Generation extends Model
         });
 
         static::restoring(function ($generation) {
+            $userGeneration = $generation->users()->withTrashed()->get();
+            if ($userGeneration->isNotEmpty()) {
+                $generation->users()->updateExistingPivot($userGeneration->pluck('id'), ['deleted_at' => null]);
+            }
+
             $academicYearTrash = $generation->academicYears()->withTrashed();
 
             $academicYearTrash->each(function ($academicYear) {
