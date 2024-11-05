@@ -23,7 +23,7 @@ class SubjectClassService
                 throw new Exception('Subject không tồn tại hoặc đã bị xóa');
             }
             // Duyệt qua từng `subject_slug` để kiểm tra và thêm môn học
-            $existingSubjects = [];
+            $existingSubjects = []; 
             foreach ($data['subject_slugs'] as $subject_slug) {
                 $subject = Subject::where('slug', $subject_slug)->firstOrFail(); // Lấy thông tin môn học bằng slug
 

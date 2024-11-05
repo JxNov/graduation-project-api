@@ -32,7 +32,9 @@ class SubjectRequest extends FormRequest
         return [
             'name' => ['required', 'max:50', 'unique:subjects'],
             'description' => ['required', 'max:500', 'string', 'min:10'],
-            'block_level' => ['required', 'integer', 'between:6,9']
+            'block_level' => ['required', 'integer', 'between:6,9'],
+            'class_slug' => 'required|exists:classes,slug',
+            'block_slug' => 'required|exists:blocks,slug',
         ];
     }
 
@@ -47,7 +49,10 @@ class SubjectRequest extends FormRequest
         return [
             'name' => ['required', 'max:50', 'unique:subjects,slug,'.$subject->id],
             'description' => ['required', 'max:500', 'string', 'min:10'],
-            'block_level' => ['required', 'numeric', 'between:6,9']
+            'block_level' => ['required', 'numeric', 'between:6,9'],
+            'class_slug' => 'required|exists:classes,slug',
+            'block_slug' => 'required|exists:blocks,slug',
+
         ];
     }
 
@@ -66,8 +71,11 @@ class SubjectRequest extends FormRequest
 
             'block_level.required' => 'Khối là bắt buộc.',
             'block_level.numeric' => 'Khối phải là số nguyên.',
-            'block_level.between' => 'Khối chỉ được nhập số từ 6 đến 9.'
-
+            'block_level.between' => 'Khối chỉ được nhập số từ 6 đến 9.',
+            'class_slug.required' => 'Trường class_slug là bắt buộc.',
+            'class_slug.exists' => 'Lớp không tồn tại.',
+            'block_slug.required' => 'Trường block_slug là bắt buộc.',
+            'block_slug.exists' => 'Lớp không tồn tại.',
         ];
     }
 }

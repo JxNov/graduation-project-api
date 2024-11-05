@@ -19,7 +19,7 @@ class SubjectResource extends JsonResource
             'name'=>$this->name,
             'slug'=>$this->slug,
             'description'=>$this->description,
-            'blockLevel'=>$this->blockevel
+            'block_Level'=>$this->block_level
         ];
     }
 }

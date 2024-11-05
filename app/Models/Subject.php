@@ -26,4 +26,28 @@ class Subject extends Model
     return $this->belongsToMany(Classes::class, 'subject_classes', 'subject_id', 'class_id');
 }
 
+protected static function booted()
+    {
+        
+        static::deleting(function ($subject) {
+            if ($subject->blocks->isNotEmpty()) {
+                $subject->blocks()->updateExistingPivot($subject->blocks->pluck('id'), ['deleted_at' => now()]);
+            }
+            if ($subject->classes->isNotEmpty()) {
+                $subject->classes()->updateExistingPivot($subject->classes->pluck('id'), ['deleted_at' => now()]);
+            }
+
+        });
+
+        static::restoring(function ($subject) {
+            $blocksubject = $subject->blocks()->withTrashed()->get();
+            if ($blocksubject->isNotEmpty()) {
+                $subject->blocks()->updateExistingPivot($blocksubject->pluck('id'), ['deleted_at' => null]);
+            }
+            $subjectclass = $subject->classes()->withTrashed()->get();
+            if ($subjectclass->isNotEmpty()) {
+                $subject->classes()->updateExistingPivot($subjectclass->pluck('id'), ['deleted_at' => null]);
+            }
+        });
+    }
 }

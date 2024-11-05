@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Block;
+use App\Models\Classes;
 use App\Models\Subject;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +16,11 @@ class SubjectService
     public function store(array $data)
     {
         return DB::transaction(function () use ($data) {
+            $class = Classes::where('slug', $data['class_slug'])->firstOrFail();
+            if ($class === null) {
+                throw new Exception('Class không tồn tại hoặc đã bị xóa');
+            }
+            $block = Block::where('slug', $data['block_slug'])->firstOrFail();;
 
             // Kiểm tra tên môn học có chứa số lớp tương ứng với block_level
             $gradeLevelFromName = $this->extractGradeLevel($data['name']);
@@ -25,6 +32,8 @@ class SubjectService
             $data['slug'] = Str::slug($data['name'], '-');
             // Tạo môn học mới
             $subject = Subject::create($data);
+            $subject->classes()->sync($class->id);
+            $subject->blocks()->sync($block->id);
             return $subject;
         });
     }
@@ -32,6 +41,11 @@ class SubjectService
     public function update(array $data,$slug)
     {
         return DB::transaction(function () use ($data,$slug) {
+            $class = Classes::where('slug', $data['class_slug'])->firstOrFail();
+            if ($class === null) {
+                throw new Exception('Class không tồn tại hoặc đã bị xóa');
+            }
+            $block = Block::where('slug', $data['block_slug'])->firstOrFail();;
             $subject = Subject::where('slug',$slug)->first();
 
             // Kiểm tra tên môn học có chứa số lớp tương ứng với block_level
@@ -41,14 +55,14 @@ class SubjectService
                 throw new Exception('Tên môn học và mã khối không khớp nhau.');
             }
 
-            $data['slug'] = Str::slug($data['name'], '-');
-
             $subject->update([
                 'name' => $data['name'],
                 'description' => $data['description'],
                 'block_level' => $data['block_level'],
-                'slug' => $data['slug'],
             ]);
+            $subject->classes()->sync($class->id);
+            $subject->blocks()->sync($block->id);
+
             return $subject;
         });
     }
@@ -75,6 +89,19 @@ class SubjectService
             $subject->restore();
             return $subject; // Trả về môn học đã được khôi phục
 
+        });
+    }
+    public function forceDelete($id)
+    {
+        return DB::transaction(function () use ($id) {
+            $blockClass = Subject::where('id', $id)->first();
+
+            if ($blockClass === null) {
+                throw new Exception('Không tìm thấy môn học');
+            }
+
+            $blockClass->forceDelete();
+            return $blockClass;
         });
     }
     // Phương thức để trích xuất số lớp từ tên môn học
