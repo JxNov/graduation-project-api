@@ -5,17 +5,17 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class SubjectClassCollection extends ResourceCollection
+class StudentClassCollection extends ResourceCollection
 {
-    public $additional = [
-        'meta' => [
-            'status' => 'success',
-        ],
-    ];
-    public function toArray($request)
+    /**
+     * Transform the resource collection into an array.
+     *
+     * @return array<int|string, mixed>
+     */
+    public function toArray(Request $request): array
     {
         return [
-            'data' => SubjectClassResource::collection($this->collection),
+            'data' => StudentClassResource::collection($this->collection),
             'meta' => [
                 'current_page' => $this->currentPage(), // trang hiện tại
                 'last_page' => $this->lastPage(), // trang cuối cùng

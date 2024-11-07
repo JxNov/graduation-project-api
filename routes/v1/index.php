@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\v1\ModuleController;
 use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
+use App\Http\Controllers\Api\v1\StudentClassController;
 use App\Http\Controllers\Api\v1\StudentController;
 use App\Http\Controllers\Api\v1\StudentRoleController;
 use App\Http\Controllers\Api\v1\TeacherController;
@@ -164,6 +165,19 @@ Route::prefix('excels')
             ->group(function () {
                 Route::get('export-form', [TeacherExcelController::class, 'exportTeacherForm']);
                 Route::post('import', [TeacherExcelController::class, 'importTeacher']);
+            });
+        Route::prefix('students-class')
+            ->group(function () {
+                Route::post('import', [StudentClassController::class, 'importStudent']);
+                Route::get('/', [StudentClassController::class, 'index']);
+                Route::post('/', [StudentClassController::class, 'store']);
+                Route::patch('/{id}', [StudentClassController::class, 'update']);
+                Route::delete('/{id}', [StudentClassController::class, 'destroy']);
+                Route::get('restore/{id}', [StudentClassController::class, 'restore']);
+                Route::get('/trash', [StudentClassController::class, 'trash']);
+                Route::delete('/forcedelete/{id}', [StudentClassController::class, 'forceDelete']);
+                Route::get('export-by-generation/{slug}', [StudentClassController::class, 'exportStudentByGeneration']);
+                Route::get('export-by-academic-year/{slug}', [StudentClassController::class, 'exportStudentByAcademicYear']);
             });
     });
 Route::prefix('students')
