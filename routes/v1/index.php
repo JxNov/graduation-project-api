@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
 use App\Http\Controllers\Api\v1\AttendanceController;
 use App\Http\Controllers\Api\v1\BlockController;
+use App\Http\Controllers\Api\v1\ChatController;
 use App\Http\Controllers\Api\v1\ClassController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\MaterialController;
@@ -220,4 +221,23 @@ Route::prefix('schedules')
         Route::get('/{id}', [ScheduleController::class, 'show']);
         Route::patch('/{id}', [ScheduleController::class, 'update']);
         Route::delete('/{id}', [ScheduleController::class, 'destroy']);
+    });
+
+Route::prefix('chat')
+    ->group(function () {
+        Route::prefix('admin')
+            ->middleware(['admin.auth'])
+            ->group(function () {
+                Route::post('/message-to-student/{studentId}', [ChatController::class, 'sendMessageToStudent']);
+                Route::get('/conversations', [ChatController::class, 'getConversationAdmin']);
+                Route::get('/conversation-message/{conversationID}', [ChatController::class, 'getMessageStudentToAdmin']);
+            });
+
+        Route::prefix('students')
+            // ->middleware('')
+            ->group(function () {
+                Route::post('/message-to-admin', [ChatController::class, 'sendMessageToAdmin']);
+                // Route::get('/conversations', [ChatController::class, 'getConversationStudent']);
+                // Route::get('/conversation-message', [ChatController::class, 'getMessageAdminToStudent']);
+            });
     });

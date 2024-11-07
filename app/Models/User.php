@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -111,6 +112,21 @@ class User extends Authenticatable implements JWTSubject
     public function academicYears(): BelongsToMany
     {
         return $this->belongsToMany(AcademicYear::class, 'user_generations');
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class);
+    }
+
+    public function conversations(): BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_users');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->roles()->where('name', 'admin')->exists();
     }
     public function classes()
     {
