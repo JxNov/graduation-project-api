@@ -47,7 +47,7 @@ class ChatService
     public function sendMessageToStudent(string $message, int $studentId)
     {
         return DB::transaction(function () use ($message, $studentId) {
-            $admin = $this->getAdmin();
+            $admin = JWTAuth::parseToken()->authenticate();
 
             $student = User::find($studentId);
 

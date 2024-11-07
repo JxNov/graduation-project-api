@@ -211,8 +211,19 @@ Route::prefix('schedules')
 
 Route::prefix('chat')
     ->group(function () {
-        Route::post('/message-to-admin', [ChatController::class, 'sendMessageToAdmin']);
-        Route::post('/message-to-student/{studentId}', [ChatController::class, 'sendMessageToStudent']);
-        Route::get('/admin-conversations', [ChatController::class, 'getConversationAdmin']);
-        Route::get('/admin-conversation-message/{conversationID}', [ChatController::class, 'getMessageUserToAdmin']);
+        Route::prefix('admin')
+            ->middleware(['admin.auth'])
+            ->group(function () {
+                Route::post('/message-to-student/{studentId}', [ChatController::class, 'sendMessageToStudent']);
+                Route::get('/conversations', [ChatController::class, 'getConversationAdmin']);
+                Route::get('/conversation-message/{conversationID}', [ChatController::class, 'getMessageStudentToAdmin']);
+            });
+
+        Route::prefix('students')
+            // ->middleware('')
+            ->group(function () {
+                Route::post('/message-to-admin', [ChatController::class, 'sendMessageToAdmin']);
+                // Route::get('/conversations', [ChatController::class, 'getConversationStudent']);
+                // Route::get('/conversation-message', [ChatController::class, 'getMessageAdminToStudent']);
+            });
     });

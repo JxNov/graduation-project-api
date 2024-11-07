@@ -28,62 +28,72 @@ class ChatController extends Controller
 
     public function getConversationAdmin()
     {
-        $roleAdmin = Role::select('id', 'slug')->where('slug', 'admin')->first();
+        try {
+            $admin = JWTAuth::parseToken()->authenticate();
 
-        if ($roleAdmin === null) {
-            return $this->errorResponse('Không tìm thấy vai trò quản trị', Response::HTTP_NOT_FOUND);
+            $conversations = Conversation::whereHas('users', function ($query) use ($admin) {
+                $query->where('user_id', $admin->id);
+            })
+                ->select('id', 'title')
+                ->get();
+
+            if ($conversations->isEmpty()) {
+                return $this->errorResponse('Chưa có cuộc trò chuyện nào', Response::HTTP_NOT_FOUND);
+            }
+
+            return $this->successResponse(
+                $conversations,
+                'Lấy tất cả cuộc trò chuyện của quản trị thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
-
-        $admin = User::whereHas('roles', function ($query) use ($roleAdmin) {
-            $query->where('role_id', $roleAdmin->id);
-        })->first();
-
-        if ($admin === null) {
-            return $this->errorResponse('Không tìm thấy người quản trị', Response::HTTP_NOT_FOUND);
-        }
-
-        $conversations = Conversation::whereHas('users', function ($query) use ($admin) {
-            $query->where('user_id', $admin->id);
-        })
-            ->select('id', 'title')
-            ->get();
-
-        return $this->successResponse(
-            $conversations,
-            'Lấy tất cả tin nhắn với quản trị thành công',
-            Response::HTTP_OK
-        );
     }
 
-    public function getMessageUserToAdmin($conversationID)
+    public function getMessageStudentToAdmin($conversationID)
     {
-        $conversation = Conversation::where('id', $conversationID)->first();
+        try {
+            $conversation = Conversation::where('id', $conversationID)->first();
 
-        if ($conversation === null) {
-            return $this->errorResponse('Không tìm thấy cuộc trò chuyện', Response::HTTP_NOT_FOUND);
+            if ($conversation === null) {
+                return $this->errorResponse('Không tìm thấy cuộc trò chuyện', Response::HTTP_NOT_FOUND);
+            }
+
+            $messages = $conversation->messages()->get();
+
+            return $this->successResponse(
+                new MessageCollection($messages),
+                'Lấy tất cả tin nhắn với người dùng thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
-
-        $messages = $conversation->messages()->get();
-
-        return $this->successResponse(
-            new MessageCollection($messages),
-            'Lấy tất cả tin nhắn với người dùng thành công',
-            Response::HTTP_OK
-        );
     }
 
-    // public function getMessageUser($conversationID)
+    // public function getConversationStudent()
     // {
-    //     $conversation = Conversation::where('id', $conversationID)->first();
+    //     try {
+    //         $student = JWTAuth::parseToken()->authenticate();
 
-    //     if ($conversation === null) {
-    //         return $this->errorResponse('Không tìm thấy cuộc trò chuyện', Response::HTTP_NOT_FOUND);
-    //     }
+    //         $conversations = Conversation::whereHas('users', function ($query) use ($student) {
+    //             $query->where('user_id', $student->id);
+    //         })
+    //             ->select('id', 'title')
+    //             ->get();
 
-    //     $student = JWTAuth::parseToken()->authenticate();
+    //         if ($conversations->isEmpty()) {
+    //             return $this->errorResponse('Chưa có cuộc trò chuyện nào', Response::HTTP_NOT_FOUND);
+    //         }
 
-    //     if (!$student) {
-    //         throw new Exception('Bạn chưa đăng nhập');
+    //         return $this->successResponse(
+    //             $conversations,
+    //             'Lấy tất cả cuộc trò chuyện của người dùng thành công',
+    //             Response::HTTP_OK
+    //         );
+    //     } catch (Exception $e) {
+    //         return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
     //     }
     // }
 
@@ -108,7 +118,7 @@ class ChatController extends Controller
         try {
             $message = $request->message;
             $studentId = $request->studentId;
-            
+
             $message = $this->chatService->sendMessageToStudent($request->message, $studentId);
 
             return $this->successResponse(
@@ -120,6 +130,4 @@ class ChatController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-
-
 }
