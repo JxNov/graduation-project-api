@@ -12,8 +12,12 @@ class Subject extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable =[
-        'id','slug','name','description','block_level'
+    protected $fillable = [
+        'id',
+        'slug',
+        'name',
+        'description',
+        'block_level'
     ];
 
     protected $table = 'subjects';
@@ -29,13 +33,18 @@ class Subject extends Model
     }
 
     public function classes()
+    {
+        return $this->belongsToMany(Classes::class, 'subject_classes', 'subject_id', 'class_id');
+    }
+    public function teachers()
 {
-    return $this->belongsToMany(Classes::class, 'subject_classes', 'subject_id', 'class_id');
+    return $this->belongsToMany(User::class, 'subject_teachers', 'subject_id', 'teacher_id');
 }
 
-protected static function booted()
+
+    protected static function booted()
     {
-        
+
         static::deleting(function ($subject) {
             if ($subject->blocks->isNotEmpty()) {
                 $subject->blocks()->updateExistingPivot($subject->blocks->pluck('id'), ['deleted_at' => now()]);
@@ -43,7 +52,6 @@ protected static function booted()
             if ($subject->classes->isNotEmpty()) {
                 $subject->classes()->updateExistingPivot($subject->classes->pluck('id'), ['deleted_at' => now()]);
             }
-
         });
 
         static::restoring(function ($subject) {
