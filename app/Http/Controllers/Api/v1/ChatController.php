@@ -5,15 +5,13 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageCollection;
 use App\Models\Conversation;
-use App\Models\Message;
-use App\Models\Role;
-use App\Models\User;
 use App\Services\ChatService;
 use App\Traits\ApiResponseTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class ChatController extends Controller
 {
@@ -29,23 +27,31 @@ class ChatController extends Controller
     public function getConversationAdmin()
     {
         try {
-            $admin = JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
 
-            $conversations = Conversation::whereHas('users', function ($query) use ($admin) {
-                $query->where('user_id', $admin->id);
-            })
-                ->select('id', 'title')
-                ->get();
-
-            if ($conversations->isEmpty()) {
-                return $this->errorResponse('Chưa có cuộc trò chuyện nào', Response::HTTP_NOT_FOUND);
+            if (!$user) {
+                return $this->errorResponse('Không có quyền truy cập', Response::HTTP_FORBIDDEN);
             }
 
-            return $this->successResponse(
-                $conversations,
-                'Lấy tất cả cuộc trò chuyện của quản trị thành công',
-                Response::HTTP_OK
-            );
+            if ($user->isAdmin()) {
+                $conversations = Conversation::whereHas('users', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                    ->select('id', 'title')
+                    ->get();
+
+                if ($conversations->isEmpty()) {
+                    return $this->errorResponse('Chưa có cuộc trò chuyện nào', Response::HTTP_NOT_FOUND);
+                }
+
+                return $this->successResponse(
+                    $conversations,
+                    'Lấy tất cả cuộc trò chuyện của quản trị thành công',
+                    Response::HTTP_OK
+                );
+            } else {
+                return $this->errorResponse('Bạn không có quyền truy cập', Response::HTTP_FORBIDDEN);
+            }
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }

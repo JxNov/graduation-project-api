@@ -15,7 +15,7 @@ class MessageResource extends JsonResource
             'message' => $this->message,
             'isRead' => $this->is_read,
             'conversationName' => optional($this->conversation)->title,
-            'userName' => optional($this->user)->name,
+            'username' => optional($this->user)->name,
         ];
     }
 }

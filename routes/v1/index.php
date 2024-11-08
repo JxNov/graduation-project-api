@@ -224,9 +224,9 @@ Route::prefix('schedules')
     });
 
 Route::prefix('chat')
+    ->middleware('auth:api')
     ->group(function () {
         Route::prefix('admin')
-            ->middleware(['admin.auth'])
             ->group(function () {
                 Route::post('/message-to-student/{studentId}', [ChatController::class, 'sendMessageToStudent']);
                 Route::get('/conversations', [ChatController::class, 'getConversationAdmin']);
@@ -234,7 +234,6 @@ Route::prefix('chat')
             });
 
         Route::prefix('students')
-            // ->middleware('')
             ->group(function () {
                 Route::post('/message-to-admin', [ChatController::class, 'sendMessageToAdmin']);
                 // Route::get('/conversations', [ChatController::class, 'getConversationStudent']);
