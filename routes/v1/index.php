@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\v1\RoleController;
 use App\Http\Controllers\Api\v1\StudentClassController;
 use App\Http\Controllers\Api\v1\StudentController;
 use App\Http\Controllers\Api\v1\StudentRoleController;
+use App\Http\Controllers\Api\v1\SubjectTeacherController;
 use App\Http\Controllers\Api\v1\TeacherController;
 use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
@@ -183,19 +184,19 @@ Route::prefix('excels')
     });
 Route::prefix('students')
     ->group(function () {
-        Route::get('/', [StudentController::class, 'index']); // Lấy danh sách học sinh
-        Route::post('/', [StudentController::class, 'store']); // Tạo học sinh mới
-        Route::put('/{username}', [StudentController::class, 'update']); // Cập nhật học sinh theo id
-        Route::delete('/{username}', [StudentController::class, 'destroy']); // Xóa mềm học sinh theo id
-        Route::get('/restore/{username}', [StudentController::class, 'restore']); // Khôi phục học sinh đã xóa mềm
+        Route::get('/', [StudentController::class, 'index']); 
+        Route::post('/', [StudentController::class, 'store']); 
+        Route::put('/{username}', [StudentController::class, 'update']); 
+        Route::delete('/{username}', [StudentController::class, 'destroy']); 
+        Route::get('/restore/{username}', [StudentController::class, 'restore']); 
     });
 Route::prefix('teachers')
     ->group(function () {
-        Route::get('/', [TeacherController::class, 'index']); // Lấy danh sách học sinh
-        Route::post('/', [TeacherController::class, 'store']); // Tạo học sinh mới
-        Route::put('/{username}', [TeacherController::class, 'update']); // Cập nhật học sinh theo id
-        Route::delete('/{username}', [TeacherController::class, 'destroy']); // Xóa mềm học sinh theo id
-        Route::get('/restore/{username}', [TeacherController::class, 'restore']); // Khôi phục học sinh đã xóa mềm
+        Route::get('/', [TeacherController::class, 'index']); 
+        Route::post('/', [TeacherController::class, 'store']); 
+        Route::put('/{username}', [TeacherController::class, 'update']); 
+        Route::delete('/{username}', [TeacherController::class, 'destroy']); 
+        Route::get('/restore/{username}', [TeacherController::class, 'restore']); 
     });
 
 Route::prefix('students-role')
@@ -239,4 +240,14 @@ Route::prefix('chat')
                 // Route::get('/conversations', [ChatController::class, 'getConversationStudent']);
                 // Route::get('/conversation-message', [ChatController::class, 'getMessageAdminToStudent']);
             });
+    });
+Route::prefix('subject-teachers')
+    ->group(function () {
+        Route::get('/', [SubjectTeacherController::class, 'index']);
+        Route::get('/trash', [SubjectTeacherController::class, 'trash']);
+        Route::post('/', [SubjectTeacherController::class, 'store']);
+        //    Route::patch('/{id}', [SubjectTeacherController::class, 'update']); 
+        Route::delete('/{id}', [SubjectTeacherController::class, 'destroy']);
+        Route::delete('forcedelete/{id}', [SubjectTeacherController::class, 'forceDelete']);
+        Route::get('/restore/{id}', [SubjectTeacherController::class, 'restore']);
     });
