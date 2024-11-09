@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageCollection;
 use App\Models\Conversation;
+use App\Models\Role;
 use App\Services\ChatService;
 use App\Traits\ApiResponseTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
 
 class ChatController extends Controller
 {
@@ -68,8 +68,25 @@ class ChatController extends Controller
 
             $messages = $conversation->messages()->get();
 
+            $data = $messages->groupBy('conversation_id')->map(function ($messageGroup) {
+                $messages = $messageGroup->map(function ($message) {
+                    return [
+                        'message' => $message->message,
+                        'isRead' => $message->isRead,
+                        'name' => $message->user->name,
+                        'username' => $message->user->username,
+                        'conversationName' => $message->conversation->title,
+                    ];
+                });
+
+                return [
+                    'conversationId' => $messageGroup->first()->conversation_id,
+                    'messages' => $messages,
+                ];
+            });
+
             return $this->successResponse(
-                new MessageCollection($messages),
+                $data->values(),
                 'Lấy tất cả tin nhắn với người dùng thành công',
                 Response::HTTP_OK
             );
@@ -103,6 +120,27 @@ class ChatController extends Controller
     //     }
     // }
 
+    // public function getMessageAdminToStudent($conversationID)
+    // {
+    //     try {
+    //         $conversation = Conversation::where('id', $conversationID)->first();
+
+    //         if ($conversation === null) {
+    //             return $this->errorResponse('Không tìm thấy cuộc trò chuyện', Response::HTTP_NOT_FOUND);
+    //         }
+
+    //         $messages = $conversation->messages()->get();
+
+    //         return $this->successResponse(
+    //             new MessageCollection($messages),
+    //             'Lấy tất cả tin nhắn với người dùng thành công',
+    //             Response::HTTP_OK
+    //         );
+    //     } catch (Exception $e) {
+    //         return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+    //     }
+    // }
+
     public function sendMessageToAdmin(Request $request)
     {
         try {
@@ -119,17 +157,17 @@ class ChatController extends Controller
         }
     }
 
-    public function sendMessageToStudent(Request $request, $studentId)
+    public function sendMessageToStudent(Request $request, $username)
     {
         try {
             $message = $request->message;
-            $studentId = $request->studentId;
+            $username = $request->username;
 
-            $message = $this->chatService->sendMessageToStudent($request->message, $studentId);
+            $message = $this->chatService->sendMessageToStudent($request->message, $username);
 
             return $this->successResponse(
                 $message->message,
-                'Gửi tin nhắn cho quản trị thành công',
+                'Gửi tin nhắn cho học sinh thành công',
                 Response::HTTP_CREATED
             );
         } catch (Exception $e) {
