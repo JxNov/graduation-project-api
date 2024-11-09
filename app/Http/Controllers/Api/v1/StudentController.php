@@ -69,4 +69,13 @@ class StudentController extends Controller
             return $this->errorResponse($e->getMessage());
         }
     }
+    public function show($username){
+        $roleStudent = Role::select('id', 'slug')->where('slug', 'student')->first();
+        $students = User::whereHas('roles', function ($query) use ($roleStudent) {
+            $query->where('role_id', $roleStudent->id);
+        })
+        ->where('username',$username)
+            ->first();
+        return new StudentResource($students);
+    }
 }

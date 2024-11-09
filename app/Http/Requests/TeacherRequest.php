@@ -31,6 +31,7 @@ class TeacherRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'image'=> 'nullable',
             'date_of_birth' => 'required|date',
             'gender' => 'required|string',
             'address' => 'required|string|max:255',
@@ -49,6 +50,7 @@ class TeacherRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'username'=>'unique:users,slug,'.$user->id,
+            'image'=> 'nullable',
             'date_of_birth' => 'required|date',
             'gender' => 'required|string',
             'address' => 'required|string|max:255',

@@ -60,12 +60,24 @@ class TeacherController extends Controller
             return $this->errorResponse($e->getMessage());
         }
     }
-    public function restore($username){
-        try{
+    public function restore($username)
+    {
+        try {
             $user = $this->teacherService->backup($username);
-            return $this->successResponse(null,'Khôi phục giáo viên thành công!',Response::HTTP_OK);
-        }catch (Exception $e) {
+            return $this->successResponse(null, 'Khôi phục giáo viên thành công!', Response::HTTP_OK);
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
+    }
+
+    public function show($username)
+    {
+        $roleTeacher = Role::select('id', 'slug')->where('slug', 'teacher')->first();
+        $teacher = User::whereHas('roles', function ($query) use ($roleTeacher) {
+            $query->where('role_id', $roleTeacher->id);
+        })
+            ->where('username', $username)
+            ->first();
+        return new TeacherResource($teacher);
     }
 }
