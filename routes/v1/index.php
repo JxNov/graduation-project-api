@@ -232,7 +232,7 @@ Route::prefix('chat')
     ->group(function () {
         Route::prefix('admin')
             ->group(function () {
-                Route::post('/message-to-student/{studentId}', [ChatController::class, 'sendMessageToStudent']);
+                Route::post('/message-to-student/{username}', [ChatController::class, 'sendMessageToStudent']);
                 Route::get('/conversations', [ChatController::class, 'getConversationAdmin']);
                 Route::get('/conversation-message/{conversationID}', [ChatController::class, 'getMessageStudentToAdmin']);
             });
@@ -240,8 +240,8 @@ Route::prefix('chat')
         Route::prefix('students')
             ->group(function () {
                 Route::post('/message-to-admin', [ChatController::class, 'sendMessageToAdmin']);
-                // Route::get('/conversations', [ChatController::class, 'getConversationStudent']);
-                // Route::get('/conversation-message', [ChatController::class, 'getMessageAdminToStudent']);
+                Route::get('/conversations', [ChatController::class, 'getConversationStudent']);
+                Route::get('/conversation-message/{conversationID}', [ChatController::class, 'getMessageAdminToStudent']);
             });
     });
 Route::prefix('subject-teachers')

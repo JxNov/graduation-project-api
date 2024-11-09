@@ -44,12 +44,12 @@ class ChatService
         });
     }
 
-    public function sendMessageToStudent(string $message, int $studentId)
+    public function sendMessageToStudent(string $message, string $username)
     {
-        return DB::transaction(function () use ($message, $studentId) {
+        return DB::transaction(function () use ($message, $username) {
             $admin = JWTAuth::parseToken()->authenticate();
 
-            $student = User::find($studentId);
+            $student = User::where('username', $username)->first();
 
             if (!$student) {
                 throw new Exception('Không tìm thấy học sinh');
