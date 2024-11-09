@@ -23,6 +23,7 @@ class UpdateStudentRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'image'=>'nullable',
             'date_of_birth' => 'required|date',
             'gender' => 'required|string',
             'address' => 'required|string|max:255',

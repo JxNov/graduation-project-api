@@ -189,6 +189,7 @@ Route::prefix('students')
         Route::put('/{username}', [StudentController::class, 'update']); 
         Route::delete('/{username}', [StudentController::class, 'destroy']); 
         Route::get('/restore/{username}', [StudentController::class, 'restore']); 
+        Route::get('/show/{username}', [StudentController::class, 'show']); 
     });
 Route::prefix('teachers')
     ->group(function () {
@@ -197,6 +198,8 @@ Route::prefix('teachers')
         Route::put('/{username}', [TeacherController::class, 'update']); 
         Route::delete('/{username}', [TeacherController::class, 'destroy']); 
         Route::get('/restore/{username}', [TeacherController::class, 'restore']); 
+        Route::get('/show/{username}', [TeacherController::class, 'show']); 
+         
     });
 
 Route::prefix('students-role')

@@ -6,7 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Str;
 class TeacherService
 {
     public function createTeacher(array $data)
@@ -17,11 +17,26 @@ class TeacherService
 
             // Tạo email dựa trên tên và username
             $data['email'] = $this->generateEmail($username);
+            if (isset($data['image'])) {
+                $firebase = app('firebase.storage');
+                $storage = $firebase->getBucket();
 
+                $firebasePath = 'image-user/' . Str::random(9) . $data['image']->getClientOriginalName();
+
+                $storage->upload(
+                    file_get_contents($data['image']->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
+            }
+
+            $data['image'] = $firebasePath;
             // Lưu thông tin giáo viên vào cơ sở dữ liệu
             $teacher = User::create([
                 'name' => $data['name'],
                 'username' => $username,
+                'image'=>$data['image'],
                 'email' => $data['email'],
                 'password' => Hash::make('abc123456'), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],
@@ -72,11 +87,36 @@ class TeacherService
 
             // Cập nhật email dựa trên `username` mới
             $data['email'] = $this->generateEmail($newUsername);
+            if (isset($data['image'])) {
+                $firebase = app('firebase.storage');
+                $storage = $firebase->getBucket();
+
+                $firebasePath = 'image-user/' . $data['image']->getClientOriginalName();
+
+                if ($user->image) {
+                    $oldFirebasePath = $user->image;
+
+                    $oldFile = $storage->object($oldFirebasePath);
+
+                    if ($oldFile->exists()) {
+                        $oldFile->delete();
+                    }
+                }
+
+                $storage->upload(
+                    file_get_contents($data['image']->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
+                $data['image'] = $firebasePath;
+            }
 
             // Cập nhật thông tin người dùng
             $user->update([
                 'name' => $data['name'],
                 'username' => $newUsername,
+                'image'=>$data['image'],
                 'email' => $data['email'],
                 'password' => Hash::make('abc123456'), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],
@@ -100,7 +140,9 @@ class TeacherService
             $userTeacher->roles()->each(function ($role) use ($userTeacher) {
                 $userTeacher->roles()->updateExistingPivot($role->id, ['deleted_at' => now()]);
             });
-
+            $userTeacher->subjects()->each(function ($subject) use ($userTeacher) {
+                $userTeacher->subjects()->updateExistingPivot($subject->id, ['deleted_at' => now()]);
+            });
             return $userTeacher;
         });
     }

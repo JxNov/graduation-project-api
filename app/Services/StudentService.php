@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class StudentService
 {
@@ -17,11 +18,26 @@ class StudentService
 
             // Tạo email dựa trên tên và username
             $data['email'] = $this->generateEmail($username);
+            if (isset($data['image'])) {
+                $firebase = app('firebase.storage');
+                $storage = $firebase->getBucket();
 
+                $firebasePath = 'image-user/' . Str::random(9) . $data['image']->getClientOriginalName();
+
+                $storage->upload(
+                    file_get_contents($data['image']->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
+            }
+
+            $data['image'] = $firebasePath;
             // Lưu thông tin học sinh vào cơ sở dữ liệu
             $student = User::create([
                 'name' => $data['name'],
                 'username' => $username,
+                'image'=>$data['image'],
                 'email' => $data['email'],
                 'password' => Hash::make('abc123456'), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],
@@ -72,10 +88,34 @@ class StudentService
 
             // Cập nhật thông tin người dùng
             $data['email'] = $this->generateEmail($username);
+            if (isset($data['image'])) {
+                $firebase = app('firebase.storage');
+                $storage = $firebase->getBucket();
 
+                $firebasePath = 'image-user/' . $data['image']->getClientOriginalName();
+
+                if ($user->image) {
+                    $oldFirebasePath = $user->image;
+
+                    $oldFile = $storage->object($oldFirebasePath);
+
+                    if ($oldFile->exists()) {
+                        $oldFile->delete();
+                    }
+                }
+
+                $storage->upload(
+                    file_get_contents($data['image']->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
+                $data['image'] = $firebasePath;
+            }
             $user->update([
                 'name' => $data['name'],
                 'username' => $username,
+                'image'=>$data['image'],
                 'email' => $data['email'],
                 'password' => Hash::make('abc123456'), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],
