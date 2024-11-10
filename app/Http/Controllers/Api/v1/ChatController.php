@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\MessageCollection;
+use App\Http\Requests\MessageRequest;
 use App\Models\Conversation;
-use App\Models\Role;
 use App\Services\ChatService;
 use App\Traits\ApiResponseTrait;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -66,16 +64,18 @@ class ChatController extends Controller
                 return $this->errorResponse('Không tìm thấy cuộc trò chuyện', Response::HTTP_NOT_FOUND);
             }
 
+            $this->markAsRead($conversation);
+
             $messages = $conversation->messages()->get();
 
             $data = $messages->groupBy('conversation_id')->map(function ($messageGroup) {
                 $messages = $messageGroup->map(function ($message) {
                     return [
+                        'messageID' => $message->id,
                         'message' => $message->message,
-                        'isRead' => $message->isRead,
+                        'isRead' => $message->is_read,
                         'name' => $message->user->name,
                         'username' => $message->user->username,
-                        'conversationName' => $message->conversation->title,
                     ];
                 });
 
@@ -95,53 +95,72 @@ class ChatController extends Controller
         }
     }
 
-    // public function getConversationStudent()
-    // {
-    //     try {
-    //         $student = JWTAuth::parseToken()->authenticate();
+    public function getConversationStudent()
+    {
+        try {
+            $student = JWTAuth::parseToken()->authenticate();
 
-    //         $conversations = Conversation::whereHas('users', function ($query) use ($student) {
-    //             $query->where('user_id', $student->id);
-    //         })
-    //             ->select('id', 'title')
-    //             ->get();
+            $conversations = Conversation::whereHas('users', function ($query) use ($student) {
+                $query->where('user_id', $student->id);
+            })
+                ->select('id', 'title')
+                ->get();
 
-    //         if ($conversations->isEmpty()) {
-    //             return $this->errorResponse('Chưa có cuộc trò chuyện nào', Response::HTTP_NOT_FOUND);
-    //         }
+            if ($conversations->isEmpty()) {
+                return $this->errorResponse('Chưa có cuộc trò chuyện nào', Response::HTTP_NOT_FOUND);
+            }
 
-    //         return $this->successResponse(
-    //             $conversations,
-    //             'Lấy tất cả cuộc trò chuyện của người dùng thành công',
-    //             Response::HTTP_OK
-    //         );
-    //     } catch (Exception $e) {
-    //         return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-    //     }
-    // }
+            return $this->successResponse(
+                $conversations,
+                'Lấy tất cả cuộc trò chuyện của người dùng thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 
-    // public function getMessageAdminToStudent($conversationID)
-    // {
-    //     try {
-    //         $conversation = Conversation::where('id', $conversationID)->first();
+    public function getMessageAdminToStudent($conversationID)
+    {
+        try {
+            $conversation = Conversation::where('id', $conversationID)->first();
 
-    //         if ($conversation === null) {
-    //             return $this->errorResponse('Không tìm thấy cuộc trò chuyện', Response::HTTP_NOT_FOUND);
-    //         }
+            if ($conversation === null) {
+                return $this->errorResponse('Không tìm thấy cuộc trò chuyện', Response::HTTP_NOT_FOUND);
+            }
 
-    //         $messages = $conversation->messages()->get();
+            $this->markAsRead($conversation);
 
-    //         return $this->successResponse(
-    //             new MessageCollection($messages),
-    //             'Lấy tất cả tin nhắn với người dùng thành công',
-    //             Response::HTTP_OK
-    //         );
-    //     } catch (Exception $e) {
-    //         return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-    //     }
-    // }
+            $messages = $conversation->messages()->get();
 
-    public function sendMessageToAdmin(Request $request)
+            $data = $messages->groupBy('conversation_id')->map(function ($messageGroup) {
+                $messages = $messageGroup->map(function ($message) {
+                    return [
+                        'messageID' => $message->id,
+                        'message' => $message->message,
+                        'isRead' => $message->is_read,
+                        'name' => $message->user->name,
+                        'username' => $message->user->username,
+                    ];
+                });
+
+                return [
+                    'conversationId' => $messageGroup->first()->conversation_id,
+                    'messages' => $messages,
+                ];
+            });
+
+            return $this->successResponse(
+                $data->values(),
+                'Lấy tất cả tin nhắn với người dùng thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function sendMessageToAdmin(MessageRequest $request)
     {
         try {
             $message = $request->message;
@@ -157,7 +176,7 @@ class ChatController extends Controller
         }
     }
 
-    public function sendMessageToStudent(Request $request, $username)
+    public function sendMessageToStudent(MessageRequest $request, $username)
     {
         try {
             $message = $request->message;
@@ -172,6 +191,38 @@ class ChatController extends Controller
             );
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function updateMessage(MessageRequest $request, $messageID)
+    {
+        try {
+            $message = $request->message;
+            $message = $this->chatService->updateMessage($message, $messageID);
+
+            $message = [
+                'messageID' => $message->id,
+                'message' => $message->message,
+                'isRead' => $message->is_read,
+                'name' => $message->user->name,
+                'username' => $message->user->username,
+            ];
+
+            return $this->successResponse(
+                $message,
+                'Đã sửa tin nhắn thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function markAsRead($conversation)
+    {
+        foreach ($conversation->messages as $message) {
+            $message->is_read = true;
+            $message->save();
         }
     }
 }
