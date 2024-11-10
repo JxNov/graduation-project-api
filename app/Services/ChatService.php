@@ -74,6 +74,27 @@ class ChatService
         });
     }
 
+    public function updateMessage($messageContent, $messageID)
+    {
+        return DB::transaction(function () use ($messageContent, $messageID) {
+            $user = JWTAuth::parseToken()->authenticate();
+
+            $message = Message::where('id', $messageID)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$message) {
+                throw new Exception('Không tìm thấy tin nhắn');
+            }
+
+            $message->message = $messageContent;
+
+            $message->save();
+
+            return $message;
+        });
+    }
+
     private function getAdmin()
     {
         $roleAdmin = Role::select('id', 'slug')->where('slug', 'admin')->first();

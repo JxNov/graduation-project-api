@@ -184,22 +184,22 @@ Route::prefix('excels')
     });
 Route::prefix('students')
     ->group(function () {
-        Route::get('/', [StudentController::class, 'index']); 
-        Route::post('/', [StudentController::class, 'store']); 
-        Route::put('/{username}', [StudentController::class, 'update']); 
-        Route::delete('/{username}', [StudentController::class, 'destroy']); 
-        Route::get('/restore/{username}', [StudentController::class, 'restore']); 
-        Route::get('/show/{username}', [StudentController::class, 'show']); 
+        Route::get('/', [StudentController::class, 'index']);
+        Route::post('/', [StudentController::class, 'store']);
+        Route::put('/{username}', [StudentController::class, 'update']);
+        Route::delete('/{username}', [StudentController::class, 'destroy']);
+        Route::get('/restore/{username}', [StudentController::class, 'restore']);
+        Route::get('/show/{username}', [StudentController::class, 'show']);
     });
 Route::prefix('teachers')
     ->group(function () {
-        Route::get('/', [TeacherController::class, 'index']); 
-        Route::post('/', [TeacherController::class, 'store']); 
-        Route::put('/{username}', [TeacherController::class, 'update']); 
-        Route::delete('/{username}', [TeacherController::class, 'destroy']); 
-        Route::get('/restore/{username}', [TeacherController::class, 'restore']); 
-        Route::get('/show/{username}', [TeacherController::class, 'show']); 
-         
+        Route::get('/', [TeacherController::class, 'index']);
+        Route::post('/', [TeacherController::class, 'store']);
+        Route::put('/{username}', [TeacherController::class, 'update']);
+        Route::delete('/{username}', [TeacherController::class, 'destroy']);
+        Route::get('/restore/{username}', [TeacherController::class, 'restore']);
+        Route::get('/show/{username}', [TeacherController::class, 'show']);
+
     });
 
 Route::prefix('students-role')
@@ -243,6 +243,8 @@ Route::prefix('chat')
                 Route::get('/conversations', [ChatController::class, 'getConversationStudent']);
                 Route::get('/conversation-message/{conversationID}', [ChatController::class, 'getMessageAdminToStudent']);
             });
+
+        Route::patch('/update-message/{messageID}', [ChatController::class, 'updateMessage']);
     });
 Route::prefix('subject-teachers')
     ->group(function () {
