@@ -103,6 +103,7 @@ class ScoreController extends Controller
         );
     }
 
+    //Show dựa trên id của bảng subject_score
     public function show($id)
     {
         $score = Score::find($id);
@@ -117,6 +118,24 @@ class ScoreController extends Controller
             Response::HTTP_OK
         );
     }
+
+    //Truy vấn dựa trên username, id_subject và theo id_semester
+    public function getScoreByStudentSubjectSemester($student_name, $subject_slug, $semester_slug)
+    {
+        try {
+            // Gọi hàm từ ScoreService
+            $score = $this->scoreService->getScoreByStudentSubjectSemester($student_name, $subject_slug, $semester_slug);
+
+            return $this->successResponse(
+                new ScoreResource($score),
+                'Lấy điểm thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
 
     public function update(ScoreRequest $request, $id)
     {
@@ -134,70 +153,71 @@ class ScoreController extends Controller
         }
     }
 
-    public function destroy($id)
-    {
-        try {
-            $this->scoreService->deleteScore($id);
+    //Không nên destroy điểm hsinh
+//    public function destroy($id)
+//    {
+//        try {
+//            $this->scoreService->deleteScore($id);
+//
+//            return $this->successResponse(
+//                null,
+//                'Đã xóa điểm thành công',
+//                Response::HTTP_OK
+//            );
+//        } catch (Exception $e) {
+//            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+//        }
+//    }
 
-            return $this->successResponse(
-                null,
-                'Đã xóa điểm thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
+//    public function trash()
+//    {
+//        $scores = Score::onlyTrashed()
+//            ->select('id', 'student_id', 'subject_id', 'semester_id', 'average_score')
+//            ->latest('id')
+//            ->paginate(6);
+//
+//        if ($scores->isEmpty()) {
+//            return $this->successResponse(
+//                null,
+//                'Không có dữ liệu',
+//                Response::HTTP_OK
+//            );
+//        }
+//
+//        return $this->successResponse(
+//            new ScoreCollection($scores),
+//            'Lấy tất cả thông tin điểm đã xóa thành công',
+//            Response::HTTP_OK
+//        );
+//    }
 
-    public function trash()
-    {
-        $scores = Score::onlyTrashed()
-            ->select('id', 'student_id', 'subject_id', 'semester_id', 'average_score')
-            ->latest('id')
-            ->paginate(6);
+//    public function restore($id)
+//    {
+//        try {
+//            $score = $this->scoreService->restoreScore($id);
+//
+//            return $this->successResponse(
+//                new ScoreResource($score),
+//                'Đã khôi phục điểm thành công',
+//                Response::HTTP_OK
+//            );
+//        } catch (Exception $e) {
+//            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+//        }
+//    }
 
-        if ($scores->isEmpty()) {
-            return $this->successResponse(
-                null,
-                'Không có dữ liệu',
-                Response::HTTP_OK
-            );
-        }
-
-        return $this->successResponse(
-            new ScoreCollection($scores),
-            'Lấy tất cả thông tin điểm đã xóa thành công',
-            Response::HTTP_OK
-        );
-    }
-
-    public function restore($id)
-    {
-        try {
-            $score = $this->scoreService->restoreScore($id);
-
-            return $this->successResponse(
-                new ScoreResource($score),
-                'Đã khôi phục điểm thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
-
-    public function forceDelete($id)
-    {
-        try {
-            $this->scoreService->forceDeleteScore($id);
-
-            return $this->successResponse(
-                null,
-                'Đã xóa vĩnh viễn điểm thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
+//    public function forceDelete($id)
+//    {
+//        try {
+//            $this->scoreService->forceDeleteScore($id);
+//
+//            return $this->successResponse(
+//                null,
+//                'Đã xóa vĩnh viễn điểm thành công',
+//                Response::HTTP_OK
+//            );
+//        } catch (Exception $e) {
+//            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+//        }
+//    }
 }
