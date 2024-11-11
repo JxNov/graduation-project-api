@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\v1\StudentExcelController;
 use App\Http\Controllers\Api\v1\SubjectController;
 use App\Http\Controllers\Api\v1\ScheduleController;
 use App\Http\Controllers\Api\v1\TeacherExcelController;
+use App\Http\Controllers\Api\v1\ScoreController;
 use Illuminate\Support\Facades\Route;
 
 // Module Permissions
@@ -251,8 +252,19 @@ Route::prefix('subject-teachers')
         Route::get('/', [SubjectTeacherController::class, 'index']);
         Route::get('/trash', [SubjectTeacherController::class, 'trash']);
         Route::post('/', [SubjectTeacherController::class, 'store']);
-        //    Route::patch('/{id}', [SubjectTeacherController::class, 'update']); 
+        //    Route::patch('/{id}', [SubjectTeacherController::class, 'update']);
         Route::delete('/{id}', [SubjectTeacherController::class, 'destroy']);
         Route::delete('forcedelete/{id}', [SubjectTeacherController::class, 'forceDelete']);
         Route::get('/restore/{id}', [SubjectTeacherController::class, 'restore']);
+    });
+
+//Điểm học sinh
+Route::prefix('scores')
+    ->group(function () {
+        Route::get('/', [ScoreController::class, 'index']);
+        Route::get('/{student_name}/{subject_slug}/{semester_slug}', [ScoreController::class, 'getScoreByStudentSubjectSemester']); //Lấy theo người dùng => môn học => kì học
+        Route::post('/', [ScoreController::class, 'store']);
+        Route::get('/{id}', [ScoreController::class, 'show']);
+        Route::patch('/{id}', [ScoreController::class, 'update']);
+//        Route::delete('/{id}', [ScoreController::class, 'destroy']);
     });
