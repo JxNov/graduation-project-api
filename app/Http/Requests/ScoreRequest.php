@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Score;
+use Exception;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ScoreRequest extends FormRequest
@@ -48,9 +50,6 @@ class ScoreRequest extends FormRequest
             $score = Score::findOrFail($this->route('id'));
 
             return [
-                'student_id' => 'required|exists:users,id',
-                'subject_id' => 'required|exists:subjects,id',
-                'semester_id' => 'required|exists:semesters,id',
                 'detailed_scores' => 'required|array',
                 'detailed_scores.*.type' => 'required|string|max:50',
                 'detailed_scores.*.score' => 'required|numeric|min:0|max:10',
