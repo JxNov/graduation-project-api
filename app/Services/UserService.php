@@ -193,33 +193,33 @@ class UserService
         }
     }
 
-    public function assignRolesAndPermissions($username, $rolesSlug, $permissionsSlug)
+    public function assignRolesAndPermissions($usersReq, $rolesReq, $permissionsReq)
     {
         DB::beginTransaction();
 
         try {
-            $username = is_string($username) ? [$username] : $username;
+            $usersReq = is_string($usersReq) ? [$usersReq] : $usersReq;
 
-            $users = User::whereIn('username', $username)->get();
+            $users = User::whereIn('email', $usersReq)->get();
 
             if ($users->isEmpty()) {
                 throw new \Exception('User không tồn tại', Response::HTTP_NOT_FOUND);
             }
 
-            $roles = Role::where('slug', $rolesSlug)->first();
+            $roles = Role::where('slug', $rolesReq)->first();
 
             if (!$roles) {
                 throw new \Exception('Role không tồn tại', Response::HTTP_NOT_FOUND);
             }
 
-            $permissions = Permission::where('slug', $permissionsSlug)->first();
+            $permissions = Permission::where('value', $permissionsReq)->first();
 
             if (!$permissions) {
                 throw new \Exception('Permission không tồn tại', Response::HTTP_NOT_FOUND);
             }
 
-            $roles = $this->getReduceRoles($rolesSlug);
-            $permissions = $this->getReducePermissions($permissionsSlug);
+            $roles = $this->getReduceRoles($rolesReq);
+            $permissions = $this->getReducePermissionsValue($permissionsReq);
 
             foreach ($users as $user) {
                 $user->roles()->sync($roles);
@@ -228,13 +228,14 @@ class UserService
 
             DB::commit();
 
-            $user = User::with('roles', 'permissions')->whereIn('username', $username)->get();
+            $user = User::with('roles', 'permissions')->whereIn('email', $usersReq)->get();
 
             return $user->map(function ($user) {
                 return [
                     'username' => $user->username,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'gender' => $user->gender,
                     'roles' => $user->roles->pluck('name'),
                     'permissions' => $user->permissions->pluck('value'),
                 ];
@@ -298,6 +299,24 @@ class UserService
 
         foreach ($permissions as $permission) {
             $permission = Permission::where('slug', $permission)->first();
+
+            $permissionIds[$permission->id] = [
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        return $permissionIds;
+    }
+
+    private function getReducePermissionsValue($permissionsValue): array
+    {
+        $permissions = is_string($permissionsValue) ? [$permissionsValue] : $permissionsValue;
+
+        $permissionIds = [];
+
+        foreach ($permissions as $permission) {
+            $permission = Permission::where('value', $permission)->first();
 
             $permissionIds[$permission->id] = [
                 'created_at' => now(),
