@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('name', 50);
             $table->string('slug', 70);
             $table->text('description')->nullable();
-            $table->integer('block_level');
             $table->timestamps();
             $table->softDeletes();
         });
