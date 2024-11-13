@@ -207,14 +207,6 @@ Route::prefix('teachers')
 
     });
 
-Route::prefix('students-role')
-    ->group(function () {
-        Route::get('/', [StudentRoleController::class, 'index']);
-        Route::post('/', [StudentRoleController::class, 'store']);
-        Route::put('/{username}', [StudentRoleController::class, 'update']);
-        Route::delete('/{username}/{slugRole}', [StudentRoleController::class, 'destroy']);
-    });
-
 Route::prefix('attendances')
     ->group(function () {
         Route::get('/', [AttendanceController::class, 'index']);
