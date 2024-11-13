@@ -26,7 +26,7 @@ class SubjectController extends Controller
     public function index()
     {
         try {
-            $subject = Subject::select('id', 'name','slug','description','block_level')
+            $subject = Subject::select('id', 'name','slug','description')
                 ->latest('id')
                 ->paginate(10);
 
@@ -45,14 +45,7 @@ class SubjectController extends Controller
     }
     public function store(SubjectRequest $request)
     {
-        $data = [
-            'name' => $request->name,
-            'description' => $request->description,
-            'block_level' => $request->block_level,
-            'class_slug'=>$request->class_slug,
-            'block_slug'=>$request->block_slug
-
-        ];
+        $data= $request->validated();
 
         try {
             $subject = $this->subjectservice->store($data);
@@ -65,13 +58,8 @@ class SubjectController extends Controller
     public function update(SubjectRequest $request, $slug)
     {
 
-        $data = [
-            'name' => $request->name,
-            'description' => $request->description,
-            'block_level' => $request->block_level,
-            'class_slug'=>$request->class_slug,
-            'block_slug'=>$request->block_slug
-        ];
+        $data= $request->validated();
+
 
         try {
             $subject = $this->subjectservice->update($data, $slug);
@@ -104,7 +92,7 @@ class SubjectController extends Controller
     {
         try {
             $subject = Subject::onlyTrashed()
-                ->select('id', 'name','slug','description','blockLevel')
+                ->select('id', 'name','slug','description')
                 ->latest('id')
                 ->paginate(10);
 
@@ -121,10 +109,10 @@ class SubjectController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function forceDelete($id)
+    public function forceDelete($slug)
     {
         try {
-            $this->subjectservice->forceDelete($id);
+            $this->subjectservice->forceDelete($slug);
             return $this->successResponse(
                 null,
                 'Xóa vĩnh viễn môn học thành công',
