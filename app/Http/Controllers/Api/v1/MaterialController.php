@@ -101,6 +101,15 @@ class MaterialController extends Controller
         }
     }
 
+    public function download($slug)
+    {
+        try {
+            return $this->materialService->downloadMaterial($slug);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     public function destroy($slug)
     {
         try {
@@ -154,7 +163,8 @@ class MaterialController extends Controller
         }
     }
 
-    public function forceDelete($slug){
+    public function forceDelete($slug)
+    {
         try {
             $this->materialService->forceDeleteMaterial($slug);
 

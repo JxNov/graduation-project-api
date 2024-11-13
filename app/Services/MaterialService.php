@@ -140,6 +140,39 @@ class MaterialService
         });
     }
 
+    public function downloadMaterial($slug)
+    {
+        try {
+            $material = Material::where('slug', $slug)->first();
+
+            if ($material === null) {
+                throw new Exception('Tài liệu không tồn tại hoặc đã bị xóa');
+            }
+
+            $firebase = app('firebase.storage');
+            $storage = $firebase->getBucket();
+
+            $filePath = $material->file_path;
+            // \Illuminate\Support\Facades\Log::info($filePath);
+            $object = $storage->object($filePath);
+            // \Illuminate\Support\Facades\Log::info(basename($filePath));
+
+            if (!$object->exists()) {
+                throw new Exception('Tệp không tồn tại');
+            }
+
+            // downloadAsStream tải tệp từ firebase storage và lưu vào 1 luồng dữ liệu và kh cần tải về máy chủ trước
+            $stream = $object->downloadAsStream();
+
+            // response()->streamDownload tạo 1 phản hồi http dạng tải xuống tệp
+            return response()->streamDownload(function () use ($stream) {
+                echo $stream->getContents();
+            }, basename($filePath));
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
     public function deleteMaterial($slug)
     {
         return DB::transaction(function () use ($slug) {

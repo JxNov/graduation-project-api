@@ -139,6 +139,7 @@ Route::prefix('materials')
         Route::get('/{slug}', [MaterialController::class, 'show']);
         Route::patch('/{slug}', [MaterialController::class, 'update']);
         Route::delete('/{slug}', [MaterialController::class, 'destroy']);
+        Route::get('/download/{slug}', [MaterialController::class, 'download']);
         Route::get('/restore/{slug}', [MaterialController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [MaterialController::class, 'forceDelete']);
     });
@@ -266,5 +267,5 @@ Route::prefix('scores')
         Route::post('/', [ScoreController::class, 'store']);
         Route::get('/{id}', [ScoreController::class, 'show']);
         Route::patch('/{id}', [ScoreController::class, 'update']);
-//        Route::delete('/{id}', [ScoreController::class, 'destroy']);
+        //        Route::delete('/{id}', [ScoreController::class, 'destroy']);
     });
