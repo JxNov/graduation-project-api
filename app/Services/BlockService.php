@@ -11,14 +11,6 @@ class BlockService
     public function createNewBlock(array $data)
     {
         return DB::transaction(function () use ($data) {
-            // lấy số cuối cùng từ chuỗi name gửi lên
-            preg_match('/\d+(?!.*\d)/', $data['name'], $matches);
-            $numberInName = isset($matches[0]) ? (int) $matches[0] : null;
-
-            if ($numberInName !== null && $numberInName != (int) $data['level']) {
-                throw new Exception('Khối: ' . $numberInName . ' không phù hợp với : ' . $data['level']);
-            }
-
             $data['slug'] = Str::slug($data['name']);
 
             $block = Block::create($data);
@@ -34,13 +26,6 @@ class BlockService
 
             if ($block === null) {
                 throw new Exception('Không tìm thấy khối');
-            }
-
-            preg_match('/\d+(?!.*\d)/', $data['name'], $matches);
-            $numberInName = isset($matches[0]) ? (int) $matches[0] : null;
-
-            if ($numberInName !== null && $numberInName != (int) $data['level']) {
-                throw new Exception('Khối: ' . $numberInName . ' không phù hợp với : ' . $data['level']);
             }
 
             $block->update($data);
