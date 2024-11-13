@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Classes;
 use App\Models\Score;
 use App\Models\Subject;
 use App\Models\User;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class ScoreService
 {
-    public function createNewScore($studentName, $subjectSlug, $semesterSlug, array $detailedScores)
+    public function createNewScore($studentName, $subjectSlug, $classSlug, $semesterSlug, array $detailedScores)
     {
         // Lấy user_id dựa trên username
         $student = User::where('username', $studentName)->firstOrFail();
@@ -20,6 +21,10 @@ class ScoreService
         // Lấy subject_id dựa trên subject_slug
         $subject = Subject::where('slug', $subjectSlug)->firstOrFail();
         $subjectId = $subject->id;
+
+        //Lấy class_id dựa trên class_slug
+        $class = Classes::where('slug', $classSlug)->firstOrFail();
+        $classId = $class->id;
 
         // Lấy semester_id dựa trên semester_slug
         $semester = Semester::where('slug', $semesterSlug)->firstOrFail();
@@ -32,14 +37,15 @@ class ScoreService
         return Score::create([
             'student_id' => $studentId,
             'subject_id' => $subjectId,
+            'class_id' => $classId,
             'semester_id' => $semesterId,
             'detailed_scores' => $detailedScores,
             'average_score' => $averageScore,
         ]);
     }
 
-    //Lấy điểm theo username -> subject_slug -> semester_slug
-    public function getScoreByStudentSubjectSemester($student_name, $subject_slug, $semester_slug)
+    //Lấy điểm theo username -> subject_slug -> class_slug -> semester_slug
+    public function getScoreByStudentSubjectSemester($student_name, $subject_slug, $class_slug, $semester_slug)
     {
         // Lấy user_id từ bảng user dựa trên usernmae
         $student = User::where('username', $student_name)->first();
@@ -51,6 +57,11 @@ class ScoreService
             throw new Exception('Môn học không tồn tại.');
         }
 
+        $class = Classes::where('slug', $class_slug)->first();
+        if (!$class) {
+            throw new Exception('Lớp học không tồn tại');
+        }
+
         // Lấy semester_id từ bảng semester dựa trên slug
         $semester = Semester::where('slug', $semester_slug)->first();
 
@@ -58,9 +69,10 @@ class ScoreService
             throw new Exception('Kỳ học không tồn tại.');
         }
 
-        // Truy vấn điểm của học sinh theo student_id, subject_id, semester_id
+        // Truy vấn điểm của học sinh theo student_id, subject_id, class_id, semester_id
         $score = Score::where('student_id', $student->id)
             ->where('subject_id', $subject->id)
+            ->where('class_id', $class->id)
             ->where('semester_id', $semester->id)
             ->first();
 

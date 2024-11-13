@@ -16,6 +16,7 @@ class ScoreResource extends JsonResource
 //            'semesterId' => $this->semester_id,
             'studentName' => optional($this->student)->name,
             'subjectName' => optional($this->subject)->name,
+            'className' => optional($this->class)->name,
             'semesterName' => optional($this->semester)->name,
             'detailedScores' => $this->detailed_scores,
             'averageScore' => $this->average_score,

@@ -18,6 +18,7 @@ class Score extends Model
         'average_score',
         'subject_id',
         'student_id',
+        'class_id',
         'semester_id'
     ];
 
@@ -35,6 +36,11 @@ class Score extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function class(): BelongsTo
+    {
+        return $this->belongsTo(Classes::class);
     }
 
     public function semester(): BelongsTo

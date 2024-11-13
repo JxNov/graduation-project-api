@@ -53,6 +53,7 @@ class ScoreController extends Controller
             $score = $this->scoreService->createNewScore(
                 $data['student_name'],
                 $data['subject_slug'],
+                $data['class_slug'],
                 $data['semester_slug'],
                 $data['detailed_scores']
             );
@@ -87,11 +88,11 @@ class ScoreController extends Controller
     }
 
     //Truy vấn dựa trên username, id_subject và theo id_semester
-    public function getScoreByStudentSubjectSemester($student_name, $subject_slug, $semester_slug)
+    public function getScoreByStudentSubjectSemester($student_name, $subject_slug, $class_slug, $semester_slug)
     {
         try {
             // Gọi hàm từ ScoreService
-            $score = $this->scoreService->getScoreByStudentSubjectSemester($student_name, $subject_slug, $semester_slug);
+            $score = $this->scoreService->getScoreByStudentSubjectSemester($student_name, $subject_slug,  $class_slug, $semester_slug);
 
             return $this->successResponse(
                 new ScoreResource($score),
