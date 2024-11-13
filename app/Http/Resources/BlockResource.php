@@ -12,7 +12,6 @@ class BlockResource extends JsonResource
         return [
             'name' => $this->name,
             'slug' => $this->slug,
-            'level'=>$this->level
         ];
     }
 }

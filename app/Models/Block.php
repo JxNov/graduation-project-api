@@ -13,7 +13,6 @@ class Block extends Model
     protected $fillable = [
         'name',
         'slug',
-        'level'
     ];
     public function subjects()
     {
