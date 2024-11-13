@@ -29,6 +29,12 @@ class Classes extends Model
         return $this->hasOne(User::class, 'id', 'teacher_id');
     }
 
+    // giáo viên bộ môn
+    public function classTeachers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'class_teachers', 'class_id', 'teacher_id');
+    }
+
     public function academicYears(): BelongsToMany
     {
         return $this->belongsToMany(AcademicYear::class, 'academic_year_classes', 'class_id', 'academic_year_id');
@@ -79,6 +85,10 @@ class Classes extends Model
         });
 
         static::deleting(function ($class) {
+            if ($class->classTeachers->isNotEmpty()) {
+                $class->classTeachers()->updateExistingPivot($class->classTeachers->pluck('id'), ['deleted_at' => now()]);
+            }
+
             if ($class->blocks->isNotEmpty()) {
                 $class->blocks()->updateExistingPivot($class->blocks->pluck('id'), ['deleted_at' => now()]);
             }
@@ -106,6 +116,11 @@ class Classes extends Model
             $materialClass = $class->materials()->withTrashed()->get();
             if ($materialClass->isNotEmpty()) {
                 $class->materials()->updateExistingPivot($materialClass->pluck('id'), ['deleted_at' => null]);
+            }
+
+            $teachClass = $class->classTeachers()->withTrashed()->get();
+            if ($teachClass->isNotEmpty()) {
+                $class->classTeachers()->updateExistingPivot($teachClass->pluck('id'), ['deleted_at' => null]);
             }
         });
     }

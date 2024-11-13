@@ -38,6 +38,9 @@ class ClassService
 
             // kiểm tra nếu giáo viên đã có trong 1 lớp cùng năm học
             $homeRoomTeacher = Classes::where('teacher_id', $teacher->id)
+                ->whereHas('academicYears', function ($query) use ($academicYear) {
+                    $query->where('academic_years.id', $academicYear->id);
+                })
                 ->first();
 
             if ($homeRoomTeacher) {
@@ -91,6 +94,9 @@ class ClassService
             }
 
             $homeRoomTeacher = Classes::where('teacher_id', $teacher->id)
+                ->whereHas('academicYears', function ($query) use ($academicYear) {
+                    $query->where('academic_years.id', $academicYear->id);
+                })
                 ->first();
 
             if ($homeRoomTeacher && $homeRoomTeacher->id !== $class->id) {
@@ -103,6 +109,25 @@ class ClassService
 
             $class->academicYears()->sync($academicYear->id);
             $class->blocks()->sync($block->id);
+
+            return $class;
+        });
+    }
+
+    public function assignClassToTeacher(array $data, $slug)
+    {
+        return DB::transaction(function () use ($data, $slug) {
+            $class = Classes::where('slug', $slug)->first();
+
+            if ($class === null) {
+                throw new Exception('Không tìm thấy lớp');
+            }
+
+            $userIds = [];
+            $users = User::whereIn('username', $data['username'])->get();
+            $userIds = $users->pluck('id')->toArray();
+
+            $class->classTeachers()->sync($userIds);
 
             return $class;
         });

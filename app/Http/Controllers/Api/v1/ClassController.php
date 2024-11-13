@@ -10,6 +10,7 @@ use App\Models\Classes;
 use App\Services\ClassService;
 use App\Traits\ApiResponseTrait;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class ClassController extends Controller
@@ -100,6 +101,26 @@ class ClassController extends Controller
         }
     }
 
+    public function assignClassToTeacher(Request $request, $slug)
+    {
+        try {
+            $data = $request->validate(
+                [
+                    'username' => 'required',
+                    'username.*' => 'exists:users,username'
+                ],
+                [
+                    'username.required' => 'Hãy chọn giáo viên',
+                    'username.exists' => 'Tên giáo viên không tồn tại',
+                ]
+            );
+
+            $this->classService->assignClassToTeacher($data, $slug);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     public function destroy($slug)
     {
         try {
@@ -108,7 +129,7 @@ class ClassController extends Controller
             return $this->successResponse(
                 null,
                 'Xóa lớp học thành công',
-                Response::HTTP_OK
+                Response::HTTP_NO_CONTENT
             );
 
         } catch (Exception $e) {
@@ -162,7 +183,7 @@ class ClassController extends Controller
             return $this->successResponse(
                 null,
                 'Xóa vĩnh viễn lớp học thành công',
-                Response::HTTP_OK
+                Response::HTTP_NO_CONTENT
             );
 
         } catch (Exception $e) {
