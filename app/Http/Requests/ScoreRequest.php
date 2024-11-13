@@ -37,6 +37,7 @@ class ScoreRequest extends FormRequest
         return [
             'student_name' => 'required|exists:users,username',
             'subject_slug' => 'required|exists:subjects,slug',
+            'class_slug' => 'required|exists:classes,slug',
             'semester_slug' => 'required|exists:semesters,slug',
             'detailed_scores' => 'required|array',
             'detailed_scores.diem_mieng' => 'nullable|array',
@@ -76,6 +77,8 @@ class ScoreRequest extends FormRequest
         return [
             'student_name.required' => 'Tên sinh viên là bắt buộc.',
             'student_name.exists' => 'Sinh viên không tồn tại.',
+            'class_slug.required' => 'Lớp học là bắt buộc',
+            'class_slug.exists' => 'Lớp học không tồn tại',
             'subject_slug.required' => 'Tên môn học là bắt buộc.',
             'subject_slug.exists' => 'Môn học không tồn tại.',
             'semester_slug.required' => 'Tên học kỳ là bắt buộc.',

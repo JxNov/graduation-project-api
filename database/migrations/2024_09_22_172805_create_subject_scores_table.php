@@ -27,6 +27,10 @@ return new class extends Migration {
                 ->constrained('semesters')
                 ->onDelete('cascade');
 
+            $table->foreignId('class_id')
+                ->constrained('classes')
+                ->onDelete('cascade');
+
             // điểm của mỗi hs trong mỗi kỳ duy nhất
             $table->unique(['subject_id', 'student_id', 'semester_id'], 'unique_subject_scores');
 
