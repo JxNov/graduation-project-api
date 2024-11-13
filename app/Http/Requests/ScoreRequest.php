@@ -35,12 +35,17 @@ class ScoreRequest extends FormRequest
     public function rulesForCreate(): array
     {
         return [
-            'student_id' => 'required|exists:users,id',
-            'subject_id' => 'required|exists:subjects,id',
-            'semester_id' => 'required|exists:semesters,id',
+            'student_name' => 'required|exists:users,username',
+            'subject_slug' => 'required|exists:subjects,slug',
+            'semester_slug' => 'required|exists:semesters,slug',
             'detailed_scores' => 'required|array',
-            'detailed_scores.*.type' => 'required|string|max:50',
-            'detailed_scores.*.score' => 'required|numeric|min:0|max:10',
+            'detailed_scores.diem_mieng' => 'nullable|array',
+            'detailed_scores.diem_15_phut' => 'nullable|array',
+            'detailed_scores.diem_mot_tiet_1' => 'nullable|array',
+            'detailed_scores.diem_mot_tiet_2' => 'nullable|array',
+            'detailed_scores.diem_giua_ki' => 'nullable|array',
+            'detailed_scores.diem_cuoi_ki' => 'nullable|array',
+            'detailed_scores.*.*' => 'numeric|min:0|max:10',
         ];
     }
 
@@ -51,8 +56,13 @@ class ScoreRequest extends FormRequest
 
             return [
                 'detailed_scores' => 'required|array',
-                'detailed_scores.*.type' => 'required|string|max:50',
-                'detailed_scores.*.score' => 'required|numeric|min:0|max:10',
+                'detailed_scores.diem_mieng' => 'nullable|array',
+                'detailed_scores.diem_15_phut' => 'nullable|array',
+                'detailed_scores.diem_mot_tiet_1' => 'nullable|array',
+                'detailed_scores.diem_mot_tiet_2' => 'nullable|array',
+                'detailed_scores.diem_giua_ki' => 'nullable|array',
+                'detailed_scores.diem_cuoi_ki' => 'nullable|array',
+                'detailed_scores.*.*' => 'numeric|min:0|max:10',
             ];
         } catch (Exception $e) {
             return [
@@ -64,12 +74,12 @@ class ScoreRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'student_id.required' => 'Mã sinh viên là bắt buộc.',
-            'student_id.exists' => 'Sinh viên không tồn tại.',
-            'subject_id.required' => 'Mã môn học là bắt buộc.',
-            'subject_id.exists' => 'Môn học không tồn tại.',
-            'semester_id.required' => 'Mã học kỳ là bắt buộc.',
-            'semester_id.exists' => 'Học kỳ không tồn tại.',
+            'student_name.required' => 'Tên sinh viên là bắt buộc.',
+            'student_name.exists' => 'Sinh viên không tồn tại.',
+            'subject_slug.required' => 'Tên môn học là bắt buộc.',
+            'subject_slug.exists' => 'Môn học không tồn tại.',
+            'semester_slug.required' => 'Tên học kỳ là bắt buộc.',
+            'semester_slug.exists' => 'Học kỳ không tồn tại.',
             'detailed_scores.required' => 'Chi tiết điểm là bắt buộc.',
             'detailed_scores.array' => 'Chi tiết điểm phải là một mảng.',
             'detailed_scores.*.numeric' => 'Mỗi điểm chi tiết phải là số.',
@@ -78,4 +88,3 @@ class ScoreRequest extends FormRequest
         ];
     }
 }
-

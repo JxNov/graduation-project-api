@@ -11,38 +11,31 @@ use Illuminate\Support\Facades\DB;
 
 class ScoreService
 {
-    public function createNewScore(array $data)
+    public function createNewScore($studentName, $subjectSlug, $semesterSlug, array $detailedScores)
     {
-        return DB::transaction(function () use ($data) {
-            $subject = Subject::find($data['subject_id']);
-            $student = User::find($data['student_id']);
-            $semester = Semester::find($data['semester_id']);
+        // Lấy user_id dựa trên username
+        $student = User::where('username', $studentName)->firstOrFail();
+        $studentId = $student->id;
 
-            if (!$subject) {
-                throw new Exception('Môn học không tồn tại.');
-            }
+        // Lấy subject_id dựa trên subject_slug
+        $subject = Subject::where('slug', $subjectSlug)->firstOrFail();
+        $subjectId = $subject->id;
 
-            if (!$student) {
-                throw new Exception('Học sinh không tồn tại.');
-            }
+        // Lấy semester_id dựa trên semester_slug
+        $semester = Semester::where('slug', $semesterSlug)->firstOrFail();
+        $semesterId = $semester->id;
 
-            if (!$semester) {
-                throw new Exception('Kỳ học không tồn tại.');
-            }
+        // Tính toán điểm trung bình từ detailed_scores (tính trung bình từ mảng điểm)
+        $averageScore = $this->calculateAverageScore($detailedScores);
 
-            $existingScore = Score::where('subject_id', $data['subject_id'])
-                ->where('student_id', $data['student_id'])
-                ->where('semester_id', $data['semester_id'])
-                ->first();
-
-            if ($existingScore) {
-                throw new Exception('Điểm cho học sinh này trong môn học và kỳ học đã tồn tại.');
-            }
-
-            $data['average_score'] = $this->calculateAverageScore($data['detailed_scores']);
-
-            return Score::create($data);
-        });
+        // Tạo điểm mới
+        return Score::create([
+            'student_id' => $studentId,
+            'subject_id' => $subjectId,
+            'semester_id' => $semesterId,
+            'detailed_scores' => $detailedScores,
+            'average_score' => $averageScore,
+        ]);
     }
 
     //Lấy điểm theo username -> subject_slug -> semester_slug
@@ -75,51 +68,22 @@ class ScoreService
             throw new Exception('Không tìm thấy điểm cho học sinh này trong môn học này.');
         }
 
-        if ($score->detailed_scores) {
-            if (is_string($score->detailed_scores)) {
-                // Nếu là chuỗi JSON, giải mã nó
-                $score->detailed_scores = json_decode($score->detailed_scores, true);
-            } elseif (is_array($score->detailed_scores)) {
-                // Nếu là mảng, giữ nguyên
-                $score->detailed_scores = $score->detailed_scores;
-            } else {
-                // Nếu không phải chuỗi JSON hay mảng, xử lý theo yêu cầu của bạn
-                throw new Exception('detailed_scores có dữ liệu không hợp lệ.');
-            }
-        }
-
         return $score;
     }
 
-//    public function updateScore(array $data, $id)
-//    {
-//        return DB::transaction(function () use ($data, $id) {
-//            $score = Score::find($id);
-//
-//            if (!$score) {
-//                throw new Exception('Điểm không tồn tại.');
-//            }
-//
-//            $data['average_score'] = $this->calculateAverageScore($data['detailed_scores']);
-//
-//            $score->update($data);
-//            return $score;
-//        });
-//    }
 
-    public function updateScore($data, $score_id)
+    public function updateScore($id, array $data)
     {
-        // Tìm điểm theo ID
-        $score = Score::find($score_id);
+        // Lấy bản ghi Score dựa trên ID
+        $score = Score::findOrFail($id);
 
-        if (!$score) {
-            throw new Exception('Điểm không tồn tại.');
-        }
 
-        //$score->student_id = $data['student_id'];
-        //$score->subject_id = $data['subject_id'];
-        //$score->semester_id = $data['semester_id'];
-        $score->detailed_scores = json_encode($data['detailed_scores']);
+        // Cập nhật các trường trong Score model
+        $score->update([
+            'detailed_scores' => $data['detailed_scores'],
+        ]);
+
+        // Cập nhật điểm trung bình nếu cần thiết
         $score->average_score = $this->calculateAverageScore($data['detailed_scores']);
         $score->save();
 
@@ -168,24 +132,18 @@ class ScoreService
         });
     }
 
-//    private function calculateAverageScore(array $detailedScores)
-//    {
-//        if (empty($detailedScores)) {
-//            return 0;
-//        }
-//
-//        $total = array_sum($detailedScores);
-//        return round($total / count($detailedScores), 2);
-//    }
-    private function calculateAverageScore(array $detailedScores): ?float
+    private function calculateAverageScore(array $detailedScores)
     {
-        if (empty($detailedScores)) {
-            return null;
+        $totalScore = 0;
+        $count = 0;
+
+        // Tính tổng điểm từ các mảng trong detailed_scores
+        foreach ($detailedScores as $scores) {
+            if (is_array($scores)) {
+                $totalScore += array_sum($scores);
+                $count += count($scores);
+            }
         }
-
-        $total = array_sum(array_column($detailedScores, 'score'));  // Sử dụng array_column để lấy tất cả điểm
-        return round($total / count($detailedScores), 2);
+        return $count > 0 ? round($totalScore / $count, 2) : 0;
     }
-
-
 }
