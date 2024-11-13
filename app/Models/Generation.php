@@ -43,6 +43,12 @@ class Generation extends Model
                     foreach ($blocks as $block) {
                         $block->delete();
                     }
+
+                    $classTeachers = $class->classTeachers;
+
+                    if ($classTeachers->isNotEmpty()) {
+                        $class->classTeachers()->updateExistingPivot($classTeachers->pluck('id'), ['deleted_at' => now()]);
+                    }
                 }
 
                 $academicYear->delete();
@@ -72,6 +78,12 @@ class Generation extends Model
                             $block->classFromMaterials()->updateExistingPivot($materialBlock->pluck('id'), ['deleted_at' => null]);
                         }
                         $block->restore();
+                    }
+
+                    $classTeachers = $class->classTeachers()->withTrashed()->get();
+
+                    if ($classTeachers->isNotEmpty()) {
+                        $class->classTeachers()->updateExistingPivot($classTeachers->pluck('id'), ['deleted_at' => null]);
                     }
                 }
 

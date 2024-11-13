@@ -127,6 +127,7 @@ Route::prefix('classes')
         Route::get('/{slug}', [ClassController::class, 'show']);
         Route::patch('/{slug}', [ClassController::class, 'update']);
         Route::delete('/{slug}', [ClassController::class, 'destroy']);
+        Route::post('/assign-class/{slug}', [ClassController::class, 'assignClassToTeacher']);
         Route::get('/restore/{slug}', [ClassController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [ClassController::class, 'forceDelete']);
     });
