@@ -149,10 +149,12 @@ Route::prefix('materials')
 Route::prefix('subjects')
     ->group(function () {
         Route::get('/', [SubjectController::class, 'index']);
+        Route::get('/trash', [SubjectController::class, 'trash']);
         Route::post('/', [SubjectController::class, 'store']);
         Route::patch('/{slug}', [SubjectController::class, 'update']);
         Route::delete('/{slug}', [SubjectController::class, 'destroy']);
         Route::get('/restore/{slug}', [SubjectController::class, 'restore']);
+        Route::get('/forcedelete/{slug}', [SubjectController::class, 'forceDelete']);
     });
 
 Route::prefix('excels')
