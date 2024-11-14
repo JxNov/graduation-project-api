@@ -12,6 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -136,5 +137,15 @@ class User extends Authenticatable implements JWTSubject
     public function subjects()
     {
         return $this->belongsToMany(Subject::class, 'subject_teachers', 'teacher_id', 'subject_id');
+    }
+
+    public function homeroomClasses(): HasOne
+    {
+        return $this->hasOne(Classes::class, 'teacher_id');
+    }
+
+    public function teachingClasses(): BelongsToMany
+    {
+        return $this->belongsToMany(Classes::class, 'class_teachers', 'teacher_id', 'class_id');
     }
 }
