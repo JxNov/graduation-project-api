@@ -15,8 +15,7 @@ return new class extends Migration {
             $table->string('title', 100);
             $table->text('description')->nullable();
             $table->date('due_date');
-            $table->json('criteria');
-            $table->decimal('weight', 5, 2);
+            $table->text('criteria');
 
             $table->foreignId('subject_id')
                 ->constrained('subjects')
