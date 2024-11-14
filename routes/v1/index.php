@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
 use App\Http\Controllers\Api\v1\StudentClassController;
 use App\Http\Controllers\Api\v1\StudentController;
-use App\Http\Controllers\Api\v1\StudentRoleController;
 use App\Http\Controllers\Api\v1\SubjectTeacherController;
 use App\Http\Controllers\Api\v1\TeacherController;
 use App\Http\Controllers\Api\v1\UserController;
@@ -14,6 +13,7 @@ use App\Http\Controllers\Api\v1\AttendanceController;
 use App\Http\Controllers\Api\v1\BlockController;
 use App\Http\Controllers\Api\v1\ChatController;
 use App\Http\Controllers\Api\v1\ClassController;
+use App\Http\Controllers\Api\v1\ClassroomController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\MaterialController;
 use App\Http\Controllers\Api\v1\SemesterController;
@@ -127,7 +127,6 @@ Route::prefix('classes')
         Route::get('/{slug}', [ClassController::class, 'show']);
         Route::patch('/{slug}', [ClassController::class, 'update']);
         Route::delete('/{slug}', [ClassController::class, 'destroy']);
-        Route::post('/assign-class/{slug}', [ClassController::class, 'assignClassToTeacher']);
         Route::get('/restore/{slug}', [ClassController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [ClassController::class, 'forceDelete']);
     });
@@ -149,12 +148,10 @@ Route::prefix('materials')
 Route::prefix('subjects')
     ->group(function () {
         Route::get('/', [SubjectController::class, 'index']);
-        Route::get('/trash', [SubjectController::class, 'trash']);
         Route::post('/', [SubjectController::class, 'store']);
         Route::patch('/{slug}', [SubjectController::class, 'update']);
         Route::delete('/{slug}', [SubjectController::class, 'destroy']);
         Route::get('/restore/{slug}', [SubjectController::class, 'restore']);
-        Route::get('/forcedelete/{slug}', [SubjectController::class, 'forceDelete']);
     });
 
 Route::prefix('excels')
@@ -263,4 +260,12 @@ Route::prefix('scores')
         Route::get('/{id}', [ScoreController::class, 'show']);
         Route::patch('/{id}', [ScoreController::class, 'update']);
         //        Route::delete('/{id}', [ScoreController::class, 'destroy']);
+    });
+
+// Classroom
+Route::prefix('classrooms')
+    ->middleware('auth:api')
+    ->group(function () {
+        Route::get('/', [ClassroomController::class, 'getClassroomForTeacher']);
+        // Route::get('/{slug}', [ClassroomController::class, 'getDetailClassroom']);
     });
