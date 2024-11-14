@@ -1,6 +1,7 @@
 <?php
 namespace App\Services;
 
+use App\Events\AttendanceSaved;
 use App\Models\Attendance;
 use App\Models\Classes;
 use App\Models\User;
@@ -44,6 +45,7 @@ class AttendanceService
                 }
             }
 
+            event(new AttendanceSaved($attendance));
             return $attendance;
         });
     }
@@ -86,6 +88,7 @@ class AttendanceService
                 }
             }
 
+            event(new AttendanceSaved($attendance));
             return $attendance;
         });
     }
