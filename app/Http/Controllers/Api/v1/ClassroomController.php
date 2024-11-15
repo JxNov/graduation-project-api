@@ -146,4 +146,46 @@ class ClassroomController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+    public function getStudentClassroom($slug)
+    {
+        try {
+            $user = Auth::user();
+
+            $class = Classes::where('slug', $slug)
+                ->with([
+                    'students',
+                    'classTeachers' => function ($query) use ($user) {
+                        $query->where('teacher_id', $user->id);
+                    }
+                ])
+                ->first();
+
+            if (!$class) {
+                throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
+            }
+
+            $students = $class->students->map(function ($student) {
+                return [
+                    'name' => $student->name,
+                    'image' => $student->image,
+                ];
+            });
+
+            $data = [
+                'teacherName' => $user->name,
+                'teacherImage' => $user->image,
+                'students' => $students,
+                'numberOfStudents' => $students->count()
+            ];
+
+            return $this->successResponse(
+                $data,
+                'Lấy danh sách học sinh thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }

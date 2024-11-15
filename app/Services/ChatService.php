@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Events\ChatWithAdmin;
-use App\Events\MessageToAdmin;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Role;

@@ -4,7 +4,6 @@ namespace App\Services;
 use App\Events\AttendanceSaved;
 use App\Models\Attendance;
 use App\Models\Classes;
-use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
