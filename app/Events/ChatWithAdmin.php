@@ -25,4 +25,11 @@ class ChatWithAdmin implements ShouldBroadcast
             new PrivateChannel('chat-with-admin.' . $this->user->id),
         ];
     }
+
+    public function broadcastWith()
+    {
+        return [
+            'message' => $this->message
+        ];
+    }
 }
