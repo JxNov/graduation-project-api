@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
 use App\Http\Controllers\Api\v1\StudentClassController;
 use App\Http\Controllers\Api\v1\StudentController;
-use App\Http\Controllers\Api\v1\StudentRoleController;
 use App\Http\Controllers\Api\v1\SubjectTeacherController;
 use App\Http\Controllers\Api\v1\TeacherController;
 use App\Http\Controllers\Api\v1\UserController;
@@ -14,6 +13,7 @@ use App\Http\Controllers\Api\v1\AttendanceController;
 use App\Http\Controllers\Api\v1\BlockController;
 use App\Http\Controllers\Api\v1\ChatController;
 use App\Http\Controllers\Api\v1\ClassController;
+use App\Http\Controllers\Api\v1\ClassroomController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\MaterialController;
 use App\Http\Controllers\Api\v1\SemesterController;
@@ -139,6 +139,7 @@ Route::prefix('materials')
         Route::get('/{slug}', [MaterialController::class, 'show']);
         Route::patch('/{slug}', [MaterialController::class, 'update']);
         Route::delete('/{slug}', [MaterialController::class, 'destroy']);
+        Route::get('/download/{slug}', [MaterialController::class, 'download']);
         Route::get('/restore/{slug}', [MaterialController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [MaterialController::class, 'forceDelete']);
     });
@@ -203,14 +204,6 @@ Route::prefix('teachers')
 
     });
 
-Route::prefix('students-role')
-    ->group(function () {
-        Route::get('/', [StudentRoleController::class, 'index']);
-        Route::post('/', [StudentRoleController::class, 'store']);
-        Route::put('/{username}', [StudentRoleController::class, 'update']);
-        Route::delete('/{username}/{slugRole}', [StudentRoleController::class, 'destroy']);
-    });
-
 Route::prefix('attendances')
     ->group(function () {
         Route::get('/', [AttendanceController::class, 'index']);
@@ -266,5 +259,32 @@ Route::prefix('scores')
         Route::post('/', [ScoreController::class, 'store']);
         Route::get('/{id}', [ScoreController::class, 'show']);
         Route::patch('/{id}', [ScoreController::class, 'update']);
+        //        Route::delete('/{id}', [ScoreController::class, 'destroy']);
+    });
+
+// Classroom
+Route::prefix('classrooms')
+    ->middleware('auth:api')
+    ->group(function () {
+        Route::get('/', [ClassroomController::class, 'getClassroomForTeacher']);
+        Route::get('/{slug}', [ClassroomController::class, 'getDetailClassroomForTeacher']);
+        Route::get('assignment/{slug}', [ClassroomController::class, 'getAssignmentClassroom']);
+        Route::get('student/{slug}', [ClassroomController::class, 'getStudentClassroom']);
+    });
+
+//Score
+Route::prefix('scores')
+    ->group(function () {
+        Route::get('/', [ScoreController::class, 'index']);
+        Route::get('/{student_name}/{subject_slug}/{class_slug}/{semester_slug}', [ScoreController::class, 'getScoreByStudentSubjectSemester']); //Lấy theo người dùng => môn học => lớp học => kì học
+        Route::post('/', [ScoreController::class, 'store']);
+        Route::get('/{id}', [ScoreController::class, 'show']);
+        Route::patch('/{id}', [ScoreController::class, 'update']);
 //        Route::delete('/{id}', [ScoreController::class, 'destroy']);
+    });
+
+//Statistic - thống kê
+Route::prefix('statistic')
+    ->group(function () {
+        Route::get('{subject_slug}/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticByClassSubjectSemester']);
     });
