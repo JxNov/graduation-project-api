@@ -112,24 +112,24 @@ class UserController extends Controller
     {
         if ($request->username) {
             $request->validate([
-                'username' => 'required|exists:users,username',
+                'users' => 'required|exists:users,email',
             ]);
         }
 
-        if ($request->roles_slug) {
+        if ($request->roles) {
             $request->validate([
-                'roles_slug' => 'required|exists:roles,slug',
+                'roles' => 'required|exists:roles,slug',
             ]);
         }
 
-        if ($request->permissions_slug) {
+        if ($request->permissions) {
             $request->validate([
-                'permissions_slug' => 'required|exists:permissions,slug',
+                'permissions' => 'required|exists:permissions,value',
             ]);
         }
 
         try {
-            $user = $this->userService->assignRolesAndPermissions($request->input('username'), $request->input('roles_slug'), $request->input('permissions_slug'));
+            $user = $this->userService->assignRolesAndPermissions($request->input('users'), $request->input('roles'), $request->input('permissions'));
 
             return $this->successResponse($user, 'Gán quyền và quyền cho người dùng thành công.');
         } catch (\Exception $e) {

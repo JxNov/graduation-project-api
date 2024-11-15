@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Http\JsonResponse;
@@ -91,10 +92,13 @@ class AuthController extends Controller
 
     private function respondWithToken($token): JsonResponse
     {
+        $minutes = 60 * 24 * 30;
+        $cookie = Cookie::make('token', $token, $minutes, null, null, false, true);
+
         return response()
             ->json([
-                'status' => 'success',
+                'message' => 'Successfully',
             ])
-            ->cookie('token', $token, 60 * 24 * 30, null, null, false, true);
+            ->cookie($cookie);
     }
 }
