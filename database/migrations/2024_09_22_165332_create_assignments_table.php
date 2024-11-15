@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('assignments', function (Blueprint $table) {
             $table->id();
             $table->string('title', 100);
+            $table->string('slug', 120)->unique();
             $table->text('description')->nullable();
             $table->date('due_date');
             $table->text('criteria');
