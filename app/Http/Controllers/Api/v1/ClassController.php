@@ -116,6 +116,12 @@ class ClassController extends Controller
             );
 
             $this->classService->assignClassToTeacher($data, $slug);
+
+            return $this->successResponse(
+                null,
+                'Phân công giáo viên thành công',
+                Response::HTTP_OK
+            );
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }

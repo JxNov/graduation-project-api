@@ -74,6 +74,11 @@ class Classes extends Model
         return $this->belongsTo(Generation::class);
     }
 
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class, 'class_id');
+    }
+
     protected static function booted()
     {
         static::creating(function ($class) {
