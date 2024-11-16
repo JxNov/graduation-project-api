@@ -3,10 +3,17 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateStudentRequest;
+use App\Http\Resources\StudentResource;
+use App\Http\Resources\TeacherResource;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use App\Traits\ApiResponseTrait;
+use Exception;
+use Illuminate\Http\Response;
 
 class UserController extends Controller
 {
@@ -150,6 +157,48 @@ class UserController extends Controller
 
             return $this->successResponse($user, 'Thu hồi quyền và quyền của người dùng thành công.');
         } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+    public function showStudent($username){
+        $roleStudent = Role::select('id', 'slug')->where('slug', 'student')->first();
+        $student = User::whereHas('roles', function ($query) use ($roleStudent) {
+            $query->where('role_id', $roleStudent->id);
+        })
+        ->where('username',$username)
+            ->first();
+        return new StudentResource($student);
+    }
+    public function updateStudent(Request $request,$username ){
+        try {
+            $data =[
+                'image'=>$request->image,
+                'password'=>$request->password
+            ] ;
+            $user = $this->userService->updateStudent($data, $username);
+            return $this->successResponse(new StudentResource($user), 'Thay đổi thông tin học sinh thành công!', Response::HTTP_OK);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+    public function showTeacher($username){
+        $roleTeacher = Role::select('id', 'slug')->where('slug', 'teacher')->first();
+        $teacher = User::whereHas('roles', function ($query) use ($roleTeacher) {
+            $query->where('role_id', $roleTeacher->id);
+        })
+        ->where('username',$username)
+            ->first();
+        return new TeacherResource($teacher);
+    }
+    public function updateTeacher(Request $request,$username ){
+        try {
+            $data =[
+                'image'=>$request->image,
+                'password'=>$request->password
+            ] ;
+            $user = $this->userService->updateTeacher($data, $username);
+            return $this->successResponse(new TeacherResource($user), 'Thay đổi thông tin giáo viên thành công!', Response::HTTP_OK);
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
     }

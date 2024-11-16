@@ -52,6 +52,8 @@ Route::prefix('users')
     ->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::post('/', [UserController::class, 'store']);
+        Route::get('/showStudent/{username}', [UserController::class, 'showStudent']);
+        Route::get('/showTeacher/{username}', [UserController::class, 'showTeacher']);
         Route::get('/{username}/roles', [UserController::class, 'getUserRoles']);
         Route::patch('/{username}/roles', [UserController::class, 'assignRoles']);
         Route::delete('/{username}/roles', [UserController::class, 'revokeRoles']);
@@ -60,6 +62,8 @@ Route::prefix('users')
         Route::delete('/{username}/permissions', [UserController::class, 'revokePermissions']);
         Route::patch('/assign-roles-permissions', [UserController::class, 'assignRolesAndPermissions']);
         Route::delete('/assign-roles-permissions', [UserController::class, 'revokeRolesAndPermissions']);
+        Route::patch('/updateStudent/{username}', [UserController::class, 'updateStudent']);
+        Route::patch('/updateTeacher/{username}', [UserController::class, 'updateTeacher']);
     });
 
 // khóa học sinh
