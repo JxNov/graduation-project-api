@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Role;
 use App\Models\Permission;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
@@ -325,5 +326,89 @@ class UserService
         }
 
         return $permissionIds;
+    }
+    public function updateStudent($data, $username)
+    {
+        return DB::transaction(function () use ($data, $username) {
+            $user = User::where('username', $username)->firstOrFail();
+            if (isset($data['image'])) {
+                $firebase = app('firebase.storage');
+                $storage = $firebase->getBucket();
+
+                $firebasePath = 'image-user/' . $data['image']->getClientOriginalName();
+
+                if ($user->image) {
+                    $oldFirebasePath = $user->image;
+
+                    $oldFile = $storage->object($oldFirebasePath);
+
+                    if ($oldFile->exists()) {
+                        $oldFile->delete();
+                    }
+                }
+
+                $storage->upload(
+                    file_get_contents($data['image']->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
+                $data['image'] = $firebasePath;
+            }
+            if(isset($data['password'])){
+                $password =$data['password'] ;
+            }
+            else{
+                $password = $user->password;
+            }
+            $user->update([
+                'image'=>$data['image'],
+                'password' => Hash::make($password),
+            ]);
+
+            return $user;
+        });
+    }
+    public function updateTeacher($data, $username)
+    {
+        return DB::transaction(function () use ($data, $username) {
+            $user = User::where('username', $username)->firstOrFail();
+            if (isset($data['image'])) {
+                $firebase = app('firebase.storage');
+                $storage = $firebase->getBucket();
+
+                $firebasePath = 'image-user/' . $data['image']->getClientOriginalName();
+
+                if ($user->image) {
+                    $oldFirebasePath = $user->image;
+
+                    $oldFile = $storage->object($oldFirebasePath);
+
+                    if ($oldFile->exists()) {
+                        $oldFile->delete();
+                    }
+                }
+
+                $storage->upload(
+                    file_get_contents($data['image']->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
+                $data['image'] = $firebasePath;
+            }
+            if(isset($data['password'])){
+                $password =$data['password'] ;
+            }
+            else{
+                $password = $user->password;
+            }
+            $user->update([
+                'image'=>$data['image'],
+                'password' => Hash::make($password),
+            ]);
+
+            return $user;
+        });
     }
 }
