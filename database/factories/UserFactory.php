@@ -20,6 +20,7 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'username' => fake()->unique()->userName(),
+            'image' => fake()->imageUrl(),
             'date_of_birth' => fake()->date(),
             'gender' => fake()->randomElement(['Male', 'Female']),
             'address' => fake()->address(),
