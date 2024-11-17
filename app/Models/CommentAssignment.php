@@ -11,8 +11,8 @@ class CommentAssignment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'submitted_assignment_id',
-        'teacher_id',
+        'assignment_id',
+        'user_id',
         'comment',
     ];
 }
