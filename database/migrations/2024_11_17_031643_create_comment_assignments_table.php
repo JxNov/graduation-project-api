@@ -13,11 +13,11 @@ return new class extends Migration {
         Schema::create('comment_assignments', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('submitted_assignment_id')
-                ->constrained('submitted_assignments')
+            $table->foreignId('assignment_id')
+                ->constrained('assignments')
                 ->onDelete('cascade');
 
-            $table->foreignId('teacher_id')
+            $table->foreignId('user_id')
                 ->constrained('users')
                 ->onDelete('cascade');
 
