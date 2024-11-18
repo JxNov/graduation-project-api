@@ -273,8 +273,9 @@ Route::prefix('classrooms')
     ->group(function () {
         Route::get('/', [ClassroomController::class, 'getClassroomForTeacher']);
         Route::get('/{slug}', [ClassroomController::class, 'getDetailClassroomForTeacher']);
-        Route::get('assignment/{slug}', [ClassroomController::class, 'getAssignmentClassroom']);
-        Route::get('student/{slug}', [ClassroomController::class, 'getStudentClassroom']);
+        Route::get('/assignment/{slug}', [ClassroomController::class, 'getAssignmentClassroom']);
+        Route::get('/student/{slug}', [ClassroomController::class, 'getStudentClassroom']);
+        Route::post('/join', [ClassroomController::class, 'joinClassroomByCode']);
     });
 
 //Thống kê

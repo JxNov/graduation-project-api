@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ClassResource;
 use App\Models\Classes;
+use App\Services\ClassroomService;
 use App\Traits\ApiResponseTrait;
 use Exception;
 use Illuminate\Http\Request;
@@ -13,6 +15,13 @@ use Illuminate\Support\Facades\Auth;
 class ClassroomController extends Controller
 {
     use ApiResponseTrait;
+
+    protected $classroomService;
+
+    public function __construct(ClassroomService $classroomService)
+    {
+        $this->classroomService = $classroomService;
+    }
 
     public function getClassroomForTeacher()
     {
@@ -223,6 +232,22 @@ class ClassroomController extends Controller
             return $this->successResponse(
                 $data,
                 'Lấy danh sách học sinh thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function joinClassroomByCode(Request $request)
+    {
+        try {
+            $code = $request->code;
+            $class = $this->classroomService->joinClassroomByCode($code);
+
+            return $this->successResponse(
+                new ClassResource($class),
+                'Tham gia lớp học thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
