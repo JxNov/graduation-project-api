@@ -50,6 +50,7 @@ class AuthController extends Controller
             $user = [
                 'name' => $user->name,
                 'username' => $user->username,
+                'image' => $user->image,
                 'dateOfBirth' => $user->date_of_birth,
                 'gender' => $user->gender,
                 'phoneNumber' => $user->phone_number,

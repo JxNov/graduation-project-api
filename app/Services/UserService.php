@@ -24,6 +24,7 @@ class UserService
                 return [
                     'name' => $user->name,
                     'username' => $user->username,
+                    'image' => $user->image,
                     'email' => $user->email,
                     'gender' => $user->gender,
                     'roles' => $user->roles->pluck('name'),
