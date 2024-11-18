@@ -26,7 +26,7 @@ class ClassroomController extends Controller
             $data = $classrooms->map(function ($classroom) use ($user) {
                 return [
                     'className' => $classroom->className,
-                    'ClassSlug' => $classroom->classSlug,
+                    'classSlug' => $classroom->classSlug,
                     'teacherName' => $user->name,
                     'teacherImage' => $user->image,
                 ];
