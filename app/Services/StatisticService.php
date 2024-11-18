@@ -100,6 +100,7 @@ class StatisticService
 
         return [
             'semesterName' => $semester->name,
+            'className' => $class->name,
             'total_less_than_3_5' => $total_less_than_3_5,
             'total_between_3_5_5' => $total_between_3_5_5,
             'total_between_5_6_5' => $total_between_5_6_5,
@@ -113,7 +114,8 @@ class StatisticService
             'studentLowestScore' => $lowest_score,
             'passRate' => $pass_rate,
             'failRate' => $fail_rate,
-            'topStudents' => $top10_students_count,
+            'top10Students' => $top10_students_count,
         ];
     }
+
 }

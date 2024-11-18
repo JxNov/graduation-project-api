@@ -49,8 +49,7 @@ class ClassService
 
             $data['teacher_id'] = $teacher->id;
 
-            $teacherName = $teacher->name;
-            $teacherSlug = Str::slug($teacherName);
+            $teacherSlug = Str::slug($teacher->username);
             $classSlug = Str::slug($data['name']);
             $data['slug'] = $teacherSlug . '-' . $classSlug;
 
