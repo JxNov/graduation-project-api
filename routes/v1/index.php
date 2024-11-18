@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\v1\ModuleController;
 use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
+use App\Http\Controllers\Api\v1\StatisticController;
 use App\Http\Controllers\Api\v1\StudentClassController;
 use App\Http\Controllers\Api\v1\StudentController;
 use App\Http\Controllers\Api\v1\SubjectTeacherController;
@@ -274,4 +275,10 @@ Route::prefix('classrooms')
         Route::get('/{slug}', [ClassroomController::class, 'getDetailClassroomForTeacher']);
         Route::get('assignment/{slug}', [ClassroomController::class, 'getAssignmentClassroom']);
         Route::get('student/{slug}', [ClassroomController::class, 'getStudentClassroom']);
+    });
+
+//Thống kê
+Route::prefix('statistic')
+    ->group(function () {
+        Route::get('{subject_slug}/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticByClassSubjectSemester']);
     });
