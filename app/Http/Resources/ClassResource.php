@@ -14,6 +14,9 @@ class ClassResource extends JsonResource
             'slug' => $this->slug,
             'code' => $this->code,
             'teacherName' => optional($this->teacher)->name,
+            'username' => optional($this->teacher)->username,
+            'academicYearSlug' => $this->academicYears->pluck('slug')->implode(', '),
+            'blockSlug' => $this->blocks->pluck('slug')->implode(', '),
         ];
     }
 }
