@@ -45,7 +45,7 @@ class ScoreService
     }
 
     //Lấy điểm theo username -> subject_slug -> class_slug -> semester_slug
-    public function getScoreByStudentSubjectSemester($student_name, $subject_slug, $class_slug, $semester_slug)
+    public function getScoreByStudentSubjectClassSemester($student_name, $subject_slug, $class_slug, $semester_slug)
     {
         // Lấy user_id từ bảng user dựa trên usernmae
         $student = User::where('username', $student_name)->first();
