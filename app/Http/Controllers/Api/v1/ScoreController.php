@@ -92,7 +92,7 @@ class ScoreController extends Controller
     {
         try {
             // Gọi hàm từ ScoreService
-            $score = $this->scoreService->getScoreByStudentSubjectSemester($student_name, $subject_slug,  $class_slug, $semester_slug);
+            $score = $this->scoreService->getScoreByStudentSubjectClassSemester($student_name, $subject_slug,  $class_slug, $semester_slug);
 
             return $this->successResponse(
                 new ScoreResource($score),
