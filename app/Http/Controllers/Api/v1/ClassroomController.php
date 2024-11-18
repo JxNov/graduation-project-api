@@ -65,7 +65,6 @@ class ClassroomController extends Controller
                                 'assignments.description',
                                 'assignments.due_date',
                                 'assignments.criteria',
-                                'assignments.weight',
                                 'assignments.class_id',
                                 'assignments.teacher_id',
                                 'assignments.subject_id'
@@ -78,6 +77,7 @@ class ClassroomController extends Controller
                 throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
             }
 
+            // nhom theo subject_id
             $assignmentsGroup = $class->assignments->groupBy('subject_id')->map(function ($assignments) {
                 return $assignments->map(function ($assignment) {
                     return [
@@ -86,7 +86,6 @@ class ClassroomController extends Controller
                         'description' => $assignment->description,
                         'due_date' => $assignment->due_date,
                         'criteria' => $assignment->criteria,
-                        'weight' => $assignment->weight,
                     ];
                 });
             });
@@ -99,7 +98,7 @@ class ClassroomController extends Controller
                     'name' => $subject->name,
                     'slug' => $subject->slug,
                     'description' => $subject->description,
-                    'assignments' => $assignmentsForSubject,  // Gán bài tập vào môn học
+                    'assignments' => $assignmentsForSubject,
                 ];
             });
 
@@ -143,7 +142,6 @@ class ClassroomController extends Controller
                                 'assignments.description',
                                 'assignments.due_date',
                                 'assignments.criteria',
-                                'assignments.weight',
                                 'assignments.class_id',
                                 'assignments.teacher_id',
                                 'assignments.subject_id'
@@ -164,7 +162,6 @@ class ClassroomController extends Controller
                         'description' => $assignment->description,
                         'due_date' => $assignment->due_date,
                         'criteria' => $assignment->criteria,
-                        'weight' => $assignment->weight,
                     ];
                 });
             });
