@@ -10,18 +10,15 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('comment_assignments', function (Blueprint $table) {
+        Schema::create('comments', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('assignment_id')
-                ->constrained('assignments')
-                ->onDelete('cascade');
+            $table->morphs('commentable');
 
             $table->foreignId('user_id')
                 ->constrained('users')
                 ->onDelete('cascade');
 
-            $table->text('comment');
+            $table->text('content');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -32,6 +29,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('comment_assignments');
+        Schema::dropIfExists('comments');
     }
 };
