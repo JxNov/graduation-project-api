@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class AssignmentCollection extends ResourceCollection
@@ -10,10 +9,21 @@ class AssignmentCollection extends ResourceCollection
     /**
      * Transform the resource collection into an array.
      *
-     * @return array<int|string, mixed>
+     * @param  Request  $request
+     * @return array
      */
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
-        return parent::toArray($request);
+        return [
+            'data' => $this->collection->transform(function ($assignment) {
+                return new AssignmentResource($assignment);
+            }),
+            'meta' => [
+                'current_page' => $this->currentPage(),
+                'total_pages' => $this->lastPage(),
+                'per_page' => $this->perPage(),
+                'total' => $this->total(),
+            ],
+        ];
     }
 }

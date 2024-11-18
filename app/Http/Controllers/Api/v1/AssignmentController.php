@@ -26,7 +26,7 @@ class AssignmentController extends Controller
     {
         try {
             $assignments = Assignment::latest('id')
-                ->select('title', 'description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id')
+                ->select('title', 'description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id', 'created_at', 'updated_at')
                 ->with(['subject', 'teacher', 'class', 'semester'])
                 ->paginate(10);
 
@@ -105,7 +105,6 @@ class AssignmentController extends Controller
             $assignment = $this->assignmentService->deleteAssignment($id);
 
             return $this->successResponse(
-                new AssignmentResource($assignment),
                 'Xóa file thành công',
                 Response::HTTP_NO_CONTENT
             );
