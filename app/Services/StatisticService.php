@@ -89,12 +89,6 @@ class StatisticService
         $pass_rate = ($total_students > 0) ? ($students_passed / $total_students) * 100 : 0;
         $fail_rate = ($total_students > 0) ? ($students_failed / $total_students) * 100 : 0;
 
-        // top 10 ông điểm cao ngất
-        // floor làm tròn xuống
-        $top10_students_count = $scores->sortByDesc('average_score')
-            ->take(floor($total_students * (10 / 100)))
-            ->count();
-
         // DTB
         $average_score = number_format($scores->avg('average_score'), 2);
 
@@ -113,8 +107,7 @@ class StatisticService
             'studentHightestScore' => $highest_score,
             'studentLowestScore' => $lowest_score,
             'passRate' => $pass_rate,
-            'failRate' => $fail_rate,
-            'top10Students' => $top10_students_count,
+            'failRate' => $fail_rate
         ];
     }
 
