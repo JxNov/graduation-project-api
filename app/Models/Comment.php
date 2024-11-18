@@ -6,13 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CommentAssignment extends Model
+class Comment extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'assignment_id',
         'user_id',
-        'comment',
+        'commentable_id',
+        'commentable_type',
+        'content'
     ];
+
+    public function commentable()
+    {
+        return $this->morphTo();
+    }
 }
