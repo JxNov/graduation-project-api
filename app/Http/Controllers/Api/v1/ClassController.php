@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ClassRequest;
 use App\Http\Resources\ClassCollection;
 use App\Http\Resources\ClassResource;
+use App\Models\AcademicYear;
+use App\Models\Block;
 use App\Models\Classes;
+use App\Models\User;
 use App\Services\ClassService;
 use App\Traits\ApiResponseTrait;
 use Exception;
@@ -78,6 +81,40 @@ class ClassController extends Controller
 
         return $this->successResponse(
             new ClassResource($class),
+            'Lấy thông tin lớp học thành công',
+            Response::HTTP_OK
+        );
+    }
+
+    public function edit($slug)
+    {
+        $class = Classes::where('slug', $slug)
+            ->with('teacher')
+            ->first();
+
+        if ($class === null) {
+            return $this->errorResponse(
+                'Không tìm thấy lớp học',
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        $academicYear = AcademicYear::select('name', 'slug')
+            ->get();
+
+        $teacher = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'teacher');
+        })->select('name', 'username')->get();
+
+        $block = Block::select('name', 'slug')->get();
+
+        return $this->successResponse(
+            [
+                new ClassResource($class),
+                'academicYearSlug' => $academicYear,
+                'blockSlug' => $block,
+                'teacherUsername' => $teacher,
+            ],
             'Lấy thông tin lớp học thành công',
             Response::HTTP_OK
         );
