@@ -281,4 +281,5 @@ Route::prefix('classrooms')
 Route::prefix('statistic')
     ->group(function () {
         Route::get('{subject_slug}/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticByClassSubjectSemester']);
+        Route::get('/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticBySemester']);
     });
