@@ -10,10 +10,41 @@ class AssignmentResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @return array<string, mixed>
+     * @param  Request  $request
+     * @return array
      */
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
-        return parent::toArray($request);
+        return [
+            'title' => $this->title,
+            'description' => $this->description,
+            'dueDate' => $this->due_date,
+            'criteria' => $this->criteria,
+            'subject' => $this->whenLoaded('subject', function () {
+                return $this->subject ? [
+                    'name' => $this->subject->name,
+                    'blockLevel' => $this->subject->block_level,
+                ] : null;
+            }),
+            'teacher' => $this->whenLoaded('teacher', function () {
+                return $this->teacher ? [
+                    'name' => $this->teacher->name,
+                    'email' => $this->teacher->email,
+                ] : null;
+            }),
+            'class' => $this->whenLoaded('class', function () {
+                return $this->class ? [
+                    'name' => $this->class->name,
+                ] : null;
+            }),
+            'semester' => $this->whenLoaded('semester', function () {
+                return $this->semester ? [
+                    'name' => $this->semester->name,
+                    'academicYearName' => $this->semester->academicYear->name
+                ] : null;
+            }),
+            'created_at' => $this->created_at ? $this->created_at->format('Y-m-d') : null,  // Định dạng lại created_at
+            'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d') : null,  // Định dạng lại updated_at
+        ];
     }
 }

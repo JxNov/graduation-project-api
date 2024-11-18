@@ -40,16 +40,15 @@ class AssignmentService
             $data['teacher_id'] = $teacher->id;
             $data['class_id'] = $class->id;
             $data['semester_id'] = $semester->id;
-            $data['slug'] = $subject->slug . '-' . Str::slug($data['title']);
 
             return Assignment::create($data);
         });
     }
 
-    public function updateAssignment($data, $slug)
+    public function updateAssignment($id, $data)
     {
-        return DB::transaction(function () use ($data, $slug) {
-            $assignment = Assignment::where('slug', $slug)->first();
+        return DB::transaction(function () use ($data, $id) {
+            $assignment = Assignment::where('id', $id)->first();
             if ($assignment === null) {
                 throw new Exception('Bài tập không tồn tại hoặc đã bị xóa');
             }
@@ -85,10 +84,10 @@ class AssignmentService
         });
     }
 
-    public function deleteAssignment($slug)
+    public function deleteAssignment($id)
     {
-        return DB::transaction(function () use ($slug) {
-            $assignment = Assignment::where('slug', $slug)->first();
+        return DB::transaction(function () use ($id) {
+            $assignment = Assignment::where('id', $id)->first();
             if ($assignment === null) {
                 throw new Exception('Bài tập không tồn tại hoặc đã bị xóa');
             }
@@ -97,10 +96,10 @@ class AssignmentService
         });
     }
 
-    public function restoreAssignment($slug)
+    public function restoreAssignment($id)
     {
-        return DB::transaction(function () use ($slug) {
-            $assignment = Assignment::where('slug', $slug)->onlyTrashed()->first();
+        return DB::transaction(function () use ($id) {
+            $assignment = Assignment::where('id', $id)->onlyTrashed()->first();
             if ($assignment === null) {
                 throw new Exception('Bài tập không tồn tại');
             }
