@@ -16,11 +16,8 @@ class SubjectTeacherResource extends JsonResource
 {
     
     $subjects = $this->subjects ? $this->subjects->map(function ($subject) {
-        return [
-            'name' => $subject->name, 
-            'slug' => $subject->slug, 
-        ];
-    }) : [];
+        return $subject->name;
+    })->toArray() : [];
 
     return [
         'teacher' => [
@@ -28,7 +25,7 @@ class SubjectTeacherResource extends JsonResource
             'username' => $this->username, 
             'email' => $this->email, 
         ],
-        'subjects' => $subjects, 
+        'subjects' => $subjects,
     ];
 }
 
