@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\v1\AssignmentController;
 use App\Http\Controllers\Api\v1\ModuleController;
 use App\Http\Controllers\Api\v1\PermissionController;
 use App\Http\Controllers\Api\v1\RoleController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Api\v1\StatisticController;
 use App\Http\Controllers\Api\v1\StudentClassController;
 use App\Http\Controllers\Api\v1\StudentController;
 use App\Http\Controllers\Api\v1\SubjectTeacherController;
+use App\Http\Controllers\Api\v1\SubmittedAssignmentController;
 use App\Http\Controllers\Api\v1\TeacherController;
 use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
@@ -284,3 +286,22 @@ Route::prefix('statistic')
         Route::get('{subject_slug}/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticByClassSubjectSemester']);
         Route::get('/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticBySemester']);
     });
+
+//Assignment
+Route::prefix('assignments')->group(function () {
+    Route::get('/', [AssignmentController::class, 'index']);
+    Route::post('/', [AssignmentController::class, 'store']);
+    Route::get('/{id}', [AssignmentController::class, 'show']);
+    Route::put('/{id}', [AssignmentController::class, 'update']);
+    Route::delete('/{id}', [AssignmentController::class, 'destroy']);
+    Route::get('/trash', [AssignmentController::class, 'trash']);
+    Route::patch('/restore/{id}', [AssignmentController::class, 'restore']);
+    Route::delete('/force-delete/{id}', [AssignmentController::class, 'forceDelete']);
+});
+
+//Submitted Assignment
+Route::prefix('submitted_assignments')->group(function () {
+    Route::post('/', [SubmittedAssignmentController::class, 'store']);
+    Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
+});
+
