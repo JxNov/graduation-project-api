@@ -15,18 +15,18 @@ use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class StudentFormExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize, WithColumnWidths, WithEvents
 {
+    const MAX_ROWS = 1000;
+
     public function collection()
     {
-        return collect(
-            []
-        );
+        return collect([]);
     }
 
     public function headings(): array
     {
         return [
             'Full Name',
-            'Date Of Birth (yyyy-mm-dd)',
+            'Date Of Birth',
             'Gender',
             'Address',
             'Phone Number',
@@ -50,8 +50,6 @@ class StudentFormExport implements FromCollection, WithHeadings, WithStyles, Sho
             'A1:E1' => [
                 'font' => [
                     'name' => 'Arial',
-                    'bold' => false,
-                    'italic' => false,
                     'size' => 13,
                     'color' => ['argb' => '000000'],
                 ],
@@ -67,7 +65,6 @@ class StudentFormExport implements FromCollection, WithHeadings, WithStyles, Sho
                         'argb' => 'DCDCDC',
                     ],
                 ],
-
             ],
         ];
     }
@@ -80,7 +77,7 @@ class StudentFormExport implements FromCollection, WithHeadings, WithStyles, Sho
 
                 $sheet->getStyle('B:B')
                     ->getNumberFormat()
-                    ->setFormatCode('yyyy-mm-dd');
+                    ->setFormatCode('dd/mm/yyyy');
 
                 $dobValidation = $sheet->getCell('B2')->getDataValidation();
                 $dobValidation->setType(DataValidation::TYPE_DATE);
@@ -93,7 +90,7 @@ class StudentFormExport implements FromCollection, WithHeadings, WithStyles, Sho
                 $dobValidation->setFormula2('DATE(2100, 12, 31)');
                 $dobValidation->setErrorTitle('Lỗi nhập liệu');
                 $dobValidation->setError('Ngày sinh không hợp lệ. Vui lòng chọn một ngày trong khoảng từ 01/01/1900 đến 31/12/2100.');
-                $sheet->setDataValidation('B2:B1048576', $dobValidation);
+                $sheet->setDataValidation('B2:B' . self::MAX_ROWS, $dobValidation);
 
                 $genderValidation = $sheet->getCell('C2')->getDataValidation();
                 $genderValidation->setType(DataValidation::TYPE_LIST);
@@ -106,7 +103,7 @@ class StudentFormExport implements FromCollection, WithHeadings, WithStyles, Sho
                 $genderValidation->setError('Giá trị không tồn tại trong danh sách');
                 $genderValidation->setPromptTitle('Chọn 1 giá trị trong danh sách');
                 $genderValidation->setPrompt('Vui lòng hãy chọn 1 giá trị trong danh sách');
-                $sheet->setDataValidation('C2:C1048576', $genderValidation);
+                $sheet->setDataValidation('C2:C' . self::MAX_ROWS, $genderValidation);
 
                 $sheet->getStyle('E:E')
                     ->getNumberFormat()
