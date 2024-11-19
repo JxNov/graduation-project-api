@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AttendanceRequest;
 use App\Http\Resources\AttendanceCollection;
 use App\Models\Attendance;
+use App\Models\AttendanceDetail;
 use App\Models\Classes;
 use App\Services\AttendanceService;
 use App\Traits\ApiResponseTrait;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -29,14 +31,34 @@ class AttendanceController extends Controller
         try {
             $attendances = Attendance::latest('id')
                 ->select('id', 'date', 'shifts', 'class_id')
+                ->with(['class.teacher', 'class.students', 'attendanceDetails'])
                 ->paginate(10);
 
             if ($attendances->isEmpty()) {
                 return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
             }
 
+            $data = $attendances->map(function ($attendance) {
+                $totalStudents = $attendance->class->students->count();
+
+                // số hs đã điểm danh
+                $attendedStudents = $attendance->attendanceDetails
+                    ->where('status', '!=', AttendanceDetail::_STATUS['Absent'])
+                    ->count();
+
+                return [
+                    'id' => $attendance->id,
+                    'date' => Carbon::parse($attendance->date)->format('d/m/Y'),
+                    'shifts' => $attendance->shifts,
+                    'className' => $attendance->class->name,
+                    'teacherName' => $attendance->class->teacher->name,
+                    'totalStudents' => $totalStudents,
+                    'attendedStudents' => $attendedStudents
+                ];
+            });
+
             return $this->successResponse(
-                new AttendanceCollection($attendances),
+                $data,
                 'Lấy tất cả kết quả điểm danh thành công',
                 Response::HTTP_OK
             );
@@ -59,22 +81,20 @@ class AttendanceController extends Controller
             $className = $class->name;
             $numberStudentInClass = $students->count();
 
-            $result = [];
-
-            foreach ($students as $student) {
-                $result[] = [
+            $result = $students->map(function ($student) {
+                return [
                     'name' => $student->name,
                     'username' => $student->username,
                     'email' => $student->email,
                 ];
-            }
+            });
 
             return $this->successResponse(
                 [
                     'className' => $className,
                     'teacherName' => $teacherName,
                     'numberStudentInClass' => $numberStudentInClass,
-                    $result
+                    'students' => $result
                 ],
                 'Danh sách học sinh của lớp: ' . $className,
                 Response::HTTP_OK
