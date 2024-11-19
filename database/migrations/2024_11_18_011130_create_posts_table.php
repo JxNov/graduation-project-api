@@ -23,7 +23,7 @@ return new class extends Migration {
                 ->constrained('classes')
                 ->onDelete('cascade');
 
-            $table->text('attachments', 100);
+            $table->text('attachments');
             $table->timestamps();
             $table->softDeletes();
         });
