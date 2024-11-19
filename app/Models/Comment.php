@@ -11,14 +11,8 @@ class Comment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'post_id',
         'user_id',
-        'commentable_id',
-        'commentable_type',
         'content'
     ];
-
-    public function commentable()
-    {
-        return $this->morphTo();
-    }
 }
