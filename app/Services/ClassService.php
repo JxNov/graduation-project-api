@@ -55,8 +55,9 @@ class ClassService
 
             $class = Classes::create($data);
 
-            $class->academicYears()->sync($academicYear->id);
-            $class->blocks()->sync($block->id);
+            $class->classTeachers()->sync([$teacher->id]);
+            $class->academicYears()->sync([$academicYear->id]);
+            $class->blocks()->sync([$block->id]);
 
             return $class;
         });
@@ -106,8 +107,9 @@ class ClassService
 
             $class->update($data);
 
-            $class->academicYears()->sync($academicYear->id);
-            $class->blocks()->sync($block->id);
+            $class->classTeachers()->sync([$teacher->id]);
+            $class->academicYears()->sync([$academicYear->id]);
+            $class->blocks()->sync([$block->id]);
 
             return $class;
         });
