@@ -216,8 +216,8 @@ Route::prefix('attendances')
     ->group(function () {
         Route::get('/', [AttendanceController::class, 'index']);
         Route::get('/{classSlug}', [AttendanceController::class, 'studentInClass']);
-        Route::post('/save', [AttendanceController::class, 'save']);
-        Route::patch('/update/{id}', [AttendanceController::class, 'update']);
+        Route::post('/', [AttendanceController::class, 'save']);
+        Route::patch('//{id}', [AttendanceController::class, 'update']);
     });
 // Thời khóa biểu
 Route::prefix('schedules')
