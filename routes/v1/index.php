@@ -186,6 +186,7 @@ Route::prefix('excels')
                 Route::post('import', [StudentClassController::class, 'importStudent']);
                 Route::get('/', [StudentClassController::class, 'index']);
                 Route::post('/', [StudentClassController::class, 'store']);
+                Route::post('/distributeStudents', [StudentClassController::class, 'distributeStudents']);
                 Route::patch('/{id}', [StudentClassController::class, 'update']);
                 Route::delete('/{id}', [StudentClassController::class, 'destroy']);
                 Route::get('restore/{id}', [StudentClassController::class, 'restore']);
