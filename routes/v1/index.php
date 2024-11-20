@@ -292,12 +292,12 @@ Route::prefix('statistic')
 Route::prefix('assignments')->group(function () {
     Route::get('/', [AssignmentController::class, 'index']);
     Route::post('/', [AssignmentController::class, 'store']);
-    Route::get('/{id}', [AssignmentController::class, 'show']);
-    Route::patch('/{id}', [AssignmentController::class, 'update']);
-    Route::delete('/{id}', [AssignmentController::class, 'destroy']);
+    Route::get('/{assignmentSlug}', [AssignmentController::class, 'show']);
+    Route::patch('/{assignmentSlug}', [AssignmentController::class, 'update']);
+    Route::delete('/{assignmentSlug}', [AssignmentController::class, 'destroy']);
     Route::get('/trash', [AssignmentController::class, 'trash']);
-    Route::patch('/restore/{id}', [AssignmentController::class, 'restore']);
-    Route::delete('/force-delete/{id}', [AssignmentController::class, 'forceDelete']);
+    Route::patch('/restore/{assignmentSlug}', [AssignmentController::class, 'restore']);
+    Route::delete('/force-delete/{assignmentSlug}', [AssignmentController::class, 'forceDelete']);
 });
 
 //Submitted Assignment

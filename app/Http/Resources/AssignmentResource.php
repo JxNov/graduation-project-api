@@ -17,6 +17,7 @@ class AssignmentResource extends JsonResource
     {
         return [
             'title' => $this->title,
+            'slug' => $this->slug,
             'description' => $this->description,
             'dueDate' => $this->due_date,
             'criteria' => $this->criteria,
@@ -43,8 +44,8 @@ class AssignmentResource extends JsonResource
                     'academicYearName' => $this->semester->academicYear->name
                 ] : null;
             }),
-            'created_at' => $this->created_at ? $this->created_at->format('Y-m-d') : null,  // Định dạng lại created_at
-            'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d') : null,  // Định dạng lại updated_at
+            'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
+            'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
         ];
     }
 }

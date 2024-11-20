@@ -26,7 +26,7 @@ class AssignmentController extends Controller
     {
         try {
             $assignments = Assignment::latest('id')
-                ->select('title', 'description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id', 'created_at', 'updated_at')
+                ->select('title', 'slug','description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id', 'created_at', 'updated_at')
                 ->with(['subject', 'teacher', 'class', 'semester'])
                 ->paginate(10);
 
@@ -60,11 +60,11 @@ class AssignmentController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($assignmentSlug)
     {
         try {
-            $assignment = Assignment::where('id', $id)
-                ->select('title', 'description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id')
+            $assignment = Assignment::where('slug', $assignmentSlug)
+                ->select('title', 'slug', 'description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id', 'created_at', 'updated_at')
                 ->with(['subject', 'teacher', 'class', 'semester'])
                 ->first();
             if ($assignment == null) {
@@ -83,14 +83,14 @@ class AssignmentController extends Controller
         }
     }
 
-    public function update(AssignmentRequest $request, $id)
+    public function update(AssignmentRequest $request, $assignmentSlug)
     {
         try {
             $data = $request->validated();
-            $assignment = $this->assignmentService->updateAssignment($id, $data);
+            $assignment = $this->assignmentService->updateAssignment($assignmentSlug, $data);
             return $this->successResponse(
                 new AssignmentResource($assignment),
-                'Đổi file Assignment thành công',
+                'Cập nhật Assignment thành công',
                 Response::HTTP_OK
             );
         }
@@ -99,13 +99,13 @@ class AssignmentController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($assignmentSlug)
     {
         try {
-            $assignment = $this->assignmentService->deleteAssignment($id);
+            $this->assignmentService->deleteAssignment($assignmentSlug);
 
             return $this->successResponse(
-                'Xóa file thành công',
+                'Xóa bài tập thành công',
                 Response::HTTP_NO_CONTENT
             );
         }
@@ -126,7 +126,7 @@ class AssignmentController extends Controller
 
             if ($assignments->isEmpty()) {
                 return $this->errorResponse(
-                    'Khoong có dữ liệu',
+                    'Không có dữ liệu',
                     Response::HTTP_NOT_FOUND
                 );
             }
@@ -142,10 +142,10 @@ class AssignmentController extends Controller
         }
     }
 
-    public function restore($id)
+    public function restore($assignmentSlug)
     {
         try {
-            $assignment = $this->assignmentService->restoreAssignment($id);
+            $assignment = $this->assignmentService->restoreAssignment($assignmentSlug);
 
             return $this->successResponse(
                 new AssignmentResource($assignment),
@@ -157,10 +157,10 @@ class AssignmentController extends Controller
         }
     }
 
-    public function forceDelete($id)
+    public function forceDelete($assignmentSlug)
     {
         try {
-            $this->assignmentService->forceDeleteAssignment($id);
+            $this->assignmentService->forceDeleteAssignment($assignmentSlug);
 
             return $this->successResponse(
                 null,
