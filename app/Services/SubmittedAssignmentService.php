@@ -68,25 +68,29 @@ class SubmittedAssignmentService
         });
     }
 
-    //Hàm chỉ cho phép giáo viên sửa điểm và feedback
-    public function updateScoreAndFeedback($assignmentId, $score, $feedback, $username)
+
+    public function updateScoreAndFeedback($assignmentSlug, $score, $feedback, $username)
     {
         // Kiểm tra xem người dùng có phải là giáo viên không
         $user = User::where('username', $username)->first();
-        if (!$user)
-        {
+        if (!$user) {
             throw new Exception('Không tồn tại người dùng');
         }
 
         $isTeacher = $user->roles()->where('slug', 'teacher')->exists();
-        if (!$isTeacher)
-        {
+        if (!$isTeacher) {
             throw new Exception('Người dùng không phải giáo viên');
         }
 
+        // Kiểm tra bài tập
+        $assignment = Assignment::where('slug', $assignmentSlug)->first();
+        if (!$assignment) {
+            throw new Exception('Bài tập không tồn tại hoặc đã bị xóa');
+        }
+
         // Kiểm tra bài nộp của sinh viên
-        $submittedAssignment = SubmittedAssignment::where('assignment_id', $assignmentId)
-            ->where('student_id', $user->username)
+        $submittedAssignment = SubmittedAssignment::where('assignment_id', $assignment->id)
+            ->where('student_id', $user->id)
             ->first();
 
         if (!$submittedAssignment) {
@@ -103,7 +107,6 @@ class SubmittedAssignmentService
         return $submittedAssignment;
     }
 
-    // Hàm xóa file từ Firebase Storage
     private function deleteFileFromFirebase($filePath)
     {
         if ($filePath) {
