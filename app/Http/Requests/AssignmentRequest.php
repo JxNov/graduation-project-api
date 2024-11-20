@@ -31,18 +31,18 @@ class AssignmentRequest extends FormRequest
             'description' => 'nullable',
             'due_date' => 'required|date',
             'criteria' => 'required',
-            'subject_slug' => 'required',
-            'username' => 'required',
-            'class_slug' => 'required',
-            'semester_slug' => 'required',
+            'subject_slug' => 'required|exists:subjects,slug',
+            'username' => 'required|exists:users,username',
+            'class_slug' => 'required|exists:classes,slug',
+            'semester_slug' => 'required|exists:semesters,slug',
         ];
     }
 
     public function rulesForUpdate(): array
     {
         try {
-            $id = $this->route('id');
-            $assignment = Assignment::find($id);
+            $slug = $this->route('assignmentSlug'); // Sử dụng slug từ route
+            $assignment = Assignment::where('slug', $slug)->first();
 
             if (!$assignment) {
                 throw new Exception('Không tìm thấy bài tập');
@@ -53,10 +53,10 @@ class AssignmentRequest extends FormRequest
                 'description' => 'nullable',
                 'due_date' => 'required|date',
                 'criteria' => 'required',
-                'subject_slug' => 'required',
-                'username' => 'required',
-                'class_slug' => 'required',
-                'semester_slug' => 'required',
+                'subject_slug' => 'required|exists:subjects,slug',
+                'username' => 'required|exists:users,username',
+                'class_slug' => 'required|exists:classes,slug',
+                'semester_slug' => 'required|exists:semesters,slug',
             ];
         } catch (Exception $e) {
             return [
@@ -75,9 +75,13 @@ class AssignmentRequest extends FormRequest
             'due_date.date' => 'Ngày hết hạn phải là ngày hợp lệ',
             'criteria.required' => 'Tiêu chí bài tập đang trống',
             'subject_slug.required' => 'Môn học chưa được chọn',
+            'subject_slug.exists' => 'Môn học không hợp lệ',
             'username.required' => 'Giáo viên chưa được chọn',
+            'username.exists' => 'Giáo viên không hợp lệ',
             'class_slug.required' => 'Hãy chọn 1 lớp cho bài tập',
+            'class_slug.exists' => 'Lớp học không hợp lệ',
             'semester_slug.required' => 'Hãy chọn 1 học kỳ cho bài tập',
+            'semester_slug.exists' => 'Học kỳ không hợp lệ',
         ];
     }
 }

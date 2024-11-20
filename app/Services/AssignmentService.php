@@ -41,14 +41,19 @@ class AssignmentService
             $data['class_id'] = $class->id;
             $data['semester_id'] = $semester->id;
 
+            // Tạo slug
+            $classSlug = Str::slug($class->slug);
+            $assignmentNameSlug = Str::slug($data['title']);
+            $data['slug'] = $classSlug . '-' . $assignmentNameSlug;
+
             return Assignment::create($data);
         });
     }
 
-    public function updateAssignment($id, $data)
+    public function updateAssignment($slug, $data)
     {
-        return DB::transaction(function () use ($data, $id) {
-            $assignment = Assignment::where('id', $id)->first();
+        return DB::transaction(function () use ($data, $slug) {
+            $assignment = Assignment::where('slug', $slug)->first();
             if ($assignment === null) {
                 throw new Exception('Bài tập không tồn tại hoặc đã bị xóa');
             }
@@ -78,16 +83,19 @@ class AssignmentService
             $data['class_id'] = $class->id;
             $data['semester_id'] = $semester->id;
 
+            // Giữ nguyên slug
+            unset($data['slug']);
+
             $assignment->update($data);
 
             return $assignment;
         });
     }
 
-    public function deleteAssignment($id)
+    public function deleteAssignment($slug)
     {
-        return DB::transaction(function () use ($id) {
-            $assignment = Assignment::where('id', $id)->first();
+        return DB::transaction(function () use ($slug) {
+            $assignment = Assignment::where('slug', $slug)->first();
             if ($assignment === null) {
                 throw new Exception('Bài tập không tồn tại hoặc đã bị xóa');
             }
@@ -96,10 +104,10 @@ class AssignmentService
         });
     }
 
-    public function restoreAssignment($id)
+    public function restoreAssignment($slug)
     {
-        return DB::transaction(function () use ($id) {
-            $assignment = Assignment::where('id', $id)->onlyTrashed()->first();
+        return DB::transaction(function () use ($slug) {
+            $assignment = Assignment::where('slug', $slug)->onlyTrashed()->first();
             if ($assignment === null) {
                 throw new Exception('Bài tập không tồn tại');
             }
