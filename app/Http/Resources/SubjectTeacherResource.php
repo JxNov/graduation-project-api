@@ -12,21 +12,13 @@ class SubjectTeacherResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-    public function toArray(Request $request): array
-{
-    
-    $subjects = $this->subjects ? $this->subjects->map(function ($subject) {
-        return $subject->name;
-    })->toArray() : [];
-
-    return [
-        'teacher' => [
-            'name' => $this->name, 
-            'username' => $this->username, 
-            'email' => $this->email, 
-        ],
-        'subjects' => $subjects,
-    ];
-}
+    public function toArray($request)
+    {
+        return [
+            'id'=>$this->id,
+            'teacher_id' => $this->teacher_id,
+            'subject_id' => $this->subject_id,
+        ];
+    }
 
 }

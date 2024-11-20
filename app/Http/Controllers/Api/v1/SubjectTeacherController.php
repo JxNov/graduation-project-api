@@ -29,47 +29,53 @@ class SubjectTeacherController extends Controller
         $this->SubjectTeacherService = $SubjectTeacherService;
     }
     public function index()
-    {
-        try {
-            // Lấy các giáo viên đã có môn học dạy
-            $subjectTeachers = User::whereHas('subjects') // Chỉ lấy giáo viên có môn học
-                ->with('subjects') // Tải các môn học mà giáo viên dạy
-                ->paginate(10);
+{
+    try {
+        $subjects = DB::table('subject_teachers')->select('id','teacher_id','subject_id')->paginate(10); 
 
-            if ($subjectTeachers->isEmpty()) {
-                return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
-            }
-
-            return $this->successResponse(
-                SubjectTeacherCollection::make($subjectTeachers), // Chuyển đổi dữ liệu qua resource collection
-                'Lấy tất cả thông tin thành công',
-                Response::HTTP_OK
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        if ($subjects->isEmpty()) {
+            return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
         }
-    }
 
-    public function store(SubjectTeacherRequest $request)
+        // Trả về dữ liệu qua SubjectTeacherCollection
+        return $this->successResponse(
+            SubjectTeacherCollection::make($subjects),
+            'Lấy tất cả thông tin thành công',
+            Response::HTTP_OK
+        );
+    } catch (\Exception $e) {
+        return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+    }
+}
+
+
+
+public function store(SubjectTeacherRequest $request)
+{
+    try {
+        // Gọi service để xử lý logic
+        $subjectTeachers = $this->SubjectTeacherService->store($request->all());
+
+        // Trả về danh sách các giáo viên đã thêm thành công
+        return $this->successResponse(
+            SubjectTeacherResource::collection($subjectTeachers),
+            'Thêm giáo viên dạy môn học thành công',
+            Response::HTTP_CREATED
+        );
+    } catch (\Exception $e) {
+        return $this->errorResponse($e->getMessage());
+    }
+}
+
+    public function update(SubjectTeacherRequest $request, $id)
     {
         try {
-            
-            $subjectTeacher = $this->SubjectTeacherService->store($request->all());
-
-            return  $this->successResponse(new SubjectTeacherResource($subjectTeacher), 'Thêm giáo viên dạy môn học thành công', Response::HTTP_CREATED);
-        } catch (\Exception $e) {
+            $user = $this->SubjectTeacherService->update($request->all(), $id);
+            return $this->successResponse(new SubjectTeacherResource($user), 'Đổi giáo viên của môn học thành công!', Response::HTTP_OK);
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
     }
-    // public function update(SubjectTeacherRequest $request, $id)
-    // {
-    //     try {
-    //         $user = $this->SubjectTeacherService->update($request->all(), $id);
-    //         return $this->successResponse(new SubjectTeacherResource($user), 'Đổi giáo viên của môn học thành công!', Response::HTTP_OK);
-    //     } catch (Exception $e) {
-    //         return $this->errorResponse($e->getMessage());
-    //     }
-    // }
     public function destroy($id)
     {
         try {
@@ -91,29 +97,20 @@ class SubjectTeacherController extends Controller
     public function trash()
 {
     try {
-        
-    
-    $subjectTeachers = User::whereHas('subjects', function ($query) {
-            $query->whereNotNull('subject_teachers.deleted_at'); // Chỉ lấy bản ghi đã bị xóa mềm trong bảng trung gian
-        })
-        ->with(['subjects' => function ($query) {
-            $query->whereNotNull('subject_teachers.deleted_at'); // Điều kiện xóa mềm từ bảng trung gian
-        }])
-        ->paginate();
+        $subjects = DB::table('subject_teachers')->select('id','teacher_id','subject_id')->whereNotNull('subject_teachers.deleted_at')->paginate(10); 
 
-        // Kiểm tra nếu không có dữ liệu
-        if ($subjectTeachers->isEmpty()) {
+        if ($subjects->isEmpty()) {
             return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
         }
-        Log::info($subjectTeachers);
+
+        // Trả về dữ liệu qua SubjectTeacherCollection
         return $this->successResponse(
-            SubjectTeacherCollection::make($subjectTeachers), // Dữ liệu đã được chuyển qua resource collection
+            SubjectTeacherCollection::make($subjects),
             'Lấy tất cả thông tin thành công',
             Response::HTTP_OK
         );
-        
     } catch (\Exception $e) {
-        return $this->errorResponse($e->getMessage(), Response::HTTP_OK);
+        return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
     }
     
 }

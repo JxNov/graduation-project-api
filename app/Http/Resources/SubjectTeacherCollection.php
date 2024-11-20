@@ -13,15 +13,16 @@ class SubjectTeacherCollection extends ResourceCollection
      * @return array<int|string, mixed>
      */
     public function toArray(Request $request): array
-    {
-        return [
-            'data' => SubjectTeacherResource::collection($this->collection),
-            'meta' => [
-                'current_page' => $this->currentPage(), // trang hiện tại
-                'last_page' => $this->lastPage(), // trang cuối cùng
-                'per_page' => $this->perPage(), // số bản ghi trên 1 trang
-                'total' => $this->total(), // tổng số bản ghi
-            ],
-        ];
-    }
+{
+    return [
+        'data' => SubjectTeacherResource::collection($this->collection),  // Sử dụng collection của resource
+        'meta' => [
+            'current_page' => $this->currentPage(),  // Trang hiện tại
+            'last_page' => $this->lastPage(),        // Trang cuối cùng
+            'per_page' => $this->perPage(),          // Số bản ghi trên một trang
+            'total' => $this->total(),               // Tổng số bản ghi
+        ],
+    ];
+}
+
 }
