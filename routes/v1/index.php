@@ -292,7 +292,7 @@ Route::prefix('assignments')->group(function () {
     Route::get('/', [AssignmentController::class, 'index']);
     Route::post('/', [AssignmentController::class, 'store']);
     Route::get('/{id}', [AssignmentController::class, 'show']);
-    Route::put('/{id}', [AssignmentController::class, 'update']);
+    Route::patch('/{id}', [AssignmentController::class, 'update']);
     Route::delete('/{id}', [AssignmentController::class, 'destroy']);
     Route::get('/trash', [AssignmentController::class, 'trash']);
     Route::patch('/restore/{id}', [AssignmentController::class, 'restore']);
@@ -302,6 +302,7 @@ Route::prefix('assignments')->group(function () {
 //Submitted Assignment
 Route::prefix('submitted_assignments')->group(function () {
     Route::post('/', [SubmittedAssignmentController::class, 'store']);
-    Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
+    //Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
+    Route::patch('/{assignmentId}/score-feedback', [SubmittedAssignmentController::class, 'updateScoreAnFeedback']);
 });
 

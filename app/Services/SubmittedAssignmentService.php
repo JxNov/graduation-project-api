@@ -69,16 +69,24 @@ class SubmittedAssignmentService
     }
 
     //Hàm chỉ cho phép giáo viên sửa điểm và feedback
-    public function updateScoreAndFeedback($assignmentId, $score, $feedback, $user)
+    public function updateScoreAndFeedback($assignmentId, $score, $feedback, $username)
     {
         // Kiểm tra xem người dùng có phải là giáo viên không
-        if (!$user->hasRole('teacher')) {
-            throw new Exception('Chỉ giáo viên mới có quyền chỉnh sửa điểm và phản hồi.');
+        $user = User::where('username', $username)->first();
+        if (!$user)
+        {
+            throw new Exception('Không tồn tại người dùng');
+        }
+
+        $isTeacher = $user->roles()->where('slug', 'teacher')->exists();
+        if (!$isTeacher)
+        {
+            throw new Exception('Người dùng không phải giáo viên');
         }
 
         // Kiểm tra bài nộp của sinh viên
         $submittedAssignment = SubmittedAssignment::where('assignment_id', $assignmentId)
-            ->where('student_id', $user->id)
+            ->where('student_id', $user->username)
             ->first();
 
         if (!$submittedAssignment) {
