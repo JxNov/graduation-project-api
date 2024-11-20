@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\SubmittedAssignment;
 use App\Models\User;
+use App\Models\Assignment;
 use Illuminate\Foundation\Http\FormRequest;
 use Exception;
 
@@ -37,7 +38,6 @@ class SubmittedAssignmentRequest extends FormRequest
     public function rulesForCreate(): array
     {
         return [
-            'assignment_id' => 'required|exists:assignments,id',
             'student_username' => 'required|exists:users,username',
             'file_path' => 'required|mimes:pdf,docx,zip',
             'score' => 'nullable|numeric|min:0|max:10',
@@ -53,10 +53,24 @@ class SubmittedAssignmentRequest extends FormRequest
     public function rulesForUpdate(): array
     {
         try {
-            $assignmentId = $this->route('assignment_id');
+            $assignmentSlug = $this->route('assignmentSlug');
             $studentUsername = $this->route('student_username');
-            $submittedAssignment = SubmittedAssignment::where('assignment_id', $assignmentId)
-                ->where('student_id', User::where('username', $studentUsername)->first()->id)
+
+            $assignment = Assignment::where('slug', $assignmentSlug)->first();
+
+            if (!$assignment) {
+                throw new Exception('Bài tập không tồn tại');
+            }
+
+            // Lấy ID sinh viên từ username
+            $student = User::where('username', $studentUsername)->first();
+
+            if (!$student) {
+                throw new Exception('Sinh viên không tồn tại');
+            }
+
+            $submittedAssignment = SubmittedAssignment::where('assignment_id', $assignment->id)
+                ->where('student_id', $student->id)
                 ->first();
 
             if (!$submittedAssignment) {
@@ -83,8 +97,6 @@ class SubmittedAssignmentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'assignment_id.required' => 'Bài tập không thể để trống',
-            'assignment_id.exists' => 'Bài tập không tồn tại',
             'student_username.required' => 'Tên sinh viên không thể để trống',
             'student_username.exists' => 'Sinh viên không tồn tại',
             'file_path.required' => 'File nộp bài không thể để trống',

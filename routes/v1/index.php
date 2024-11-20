@@ -305,9 +305,9 @@ Route::prefix('assignments')->group(function () {
 
 //Submitted Assignment
 Route::prefix('submitted_assignments')->group(function () {
-    Route::post('/', [SubmittedAssignmentController::class, 'store']);
+    Route::post('/{assignmentSlug}', [SubmittedAssignmentController::class, 'store']);
     //Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
-    Route::patch('/{assignmentId}/score-feedback', [SubmittedAssignmentController::class, 'updateScoreAnFeedback']);
+    Route::patch('/{assignmentSlug}/score-feedback', [SubmittedAssignmentController::class, 'updateScoreAndFeedback']);
 });
 Route::prefix('article')->group(function () {
     Route::post('/', [ArticleController::class, 'store']);

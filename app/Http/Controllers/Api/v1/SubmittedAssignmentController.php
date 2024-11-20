@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SubmittedAssignmentRequest;
 use App\Http\Resources\SubmittedAssignmentCollection;
 use App\Http\Resources\SubmittedAssignmentResource;
+use App\Models\Assignment;
 use App\Models\SubmittedAssignment;
 use App\Services\SubmittedAssignmentService;
 use App\Traits\ApiResponseTrait;
@@ -31,27 +32,33 @@ class SubmittedAssignmentController extends Controller
                 ->with(['assignment', 'student'])
                 ->paginate(10);
 
-            if ($submittedAssignment->isEmpty())
-            {
+            if ($submittedAssignment->isEmpty()) {
                 return $this->errorResponse('Dữ liệu không tồn tại', Response::HTTP_NOT_FOUND);
             }
 
             return $this->successResponse(
                 new SubmittedAssignmentCollection($submittedAssignment),
-                'Lấy thông tin thành côg',
+                'Lấy thông tin thành công',
                 Response::HTTP_OK
             );
-
         }
         catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
 
-    public function store(SubmittedAssignmentRequest $request)
+    public function store(SubmittedAssignmentRequest $request, $assignmentSlug)
     {
         try {
             $data = $request->validated();
+
+            $assignment = Assignment::where('slug', $assignmentSlug)->first();
+
+            if (!$assignment) {
+                throw new Exception('Bài tập không tồn tại');
+            }
+
+            $data['assignment_id'] = $assignment->id;
 
             $submittedAssignment = $this->submittedAssignmentService->createOrUpdateSubmittedAssignment($data);
 
@@ -61,14 +68,14 @@ class SubmittedAssignmentController extends Controller
                 Response::HTTP_CREATED
             );
         }
-
         catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
 
+
     //controller để dành cho giáo viên chấm điểm và give feedback
-    public function updateScoreAnFeedback(SubmittedAssignmentRequest $request, $assignmentId)
+    public function updateScoreAndFeedback(SubmittedAssignmentRequest $request, $assignmentSlug)
     {
         try {
             $data = $request->validated();
@@ -76,7 +83,7 @@ class SubmittedAssignmentController extends Controller
             $user = $request->user();
 
             $submittedAssignment = $this->submittedAssignmentService->updateScoreAndFeedback(
-                $assignmentId,
+                $assignmentSlug,
                 $data['score'],
                 $data['feedback'],
                 $user->username
