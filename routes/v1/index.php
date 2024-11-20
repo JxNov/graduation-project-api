@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\v1\ArticleController;
 use App\Http\Controllers\Api\v1\AssignmentController;
 use App\Http\Controllers\Api\v1\ModuleController;
 use App\Http\Controllers\Api\v1\PermissionController;
@@ -17,8 +18,10 @@ use App\Http\Controllers\Api\v1\BlockController;
 use App\Http\Controllers\Api\v1\ChatController;
 use App\Http\Controllers\Api\v1\ClassController;
 use App\Http\Controllers\Api\v1\ClassroomController;
+use App\Http\Controllers\Api\v1\CommentController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\MaterialController;
+use App\Http\Controllers\Api\v1\PostController;
 use App\Http\Controllers\Api\v1\SemesterController;
 use App\Http\Controllers\Api\v1\StudentExcelController;
 use App\Http\Controllers\Api\v1\SubjectController;
@@ -304,5 +307,13 @@ Route::prefix('assignments')->group(function () {
 Route::prefix('submitted_assignments')->group(function () {
     Route::post('/', [SubmittedAssignmentController::class, 'store']);
     Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
+});
+Route::prefix('article')->group(function () {
+    Route::post('/', [ArticleController::class, 'store']);
+   // Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
+});
+Route::prefix('comment')->group(function () {
+    Route::post('/{postId}', [CommentController::class, 'store']);
+   // Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
 });
 
