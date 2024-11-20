@@ -142,18 +142,67 @@ class StudentClassService
                 ->whereNotNull('deleted_at')
                 ->where('student_id', $id)
                 ->first();
-    
+
             if ($student === null) {
                 throw new Exception('Không tìm thấy học sinh');
             }
-    
+
             // Xoá vĩnh viễn học sinh khỏi bảng class_students
             DB::table('class_students')
                 ->where('student_id', $id)
                 ->whereNotNull('deleted_at')  // Chỉ xoá bản ghi đã bị xoá mềm
                 ->delete();
-    
+
             return response()->json(['message' => 'Học sinh đã được xoá vĩnh viễn khỏi lớp']);
+        });
+    }
+    public function distributeStudents()
+    {
+        return DB::transaction(function () {
+            // lấy lớp
+            $classes = Classes::all();
+            if ($classes->isEmpty()) {
+                throw new Exception('Không có lớp nào để phân chia học sinh.');
+            }
+
+            // Lấy danh sách học sinh chưa được gắn lớp
+            $students = User::whereHas('roles', function ($query) {
+                $query->where('slug', 'student');
+            })->whereDoesntHave('classes')->get();
+
+            if ($students->isEmpty()) {
+                throw new Exception('Không có học sinh nào chưa được gắn lớp.');
+            }
+
+            // liệt kê số lượng và tính toán số lượng hs cần cho 1 lớp
+            $studentsPerClass = $students->count() / $classes->count();
+            $studentsPerClass = max(min(50, $studentsPerClass), 40);
+
+            $currentStudentIndex = 0; // số hs hiện tại
+            $classesWithStudents = 0; // số lớp đã random hs
+
+            foreach ($classes as $class) {
+                // lấy 1 phần hs từ bảng và số lượng hs cần cho 1 lớp
+                $classStudents = $students->slice($currentStudentIndex, $studentsPerClass);
+
+                if ($classStudents->isEmpty()) {
+                    break;
+                }
+                // lấy mảng id của hs
+                $studentIds = $classStudents->pluck('id')->toArray();
+                $class->students()->syncWithoutDetaching(array_fill_keys($studentIds, ['created_at' => Carbon::now()]));
+
+                $currentStudentIndex += $studentsPerClass;
+                $classesWithStudents++; // Tăng số lớp đã tồn tại học sinh
+
+            }
+            // số học sinh còn thừa
+            $remainingStudents = $students->slice($currentStudentIndex)->count();
+            return [
+                'total_students' => $students->count(),
+                'classes_with_students' => $classesWithStudents,
+                'remaining_students' => $remainingStudents, 
+            ];
         });
     }
 }
