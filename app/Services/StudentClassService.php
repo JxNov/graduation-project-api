@@ -157,52 +157,74 @@ class StudentClassService
         });
     }
     public function distributeStudents()
-    {
-        return DB::transaction(function () {
-            // lấy lớp
-            $classes = Classes::all();
-            if ($classes->isEmpty()) {
-                throw new Exception('Không có lớp nào để phân chia học sinh.');
+{
+    return DB::transaction(function () {
+        // Lấy danh sách lớp
+        $classes = Classes::all();
+        if ($classes->isEmpty()) {
+            throw new Exception('Không có lớp nào để phân chia học sinh.');
+        }
+
+        // Lấy danh sách học sinh chưa được gắn lớp
+        $students = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'student');
+        })->whereDoesntHave('classes')->get();
+
+        if ($students->isEmpty()) {
+            throw new Exception('Không có học sinh nào chưa được gắn lớp.');
+        }
+
+        // Số lượng học sinh và số lớp
+        $totalStudents = $students->count();
+        $totalClasses = $classes->count();
+
+        // Số lượng học sinh tối đa mỗi lớp
+        $maxStudentsPerClass = 50;
+
+        // Kiểm tra nếu không đủ lớp để chứa học sinh
+        if ($totalStudents > $totalClasses * $maxStudentsPerClass) {
+            throw new Exception('Không đủ lớp để phân chia học sinh.');
+        }
+
+        $currentStudentIndex = 0; // Chỉ số học sinh hiện tại
+        $classesWithStudents = 0; // Số lớp đã phân bổ học sinh
+
+        foreach ($classes as $class) {
+            // Kiểm tra số lượng học sinh hiện tại trong lớp
+            $currentClassStudentCount = $class->students()->count();
+
+            if ($currentClassStudentCount >= $maxStudentsPerClass) {
+                continue; // Bỏ qua lớp đã đầy
             }
 
-            // Lấy danh sách học sinh chưa được gắn lớp
-            $students = User::whereHas('roles', function ($query) {
-                $query->where('slug', 'student');
-            })->whereDoesntHave('classes')->get();
+            // Số lượng học sinh có thể thêm vào lớp
+            $availableSlots = $maxStudentsPerClass - $currentClassStudentCount;
 
-            if ($students->isEmpty()) {
-                throw new Exception('Không có học sinh nào chưa được gắn lớp.');
+            // Lấy danh sách học sinh cần thêm vào lớp
+            $classStudents = $students->slice($currentStudentIndex, $availableSlots);
+
+            if ($classStudents->isEmpty()) {
+                break;
             }
 
-            // liệt kê số lượng và tính toán số lượng hs cần cho 1 lớp
-            $studentsPerClass = $students->count() / $classes->count();
-            $studentsPerClass = max(min(50, $studentsPerClass), 40);
+            // Gắn học sinh vào lớp
+            $studentIds = $classStudents->pluck('id')->toArray();
+            $class->students()->syncWithoutDetaching(array_fill_keys($studentIds, ['created_at' => Carbon::now()]));
 
-            $currentStudentIndex = 0; // số hs hiện tại
-            $classesWithStudents = 0; // số lớp đã random hs
+            // Cập nhật chỉ số học sinh hiện tại
+            $currentStudentIndex += $availableSlots;
+            $classesWithStudents++; // Tăng số lớp đã được gắn học sinh
+        }
 
-            foreach ($classes as $class) {
-                // lấy 1 phần hs từ bảng và số lượng hs cần cho 1 lớp
-                $classStudents = $students->slice($currentStudentIndex, $studentsPerClass);
+        // Số học sinh còn dư
+        $remainingStudents = $students->slice($currentStudentIndex)->count();
 
-                if ($classStudents->isEmpty()) {
-                    break;
-                }
-                // lấy mảng id của hs
-                $studentIds = $classStudents->pluck('id')->toArray();
-                $class->students()->syncWithoutDetaching(array_fill_keys($studentIds, ['created_at' => Carbon::now()]));
+        return [
+            'total_students' => $totalStudents,
+            'classes_with_students' => $classesWithStudents,
+            'remaining_students' => $remainingStudents,
+        ];
+    });
+}
 
-                $currentStudentIndex += $studentsPerClass;
-                $classesWithStudents++; // Tăng số lớp đã tồn tại học sinh
-
-            }
-            // số học sinh còn thừa
-            $remainingStudents = $students->slice($currentStudentIndex)->count();
-            return [
-                'total_students' => $students->count(),
-                'classes_with_students' => $classesWithStudents,
-                'remaining_students' => $remainingStudents, 
-            ];
-        });
-    }
 }
