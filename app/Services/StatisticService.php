@@ -57,58 +57,92 @@ class StatisticService
 
     public function getStatisticBySemester($class_slug, $semester_slug)
     {
-        $semester = Semester::where('slug', $semester_slug)->first();
-        $class = Classes::where('slug', $class_slug)->first();
+        try {
+            $semester = Semester::where('slug', $semester_slug)->first();
+            $class = Classes::where('slug', $class_slug)->first();
 
-        if (!$semester || !$class) {
-            throw new Exception('Kỳ học, lớp học không tồn tại hoặc đã bị xóa');
+            if (!$semester || !$class) {
+                throw new Exception('Kỳ học, lớp học không tồn tại hoặc đã bị xóa');
+            }
+
+            $scores = Score::where('semester_id', $semester->id)
+                ->where('class_id', $class->id)
+                ->get();
+
+            $total_students = $scores->count();
+
+            $total_less_than_3_5 = $scores->where('average_score', '<', 3.5)->count();
+            $total_between_3_5_5 = $scores->whereBetween('average_score', [3.5, 5])->count();
+            $total_between_5_6_5 = $scores->whereBetween('average_score', [5, 6.5])->count();
+            $total_between_6_5_8 = $scores->whereBetween('average_score', [6.5, 8])->count();
+            $total_between_8_9 = $scores->whereBetween('average_score', [8, 9])->count();
+            $total_above_9 = $scores->where('average_score', '>', 9)->count();
+
+            // bao nhiêu ông >= 5 điểm, bao nhiêu ông < 5 điểm
+            $students_passed = $scores->where('average_score', '>=', 5)->count();
+            $students_failed = $scores->where('average_score', '<', 5)->count();
+
+            // ông điểm cao nhất, thấp nhất
+            $highest_score = $scores->max('average_score');
+            $lowest_score = $scores->min('average_score');
+
+            // tỷ lệ qua hoặc trượt theo kỳ của lớp
+            $pass_rate = ($total_students > 0) ? ($students_passed / $total_students) * 100 : 0;
+            $fail_rate = ($total_students > 0) ? ($students_failed / $total_students) * 100 : 0;
+
+            // DTB
+            $average_score = number_format($scores->avg('average_score'), 2);
+
+            return [
+                'semesterName' => $semester->name,
+                'className' => $class->name,
+                'total_less_than_3_5' => $total_less_than_3_5,
+                'total_between_3_5_5' => $total_between_3_5_5,
+                'total_between_5_6_5' => $total_between_5_6_5,
+                'total_between_6_5_8' => $total_between_6_5_8,
+                'total_between_8_9' => $total_between_8_9,
+                'total_above_9' => $total_above_9,
+                'averageScoreOfSemester' => $average_score,
+                'studentPassSemester' => $students_passed,
+                'studentFailedSemester' => $students_failed,
+                'studentHightestScore' => $highest_score,
+                'studentLowestScore' => $lowest_score,
+                'passRate' => $pass_rate,
+                'failRate' => $fail_rate
+            ];
+        } catch (Exception $e) {
+            throw $e;
         }
+    }
 
-        $scores = Score::where('semester_id', $semester->id)
-            ->where('class_id', $class->id)
-            ->get();
+    public function countStudentInBlockByAcademicYear($academic_year_slug)
+    {
+        try {
+            $academicYear = AcademicYear::where('slug', $academic_year_slug)->first();
+            if ($academicYear === null) {
+                throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
+            }
 
-        $total_students = $scores->count();
+            $classInAcademicYear = $academicYear->classes;
+            // \Illuminate\Support\Facades\Log::info($classInAcademicYear->toArray());
 
-        $total_less_than_3_5 = $scores->where('average_score', '<', 3.5)->count();
-        $total_between_3_5_5 = $scores->whereBetween('average_score', [3.5, 5])->count();
-        $total_between_5_6_5 = $scores->whereBetween('average_score', [5, 6.5])->count();
-        $total_between_6_5_8 = $scores->whereBetween('average_score', [6.5, 8])->count();
-        $total_between_8_9 = $scores->whereBetween('average_score', [8, 9])->count();
-        $total_above_9 = $scores->where('average_score', '>', 9)->count();
+            $blockStudentCount = $classInAcademicYear->flatMap(function ($class) use ($academicYear) {
+                $studentCount = $class->students->count();
 
-        // bao nhiêu ông >= 5 điểm, bao nhiêu ông < 5 điểm
-        $students_passed = $scores->where('average_score', '>=', 5)->count();
-        $students_failed = $scores->where('average_score', '<', 5)->count();
+                return $class->blocks->map(function ($block) use ($studentCount, $academicYear) {
+                    return [
+                        'academicYearName' => $academicYear->name,
+                        'blockName' => $block->name,
+                        'quantity' => $studentCount,
+                    ];
+                });
+            });
 
-        // ông điểm cao nhất, thấp nhất
-        $highest_score = $scores->max('average_score');
-        $lowest_score = $scores->min('average_score');
+            return $blockStudentCount;
 
-        // tỷ lệ qua hoặc trượt theo kỳ của lớp
-        $pass_rate = ($total_students > 0) ? ($students_passed / $total_students) * 100 : 0;
-        $fail_rate = ($total_students > 0) ? ($students_failed / $total_students) * 100 : 0;
-
-        // DTB
-        $average_score = number_format($scores->avg('average_score'), 2);
-
-        return [
-            'semesterName' => $semester->name,
-            'className' => $class->name,
-            'total_less_than_3_5' => $total_less_than_3_5,
-            'total_between_3_5_5' => $total_between_3_5_5,
-            'total_between_5_6_5' => $total_between_5_6_5,
-            'total_between_6_5_8' => $total_between_6_5_8,
-            'total_between_8_9' => $total_between_8_9,
-            'total_above_9' => $total_above_9,
-            'averageScoreOfSemester' => $average_score,
-            'studentPassSemester' => $students_passed,
-            'studentFailedSemester' => $students_failed,
-            'studentHightestScore' => $highest_score,
-            'studentLowestScore' => $lowest_score,
-            'passRate' => $pass_rate,
-            'failRate' => $fail_rate
-        ];
+        } catch (Exception $e) {
+            throw $e;
+        }
     }
 
 }
