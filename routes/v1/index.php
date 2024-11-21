@@ -167,7 +167,6 @@ Route::prefix('subjects')
 
 Route::prefix('excels')
     ->group(function () {
-
         Route::prefix('students')
             ->group(function () {
                 Route::get('export-form', [StudentExcelController::class, 'exportStudentForm']);
@@ -181,6 +180,7 @@ Route::prefix('excels')
                 Route::get('export-form', [TeacherExcelController::class, 'exportTeacherForm']);
                 Route::post('import', [TeacherExcelController::class, 'importTeacher']);
             });
+
         Route::prefix('students-class')
             ->group(function () {
                 Route::post('import', [StudentClassController::class, 'importStudent']);
@@ -196,6 +196,7 @@ Route::prefix('excels')
                 Route::get('export-by-academic-year/{slug}', [StudentClassController::class, 'exportStudentByAcademicYear']);
             });
     });
+
 Route::prefix('students')
     ->group(function () {
         Route::get('/', [StudentController::class, 'index']);
@@ -205,6 +206,7 @@ Route::prefix('students')
         Route::get('/restore/{username}', [StudentController::class, 'restore']);
         Route::get('/show/{username}', [StudentController::class, 'show']);
     });
+
 Route::prefix('teachers')
     ->group(function () {
         Route::get('/', [TeacherController::class, 'index']);
@@ -223,6 +225,7 @@ Route::prefix('attendances')
         Route::post('/', [AttendanceController::class, 'save']);
         Route::patch('/{id}', [AttendanceController::class, 'update']);
     });
+
 // Thời khóa biểu
 Route::prefix('schedules')
     ->group(function () {
@@ -252,6 +255,7 @@ Route::prefix('chat')
 
         Route::patch('/update-message/{messageID}', [ChatController::class, 'updateMessage']);
     });
+
 Route::prefix('subject-teachers')
     ->group(function () {
         Route::get('/', [SubjectTeacherController::class, 'index']);
@@ -282,14 +286,15 @@ Route::prefix('classrooms')
         Route::get('/{slug}', [ClassroomController::class, 'getDetailClassroomForTeacher']);
         Route::get('/assignment/{slug}', [ClassroomController::class, 'getAssignmentClassroom']);
         Route::get('/student/{slug}', [ClassroomController::class, 'getStudentClassroom']);
-        Route::post('/', [ClassroomController::class, 'joinClassroomByCode']);
+        Route::post('/', [ClassroomController::class, 'joinClassroomByCode']); // vào lớp = mã lớp
     });
 
 //Thống kê
 Route::prefix('statistic')
     ->group(function () {
         Route::get('{subject_slug}/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticByClassSubjectSemester']);
-        Route::get('/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticBySemester']);
+        Route::get('/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticBySemester']); // thống kê điểm TB của 1 lớp theo kỳ
+        Route::get('/{academic_year_slug}', [StatisticController::class, 'countStudentInBlockByAcademicYear']); // số lượng học sinh theo từng khối của năm
     });
 
 //Assignment
@@ -310,12 +315,14 @@ Route::prefix('submitted_assignments')->group(function () {
     //Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
     Route::patch('/{assignmentSlug}/score-feedback', [SubmittedAssignmentController::class, 'updateScoreAndFeedback']);
 });
+
 Route::prefix('article')->group(function () {
     Route::post('/', [ArticleController::class, 'store']);
-   // Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
+    // Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
 });
+
 Route::prefix('comment')->group(function () {
     Route::post('/{postId}', [CommentController::class, 'store']);
-   // Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
+    // Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
 });
 

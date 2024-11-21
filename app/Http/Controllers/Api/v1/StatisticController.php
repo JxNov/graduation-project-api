@@ -58,4 +58,18 @@ class StatisticController extends Controller
         }
     }
 
+    public function countStudentInBlockByAcademicYear($academic_year_slug)
+    {
+        try {
+            $count = $this->statisticService->countStudentInBlockByAcademicYear($academic_year_slug);
+
+            return $this->successResponse(
+                $count,
+                'Thống kê số học sinh trong khối của năm thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }
