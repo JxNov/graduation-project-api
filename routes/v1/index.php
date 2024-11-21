@@ -292,6 +292,8 @@ Route::prefix('classrooms')
 //Thống kê
 Route::prefix('statistic')
     ->group(function () {
+        Route::get('/list/{block_slug}', [StatisticController::class, 'StudentClassInBlock']); 
+        Route::get('/gender/{block_slug}', [StatisticController::class, 'getGenderRatioInBlock']); 
         Route::get('{subject_slug}/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticByClassSubjectSemester']);
         Route::get('/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticBySemester']); // thống kê điểm TB của 1 lớp theo kỳ
         Route::get('/{academic_year_slug}', [StatisticController::class, 'countStudentInBlockByAcademicYear']); // số lượng học sinh theo từng khối của năm

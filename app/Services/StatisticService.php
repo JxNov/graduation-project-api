@@ -7,6 +7,8 @@ use App\Models\Subject;
 use App\Models\Classes;
 use App\Models\Semester;
 use App\Models\AcademicYear;
+use App\Models\Block;
+use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -144,5 +146,68 @@ class StatisticService
             throw $e;
         }
     }
+    public function countStudentsInBlock($block_slug)
+{
+    return DB::transaction(function () use($block_slug) {
+        // Lấy thông tin khối
+        $block = Block::where('slug', $block_slug)->first();
+        if ($block === null) {
+            throw new Exception('Khối không tồn tại hoặc đã bị xóa');
+        }
+
+        // Tính tổng số học sinh trong các lớp thuộc khối
+        $studentsCount = User::whereHas('classes', function ($query) use ($block) {
+            $query->whereHas('blocks', function ($subQuery) use ($block) {
+                $subQuery->where('block_id', $block->id); // Kiểm tra khối từ bảng block_classes
+            });
+        })->count();
+
+        return [
+            'total_students' => $studentsCount
+        ];
+    });
+}
+public function getGenderRatioInBlock($block_slug)
+{
+    return DB::transaction(function () use ($block_slug) {
+        // Lấy thông tin khối từ slug
+        $block = Block::where('slug', $block_slug)->first();
+        if ($block === null) {
+            throw new Exception('Khối không tồn tại hoặc đã bị xóa');
+        }
+
+        // Lấy danh sách học sinh thuộc các lớp của khối
+        $students = User::whereHas('classes', function ($query) use ($block) {
+            $query->whereHas('blocks', function ($subQuery) use ($block) {
+                $subQuery->where('block_id', $block->id);
+            });
+        })->get(); 
+        // Đếm số lượng học sinh nam và nữ
+        $genderCount = $students->groupBy('gender')->map(function ($group) {
+            return $group->count();
+        });
+        $maleCount = $genderCount->get('Male', 0);  
+        $femaleCount = $genderCount->get('Female', 0); 
+        $total = $maleCount + $femaleCount;
+
+        if ($total === 0) {
+            throw new Exception('Không có học sinh nào trong khối này.');
+        }
+
+        // Tính tỷ lệ phần trăm cho nam và nữ
+        $maleRatio = round(($maleCount / $total) * 100, 2);
+        $femaleRatio = round(($femaleCount / $total) * 100, 2);
+
+        
+        return [
+            'male_count' => $maleCount,
+            'female_count' => $femaleCount,
+            'male_ratio' => $maleRatio . '%',
+            'female_ratio' => $femaleRatio . '%'
+        ];
+    });
+}
+
+
 
 }
