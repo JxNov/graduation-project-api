@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ClassResource;
+use App\Models\Article;
 use App\Models\Classes;
 use App\Services\ClassroomService;
 use App\Traits\ApiResponseTrait;
@@ -31,7 +32,6 @@ class ClassroomController extends Controller
             $classrooms = $user->teachingClasses()
                 ->select('classes.name as className', 'classes.slug as classSlug')
                 ->get();
-
             $data = $classrooms->map(function ($classroom) use ($user) {
                 return [
                     'className' => $classroom->className,
@@ -86,6 +86,11 @@ class ClassroomController extends Controller
                 throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
             }
 
+            $articles = Article::where('teacher_id', $user->id)
+                ->where('class_id', $class->id)
+                ->select('title', 'content', 'attachments')
+                ->first();
+
             // nhom theo subject_id
             $assignmentsGroup = $class->assignments->groupBy('subject_id')->map(function ($assignments) {
                 return $assignments->map(function ($assignment) {
@@ -116,6 +121,7 @@ class ClassroomController extends Controller
                 'classSlug' => $class->slug,
                 'classCode' => $class->code,
                 'subjects' => $subjects,
+                'articles' => $articles ?? null
             ];
 
             return $this->successResponse(
@@ -183,7 +189,7 @@ class ClassroomController extends Controller
                     'name' => $subject->name,
                     'slug' => $subject->slug,
                     'description' => $subject->description,
-                    'assignments' => $assignmentsForSubject,  // Gán bài tập vào môn học
+                    'assignments' => $assignmentsForSubject,  // gán bài tập vào môn học
                 ];
             });
 
