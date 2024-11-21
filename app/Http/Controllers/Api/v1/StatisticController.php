@@ -72,4 +72,32 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+    public function StudentClassInBlock($block_slug)
+    {
+        try {
+            $count = $this->statisticService->countStudentsInBlock($block_slug);
+
+            return $this->successResponse(
+                $count,
+                'Thống kê số học sinh trong khối thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+    public function getGenderRatioInBlock($block_slug)
+    {
+        try {
+            $count = $this->statisticService->getGenderRatioInBlock($block_slug);
+
+            return $this->successResponse(
+                $count,
+                'Thống kê số học sinh nam, nữ trong khối thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }
