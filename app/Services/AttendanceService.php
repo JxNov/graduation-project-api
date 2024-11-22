@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Events\AttendanceSaved;
 use App\Models\Attendance;
 use App\Models\Classes;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -16,6 +17,13 @@ class AttendanceService
 
             if ($class === null) {
                 throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
+            }
+
+            $dayNow = Carbon::now()->toDateString();
+            $attendance = Attendance::where('class_id', $class->id)->select('date')->first();
+
+            if ($attendance && Carbon::parse($attendance->date)->toDateString() === $dayNow) {
+                throw new Exception('Đã điểm danh lớp này rồi');
             }
 
             $attendance = Attendance::create([
@@ -54,8 +62,15 @@ class AttendanceService
         return DB::transaction(function () use ($data, $id) {
             $attendance = Attendance::find($id);
 
+
             if ($attendance === null) {
                 throw new Exception('Không tìm thấy kết quả điểm danh');
+            }
+
+            $dayNow = Carbon::now()->toDateString();
+
+            if ($attendance && Carbon::parse($attendance->date)->toDateString() < $dayNow) {
+                throw new Exception('Đã quá hạn để cập nhật điểm danh');
             }
 
             $class = Classes::where('slug', $data['class_slug'])->first();
