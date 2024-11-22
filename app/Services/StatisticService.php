@@ -57,7 +57,8 @@ class StatisticService
         ];
     }
 
-    public function getStatisticBySemester($class_slug, $semester_slug)
+    // điểm của 1 lớp theo kỳ
+    public function getStatisticByClassSemester($class_slug, $semester_slug)
     {
         try {
             $semester = Semester::where('slug', $semester_slug)->first();
@@ -71,47 +72,36 @@ class StatisticService
                 ->where('class_id', $class->id)
                 ->get();
 
-            $total_students = $scores->count();
+            return $this->calculateScoreStatisticsByClassSemester($scores, $semester->name, $class->name);
 
-            $total_less_than_3_5 = $scores->where('average_score', '<', 3.5)->count();
-            $total_between_3_5_5 = $scores->whereBetween('average_score', [3.5, 5])->count();
-            $total_between_5_6_5 = $scores->whereBetween('average_score', [5, 6.5])->count();
-            $total_between_6_5_8 = $scores->whereBetween('average_score', [6.5, 8])->count();
-            $total_between_8_9 = $scores->whereBetween('average_score', [8, 9])->count();
-            $total_above_9 = $scores->where('average_score', '>', 9)->count();
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
 
-            // bao nhiêu ông >= 5 điểm, bao nhiêu ông < 5 điểm
-            $students_passed = $scores->where('average_score', '>=', 5)->count();
-            $students_failed = $scores->where('average_score', '<', 5)->count();
+    // điểm của tất cả lớp theo kỳ
+    public function getStatisticAllClassInSemester($semester_slug)
+    {
+        try {
+            $semester = Semester::where('slug', $semester_slug)->first();
 
-            // ông điểm cao nhất, thấp nhất
-            $highest_score = $scores->max('average_score');
-            $lowest_score = $scores->min('average_score');
+            if (!$semester) {
+                throw new Exception('Kỳ học không tồn tại hoặc đã bị xóa');
+            }
 
-            // tỷ lệ qua hoặc trượt theo kỳ của lớp
-            $pass_rate = ($total_students > 0) ? ($students_passed / $total_students) * 100 : 0;
-            $fail_rate = ($total_students > 0) ? ($students_failed / $total_students) * 100 : 0;
+            $academicYear = $semester->academicYear;
+            $classes = $academicYear->classes;
+            // \Illuminate\Support\Facades\Log::info($classes->toArray());
 
-            // DTB
-            $average_score = number_format($scores->avg('average_score'), 2);
+            $statistic = $classes->map(function ($class) use ($semester) {
+                $scores = Score::where('semester_id', $semester->id)
+                    ->where('class_id', $class->id)
+                    ->get();
 
-            return [
-                'semesterName' => $semester->name,
-                'className' => $class->name,
-                'total_less_than_3_5' => $total_less_than_3_5,
-                'total_between_3_5_5' => $total_between_3_5_5,
-                'total_between_5_6_5' => $total_between_5_6_5,
-                'total_between_6_5_8' => $total_between_6_5_8,
-                'total_between_8_9' => $total_between_8_9,
-                'total_above_9' => $total_above_9,
-                'averageScoreOfSemester' => $average_score,
-                'studentPassSemester' => $students_passed,
-                'studentFailedSemester' => $students_failed,
-                'studentHightestScore' => $highest_score,
-                'studentLowestScore' => $lowest_score,
-                'passRate' => $pass_rate,
-                'failRate' => $fail_rate
-            ];
+                return $this->calculateScoreStatisticsByClassSemester($scores, $semester->name, $class->name);
+            });
+
+            return $statistic;
         } catch (Exception $e) {
             throw $e;
         }
@@ -146,68 +136,109 @@ class StatisticService
             throw $e;
         }
     }
+
     public function countStudentsInBlock($block_slug)
-{
-    return DB::transaction(function () use($block_slug) {
-        // Lấy thông tin khối
-        $block = Block::where('slug', $block_slug)->first();
-        if ($block === null) {
-            throw new Exception('Khối không tồn tại hoặc đã bị xóa');
-        }
+    {
+        return DB::transaction(function () use ($block_slug) {
+            // Lấy thông tin khối
+            $block = Block::where('slug', $block_slug)->first();
+            if ($block === null) {
+                throw new Exception('Khối không tồn tại hoặc đã bị xóa');
+            }
 
-        // Tính tổng số học sinh trong các lớp thuộc khối
-        $studentsCount = User::whereHas('classes', function ($query) use ($block) {
-            $query->whereHas('blocks', function ($subQuery) use ($block) {
-                $subQuery->where('block_id', $block->id); // Kiểm tra khối từ bảng block_classes
-            });
-        })->count();
+            // Tính tổng số học sinh trong các lớp thuộc khối
+            $studentsCount = User::whereHas('classes', function ($query) use ($block) {
+                $query->whereHas('blocks', function ($subQuery) use ($block) {
+                    $subQuery->where('block_id', $block->id); // Kiểm tra khối từ bảng block_classes
+                });
+            })->count();
 
-        return [
-            'total_students' => $studentsCount
-        ];
-    });
-}
-public function getGenderRatioInBlock($block_slug)
-{
-    return DB::transaction(function () use ($block_slug) {
-        // Lấy thông tin khối từ slug
-        $block = Block::where('slug', $block_slug)->first();
-        if ($block === null) {
-            throw new Exception('Khối không tồn tại hoặc đã bị xóa');
-        }
-
-        // Lấy danh sách học sinh thuộc các lớp của khối
-        $students = User::whereHas('classes', function ($query) use ($block) {
-            $query->whereHas('blocks', function ($subQuery) use ($block) {
-                $subQuery->where('block_id', $block->id);
-            });
-        })->get(); 
-        // Đếm số lượng học sinh nam và nữ
-        $genderCount = $students->groupBy('gender')->map(function ($group) {
-            return $group->count();
+            return [
+                'total_students' => $studentsCount
+            ];
         });
-        $maleCount = $genderCount->get('Male', 0);  
-        $femaleCount = $genderCount->get('Female', 0); 
-        $total = $maleCount + $femaleCount;
+    }
 
-        if ($total === 0) {
-            throw new Exception('Không có học sinh nào trong khối này.');
-        }
+    public function getGenderRatioInBlock($block_slug)
+    {
+        return DB::transaction(function () use ($block_slug) {
+            // Lấy thông tin khối từ slug
+            $block = Block::where('slug', $block_slug)->first();
+            if ($block === null) {
+                throw new Exception('Khối không tồn tại hoặc đã bị xóa');
+            }
 
-        // Tính tỷ lệ phần trăm cho nam và nữ
-        $maleRatio = round(($maleCount / $total) * 100, 2);
-        $femaleRatio = round(($femaleCount / $total) * 100, 2);
+            // Lấy danh sách học sinh thuộc các lớp của khối
+            $students = User::whereHas('classes', function ($query) use ($block) {
+                $query->whereHas('blocks', function ($subQuery) use ($block) {
+                    $subQuery->where('block_id', $block->id);
+                });
+            })->get();
+            // Đếm số lượng học sinh nam và nữ
+            $genderCount = $students->groupBy('gender')->map(function ($group) {
+                return $group->count();
+            });
+            $maleCount = $genderCount->get('Male', 0);
+            $femaleCount = $genderCount->get('Female', 0);
+            $total = $maleCount + $femaleCount;
 
-        
+            if ($total === 0) {
+                throw new Exception('Không có học sinh nào trong khối này.');
+            }
+
+            // Tính tỷ lệ phần trăm cho nam và nữ
+            $maleRatio = round(($maleCount / $total) * 100, 2);
+            $femaleRatio = round(($femaleCount / $total) * 100, 2);
+
+
+            return [
+                'male_count' => $maleCount,
+                'female_count' => $femaleCount,
+                'male_ratio' => $maleRatio . '%',
+                'female_ratio' => $femaleRatio . '%'
+            ];
+        });
+    }
+
+    // hàm tính toán thống kê của lớp theo kỳ
+    private function calculateScoreStatisticsByClassSemester($scores, $semesterName, $className)
+    {
+        $total_students = $scores->count();
+
+        $total_less_than_3_5 = $scores->where('average_score', '<', 3.5)->count();
+        $total_between_3_5_5 = $scores->whereBetween('average_score', [3.5, 5])->count();
+        $total_between_5_6_5 = $scores->whereBetween('average_score', [5, 6.5])->count();
+        $total_between_6_5_8 = $scores->whereBetween('average_score', [6.5, 8])->count();
+        $total_between_8_9 = $scores->whereBetween('average_score', [8, 9])->count();
+        $total_above_9 = $scores->where('average_score', '>', 9)->count();
+
+        $students_passed = $scores->where('average_score', '>=', 5)->count();
+        $students_failed = $scores->where('average_score', '<', 5)->count();
+
+        $highest_score = $scores->max('average_score');
+        $lowest_score = $scores->min('average_score');
+
+        $pass_rate = ($total_students > 0) ? ($students_passed / $total_students) * 100 : 0;
+        $fail_rate = ($total_students > 0) ? ($students_failed / $total_students) * 100 : 0;
+
+        $average_score = number_format($scores->avg('average_score'), 2);
+
         return [
-            'male_count' => $maleCount,
-            'female_count' => $femaleCount,
-            'male_ratio' => $maleRatio . '%',
-            'female_ratio' => $femaleRatio . '%'
+            'semesterName' => $semesterName,
+            'className' => $className,
+            'total_less_than_3_5' => $total_less_than_3_5,
+            'total_between_3_5_5' => $total_between_3_5_5,
+            'total_between_5_6_5' => $total_between_5_6_5,
+            'total_between_6_5_8' => $total_between_6_5_8,
+            'total_between_8_9' => $total_between_8_9,
+            'total_above_9' => $total_above_9,
+            'averageScoreOfSemester' => $average_score,
+            'studentPassSemester' => $students_passed,
+            'studentFailedSemester' => $students_failed,
+            'studentHightestScore' => $highest_score,
+            'studentLowestScore' => $lowest_score,
+            'passRate' => $pass_rate,
+            'failRate' => $fail_rate,
         ];
-    });
-}
-
-
-
+    }
 }

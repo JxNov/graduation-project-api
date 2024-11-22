@@ -43,14 +43,29 @@ class StatisticController extends Controller
         }
     }
 
-    public function getStatisticBySemester($class_slug, $semester_slug)
+    public function getStatisticByClassSemester($class_slug, $semester_slug)
     {
         try {
-            $statistic = $this->statisticService->getStatisticBySemester($class_slug, $semester_slug);
+            $statistic = $this->statisticService->getStatisticByClassSemester($class_slug, $semester_slug);
 
             return $this->successResponse(
                 $statistic,
-                'Thống kê theo kỳ học thành công',
+                'Thống kê điểm của lớp theo kỳ học thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function getStatisticAllClassInSemester($semester_slug)
+    {
+        try {
+            $statistic = $this->statisticService->getStatisticAllClassInSemester($semester_slug);
+
+            return $this->successResponse(
+                $statistic,
+                'Thống kê điểm của tất cả lớp theo kỳ học thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
