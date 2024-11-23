@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Imports\StudentClassImport;
+use App\Models\Block;
 use App\Models\Classes;
 use App\Models\Role;
 use App\Models\User;
@@ -162,6 +163,19 @@ class StudentClassService
     public function distributeStudents()
 {
     return DB::transaction(function () {
+        $maxStudentsPerClass = 40;
+        $maxClasses = 5;
+
+        // Kiểm tra số lượng lớp hiện tại và học sinh trong lớp
+        $existingClasses = Classes::withCount('students')->get();
+        $fullClasses = $existingClasses->filter(function ($class) use ($maxStudentsPerClass) {
+            return $class->students_count >= $maxStudentsPerClass;
+        });
+
+        if ($existingClasses->count() >= $maxClasses && $fullClasses->count() == $maxClasses) {
+            throw new Exception('Không thể phân lớp. Đã đủ 5 lớp 6 với 40 học sinh mỗi lớp.');
+        }
+
         // Lấy danh sách học sinh chưa được gắn lớp
         $students = User::whereHas('roles', function ($query) {
             $query->where('slug', 'student');
@@ -173,61 +187,42 @@ class StudentClassService
             throw new Exception('Không đủ học sinh để phân lớp.');
         }
 
-        // tối thiểu 30, tối đa 40 học sinh
         $minStudentsPerClass = 30;
-        $maxStudentsPerClass = 40;
-        // tối đa đc 5 lớp
-        $maxClasses = 5;
 
-        // tạo 1 mảng chứa học sinh của lớp
         $studentsForClass = [];
-        //số dư học sinh = tổng số học sinh
         $remainingStudents = $totalStudents;
-
-        // tạo lớp cho đến khi đủ lớp cho tổng số học sinh hoặc = 5 lớp
         $classesCreated = 0;
-        // nếu số dư học sinh >= sô hs tối thiểu và số lớp hiện tại < max lớp
-        while ($remainingStudents >= $minStudentsPerClass && $classesCreated < $maxClasses) {
-            // tạo một lớp mới với tối thiểu 30 học sinh
+
+        while ($remainingStudents >= $minStudentsPerClass && $classesCreated + $existingClasses->count() < $maxClasses) {
             $studentsForClass[] = $minStudentsPerClass;
-            // sau đó trừ số học sinh đã được gán lớp ở trên
             $remainingStudents -= $minStudentsPerClass;
             $classesCreated++;
         }
 
-        // số hs còn lại khi đã đủ 5 lớp 30 hs
         $remainingStudentsForClass = $remainingStudents;
 
         foreach ($studentsForClass as $key => $classStudents) {
-            // Nếu lớp chưa đạt tối đa học sinh, phân bổ học sinh dư vào lớp
             if ($classStudents < $maxStudentsPerClass) {
                 $canAddStudents = $maxStudentsPerClass - $classStudents;
                 $studentsToAdd = min($remainingStudentsForClass, $canAddStudents);
                 $studentsForClass[$key] += $studentsToAdd;
                 $remainingStudentsForClass -= $studentsToAdd;
 
-                // Nếu lớp đã đủ 40 học sinh, dừng phân bổ cho lớp này
                 if ($studentsForClass[$key] >= $maxStudentsPerClass) {
                     continue;
                 }
             }
 
-            // Nếu không còn học sinh dư để phân bổ, dừng
             if ($remainingStudentsForClass <= 0) {
                 break;
             }
         }
 
-        // Tạo lớp mới nếu còn đủ học sinh để tạo lớp
-        if ($remainingStudentsForClass > 0 && $classesCreated < $maxClasses) {
+        if ($remainingStudentsForClass > 0 && $classesCreated + $existingClasses->count() < $maxClasses) {
             $studentsForClass[] = $remainingStudentsForClass;
             $classesCreated++;
         }
 
-        // Lấy danh sách các lớp đã tạo
-        $existingClassesCount = Classes::count();
-
-        // Lấy danh sách giáo viên có role là 'teacher'
         $teachers = User::whereHas('roles', function ($query) {
             $query->where('slug', 'teacher');
         })->get();
@@ -236,54 +231,57 @@ class StudentClassService
             throw new Exception('Không có giáo viên nào có role teacher.');
         }
 
-        // Kiểm tra số lượng giáo viên có đủ không
         if ($teachers->count() < $classesCreated) {
             throw new Exception('Không đủ giáo viên để gán cho tất cả các lớp.');
         }
 
-        // Xáo trộn danh sách giáo viên
         $teachers = $teachers->shuffle();
 
-        // Tạo lớp và gán giáo viên
-        for ($i = $existingClassesCount + 1; $i <= $classesCreated; $i++) {
+        $blockSlug = 'khoi-6'; 
+        $block = Block::where('slug', $blockSlug)->firstOrFail();
+        $blockId = $block->id;
+
+        for ($i = 1; $i <= $classesCreated; $i++) {
             $teacher = $teachers[$i - 1];
 
             $class = Classes::create([
-                'name' => "6A$i",
-                'slug' => Str::slug("6A$i"),
+                'name' => "6A" . ($existingClasses->count() + $i),
+                'slug' => Str::slug("6A" . ($existingClasses->count() + $i)),
                 'code' => Str::random(7),
-                'teacher_id' => $teacher->id, // Gán giáo viên cho lớp
+                'teacher_id' => $teacher->id,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+            DB::table('block_classes')->insert([
+                'block_id' => $blockId,
+                'class_id' => $class->id,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
         }
 
-        // Phân chia học sinh vào các lớp đã tạo
         $currentStudentIndex = 0;
         foreach ($studentsForClass as $index => $studentsCount) {
-            // Lấy lớp tương ứng
-            $class = Classes::skip($index)->first(); 
+            $class = Classes::skip($index)->first();
 
-            // Lấy danh sách học sinh cho lớp
             $classStudents = $students->slice($currentStudentIndex, $studentsCount);
             $studentIds = $classStudents->pluck('id')->toArray();
 
-            // Gắn học sinh vào lớp
             $class->students()->syncWithoutDetaching(array_fill_keys($studentIds, ['created_at' => Carbon::now()]));
 
-            // Cập nhật chỉ số học sinh hiện tại
             $currentStudentIndex += $studentsCount;
         }
 
-        // Trả về kết quả
         return [
             'total_students' => $totalStudents,
             'classes_created' => Classes::count(),
             'students_per_class' => Classes::withCount('students')->pluck('students_count', 'name'),
             'remaining_students' => $remainingStudentsForClass,
         ];
-        
     });
 }
+
+
 
 }
