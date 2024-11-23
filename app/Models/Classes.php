@@ -79,6 +79,11 @@ class Classes extends Model
         return $this->hasMany(Assignment::class, 'class_id');
     }
 
+    public function articles()
+    {
+        return $this->hasMany(Article::class, 'class_id');
+    }
+
     protected static function booted()
     {
         static::creating(function ($class) {
@@ -105,6 +110,10 @@ class Classes extends Model
             if ($class->materials->isNotEmpty()) {
                 $class->materials()->updateExistingPivot($class->materials->pluck('id'), ['deleted_at' => now()]);
             }
+
+            $class->articles->each(function ($article) {
+                $article->delete();
+            });
         });
 
         static::restoring(function ($class) {
@@ -127,6 +136,10 @@ class Classes extends Model
             if ($teachClass->isNotEmpty()) {
                 $class->classTeachers()->updateExistingPivot($teachClass->pluck('id'), ['deleted_at' => null]);
             }
+
+            $class->articles()->onlyTrashed()->each(function ($article) {
+                $article->restore();
+            });
         });
     }
 }
