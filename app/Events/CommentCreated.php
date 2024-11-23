@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\User;
+use App\Models\Comment;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -11,33 +11,34 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ChatWithAdmin implements ShouldBroadcast
+class CommentCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
+    public $comment;
 
-    public function __construct(public $message, public User $user)
+    public function __construct(Comment $comment)
     {
+        $this->comment = $comment;
     }
 
     public function broadcastOn(): array
     {
-        // \Illuminate\Support\Facades\Log::info($this->message);
-
         return [
-            new PrivateChannel('chat-with-admin.' . $this->user->id),
+            new PrivateChannel('article.' . $this->comment->article_id),
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'chat';
+        return 'comment.created';
     }
 
     public function broadcastWith()
     {
         return [
-            'message' => $this->message
+            'name' => optional($this->comment->user)->name,
+            'articleTitle' => optional($this->comment->article)->title,
+            'content' => $this->comment->content,
         ];
     }
 }
-

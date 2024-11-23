@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Article extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'articles';
+
     protected $fillable = [
         'title',
         'content',
@@ -17,6 +17,7 @@ class Article extends Model
         'teacher_id',
         'class_id'
     ];
+    
     public function comments()
     {
         return $this->hasMany(Comment::class);

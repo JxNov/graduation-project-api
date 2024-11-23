@@ -324,8 +324,8 @@ Route::prefix('article')->group(function () {
     // Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
 });
 
-Route::prefix('comment')->group(function () {
-    Route::post('/{postId}', [CommentController::class, 'store']);
-    // Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
+Route::prefix('comments')->group(function () {
+    Route::post('/', [CommentController::class, 'store'])->middleware('auth:api');
 });
+
 

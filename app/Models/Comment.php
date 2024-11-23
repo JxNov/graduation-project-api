@@ -9,12 +9,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Comment extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'comments';
+
     protected $fillable = [
         'article_id',
         'user_id',
         'content'
     ];
+
     public function article()
     {
         return $this->belongsTo(Article::class);
