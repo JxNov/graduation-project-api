@@ -319,9 +319,15 @@ Route::prefix('submitted_assignments')->group(function () {
     Route::patch('/{assignmentSlug}/score-feedback', [SubmittedAssignmentController::class, 'updateScoreAndFeedback']);
 });
 
-Route::prefix('article')->group(function () {
+Route::prefix('articles')->group(function () {
+    Route::get('/', [ArticleController::class, 'index']);
     Route::post('/', [ArticleController::class, 'store']);
-    // Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
+    Route::get('/trash', [ArticleController::class, 'trash']);
+    Route::get('/{slug}', [ArticleController::class, 'show']);
+    Route::patch('/{slug}', [ArticleController::class, 'update']);
+    Route::delete('/{slug}', [ArticleController::class, 'destroy']);
+    Route::get('/restore/{slug}', [ArticleController::class, 'restore']);
+    Route::delete('/force-delete/{slug}', [ArticleController::class, 'forceDelete']);
 });
 
 Route::prefix('comments')->group(function () {

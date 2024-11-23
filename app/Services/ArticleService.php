@@ -5,61 +5,154 @@ use App\Models\Article;
 use App\Models\Classes;
 use App\Models\User;
 use Exception;
-use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ArticleService
 {
-    public function createPost(array $data)
-{
-    // Kiểm tra người dùng hiện tại có phải là giáo viên
-    $teacher = User::whereHas('roles', function ($role) {
-        $role->where('slug', 'like', 'teacher');
-    })
-        ->where('username', $data['username'])
-        ->first();
+    public function createNewArticle(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+            $user = User::where('username', $data['username'])->first();
 
-    if ($teacher === null) {
-        throw new Exception('Người này không phải giáo viên');
+            if ($user === null) {
+                throw new Exception('Không tìm thấy người dùng');
+            }
+
+            $class = Classes::where('slug', $data['class_slug'])->first();
+            if ($class === null) {
+                throw new Exception('Không tìm thấy lớp');
+            }
+
+            if (isset($data['attachments'])) {
+                $firebase = app('firebase.storage');
+                $storage = $firebase->getBucket();
+
+                $firebasePath = 'articles/' . Str::random(6) . $data['attachments']->getClientOriginalName();
+
+                $storage->upload(
+                    file_get_contents($data['attachments']->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
+            }
+
+            $slug = time() . '-' . Str::slug($data['title']);
+            $data['attachments'] = $firebasePath;
+
+            $article = Article::create([
+                'title' => $data['title'],
+                'slug' => $slug,
+                'content' => $data['content'],
+                'teacher_id' => $user->id,
+                'class_id' => $class->id,
+                'attachments' => $data['attachments'] ?? null,
+            ]);
+
+            return $article;
+        });
     }
 
-    // Kiểm tra lớp có tồn tại không
-    $class = Classes::where('slug', $data['class_slug'])->first();
-    if ($class === null) {
-        throw new Exception('Không tìm thấy lớp');
+    public function updateArticle(array $data, $slug)
+    {
+        return DB::transaction(function () use ($data, $slug) {
+            $article = Article::where('slug', $slug)->first();
+
+            if ($article === null) {
+                throw new Exception('Không tìm thấy bài viết');
+            }
+
+            $user = User::where('username', $data['username'])->first();
+
+            if ($user === null) {
+                throw new Exception('Không tìm thấy người dùng');
+            }
+
+            $class = Classes::where('slug', $data['class_slug'])->first();
+            if ($class === null) {
+                throw new Exception('Không tìm thấy lớp');
+            }
+
+            if (isset($data['attachments'])) {
+                $firebase = app('firebase.storage');
+                $storage = $firebase->getBucket();
+
+                $firebasePath = 'articles/' . $data['attachments']->getClientOriginalName();
+
+                if ($article->attachments) {
+                    $oldFirebasePath = $article->attachments;
+
+                    $oldFile = $storage->object($oldFirebasePath);
+
+                    if ($oldFile->exists()) {
+                        $oldFile->delete();
+                    }
+                }
+
+                $storage->upload(
+                    file_get_contents($data['attachments']->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
+                $data['attachments'] = $firebasePath;
+            }
+
+            $article->update([
+                'title' => $data['title'],
+                'content' => $data['content'],
+                'teacher_id' => $user->id,
+                'class_id' => $class->id,
+                'attachments' => $data['attachments'] ?? null,
+            ]);
+
+            return $article;
+        });
     }
-    // Kiểm tra nếu có tệp đính kèm
-    if (isset($data['attachments'])) {
-        $firebase = app('firebase.storage');
-        $storage = $firebase->getBucket();
 
-        // Tạo đường dẫn Firebase
-        $firebasePath = 'attachments/' . time() . '_' . $data['attachments']->getClientOriginalName();
+    public function deleteArticle($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $article = Article::where('slug', $slug)->first();
 
-        // Upload tệp lên Firebase Storage
-        $storage->upload(
-            file_get_contents($data['attachments']->getRealPath()),
-            [
-                'name' => $firebasePath
-            ]
-        );
+            if ($article === null) {
+                throw new Exception('Không tìm thấy bài viết');
+            }
 
-        // Lưu đường dẫn Firebase vào cơ sở dữ liệu
-        $data['attachments'] = $firebasePath;
+            $article->delete();
+
+            return $article;
+        });
     }
 
-    // Tạo bài viết trong cơ sở dữ liệu
-    $post = Article::create([
-        'title' => $data['title'],
-        'content' => $data['content'],
-        'teacher_id' => $teacher->id, // Giáo viên đang đăng nhập
-        'class_id' => $class->id, // Lớp mà bài viết thuộc về
-        'attachments' => $data['attachments'] ?? null, // Đường dẫn tệp trên Firebase
-    ]);
+    public function restoreArticle($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $article = Article::onlyTrashed()->where('slug', $slug)->first();
 
-    return $post;
-}
+            if ($article === null) {
+                throw new Exception('Không tìm thấy bài viết');
+            }
 
+            $article->restore();
 
+            return $article;
+        });
+    }
 
+    public function forceDeleteArticle($slug)
+    {
+        return DB::transaction(function () use ($slug) {
+            $article = Article::where('slug', $slug)->first();
+
+            if ($article === null) {
+                throw new Exception('Không tìm thấy bài viết');
+            }
+
+            $article->forceDelete();
+
+            return $article;
+        });
+    }
 }
