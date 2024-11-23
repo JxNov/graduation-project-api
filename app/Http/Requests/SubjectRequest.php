@@ -28,14 +28,16 @@ class SubjectRequest extends FormRequest
     }
 
     public function rulesForCreate(): array
-    {
-        return [
-            'name' => ['required', 'max:50', 'unique:subjects'],
-            'description' => ['required', 'max:500', 'string', 'min:10'],
-            'class_slug' => 'required|exists:classes,slug',
-            'block_slug' => 'required|exists:blocks,slug',
-        ];
-    }
+{
+    return [
+        'block_slug' => ['required', 'exists:blocks,slug'],
+        'subjects' => ['required', 'array', 'min:1'], 
+        'subjects.*.name' => ['required', 'string', 'max:50', 'unique:subjects,name'], 
+        'subjects.*.description' => ['nullable', 'string', 'max:500', 'min:10'], 
+    ];
+    
+}
+
 
     public function rulesForUpdate(): array
     {
@@ -45,13 +47,13 @@ class SubjectRequest extends FormRequest
             if (!$subject) {
                 throw new Exception('Không tìm thấy môn học');
             } 
-        return [
-            'name' => ['required', 'max:50', 'unique:subjects,slug,'.$subject->id],
-            'description' => ['required', 'max:500', 'string', 'min:10'],
-            'class_slug' => 'required|exists:classes,slug',
-            'block_slug' => 'required|exists:blocks,slug',
-
-        ];
+            return [
+                'block_slug' => ['required', 'exists:blocks,slug'],
+                'subjects' => ['required', 'array', 'min:1'], 
+                'subjects.*.name' => ['required', 'string', 'max:50', 'unique:subjects,name'], 
+                'subjects.*.description' => ['nullable', 'string', 'max:500', 'min:10'],
+            ];
+            
     }
 
     public function messages(): array

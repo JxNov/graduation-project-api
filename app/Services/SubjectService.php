@@ -14,22 +14,39 @@ class SubjectService
 {
 
     public function store(array $data)
-    {
-        return DB::transaction(function () use ($data) {
-            $class = Classes::where('slug', $data['class_slug'])->firstOrFail();
-            if ($class === null) {
-                throw new Exception('Class không tồn tại hoặc đã bị xóa');
+{
+    return DB::transaction(function () use ($data) {
+        // Tìm khối theo slug
+        $block = Block::where('slug', $data['block_slug'])->firstOrFail();
+        
+        // Duyệt qua từng môn học và thêm vào cơ sở dữ liệu
+        $subjects = [];
+        foreach ($data['subjects'] as $subjectData) {
+            $subjectData['slug'] = Str::slug($subjectData['name'], '-');
+
+            // Tạo môn học
+            $subject = Subject::create($subjectData);
+
+            // Gán môn học cho các lớp thuộc khối này
+            $classes = $block->classes()->get(); // Thêm get() để lấy kết quả
+
+            foreach ($classes as $class) {
+                // Gắn môn học vào lớp
+                $subject->classes()->attach($class->id);
             }
-            $block = Block::where('slug', $data['block_slug'])->firstOrFail();;
-            
-            $data['slug'] = Str::slug($data['name'], '-');
-            
-            $subject = Subject::create($data);
-            $subject->classes()->sync($class->id);
-            $subject->blocks()->sync($block->id);
-            return $subject;
-        });
-    }
+
+            // Gắn môn học vào khối
+            $subject->blocks()->attach($block->id);
+
+            $subjects[] = $subject;
+        }
+
+        return $subjects;
+    });
+}
+
+
+
 
     public function update(array $data,$slug)
     {
