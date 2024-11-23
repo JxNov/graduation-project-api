@@ -28,24 +28,26 @@ class CommentRequest extends FormRequest
     public function rulesForCreate()
     {
         return [
-            'username'=>'required',
+            'article_slug' => 'required|exists:articles,slug',
             'content' => 'required|max:255'
         ];
     }
 
     public function rulesForUpdate()
     {
-       
-            return [
-                'content' => 'required|max:255'
-            ];
+        return [
+            'article_slug' => 'required|exists:articles,slug',
+            'content' => 'required|max:255'
+        ];
     }
 
     public function messages()
     {
         return [
-            'content.required' => 'Nội dung comments không được trống',
-            'content.max'=> 'Nội dung comments quá dài'
+            'article_slug.required' => 'Không có bài viết được tìm thấy',
+            'article_slug.exists' => 'Bài viết không tồn tại',
+            'content.required' => 'Nội dung bình luận không được trống',
+            'content.max' => 'Nội dung bình luận quá dài'
         ];
     }
 }

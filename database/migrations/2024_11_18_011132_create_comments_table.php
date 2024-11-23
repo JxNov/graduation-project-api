@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            
+
             $table->foreignId('article_id')
                 ->constrained('articles')
                 ->onDelete('cascade');
@@ -21,7 +21,7 @@ return new class extends Migration {
                 ->constrained('users')
                 ->onDelete('cascade');
 
-            $table->text('content');
+            $table->string('content', 255);
             $table->timestamps();
             $table->softDeletes();
         });

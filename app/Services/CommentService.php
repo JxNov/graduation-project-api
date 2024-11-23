@@ -1,35 +1,35 @@
 <?php
 namespace App\Services;
 
+use App\Events\CommentCreated;
 use App\Models\Article;
-use App\Models\Post;
-use App\Models\Role;
-use App\Models\User;
+use App\Models\Comment;
 use Exception;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
 
 class CommentService
 {
-    public function addComment($postId, $content)
+    public function addComment(array $data)
     {
-        // Lấy vai trò 'student'
-        $roleStudent = Role::select('id', 'slug')->where('slug', 'student')->first();
+        return DB::transaction(function () use ($data) {
+            $user = Auth::user();
 
-        // Tìm người dùng có username và vai trò 'student'
-        $user = User::where('username', $content['username'])
-            ->whereHas('roles', function ($query) use ($roleStudent) {
-                $query->where('role_id', $roleStudent->id);
-            })->first();
-        if (!$user) {
-            throw new Exception('Username này không phải là học sinh');
-        }
-        $post = Article::findOrFail($postId);
+            $article = Article::where('slug', $data['article_slug'])->first();
 
-        
-        return $post->comments()->create([
-            'user_id' => $user->id, 
-            'content' => $content['content'],
-        ]);
+            if ($article === null) {
+                throw new Exception('Bài viết không tồn tại hoặc đã bị xóa');
+            }
+
+            $comment = Comment::create([
+                'article_id' => $article->id,
+                'user_id' => $user->id,
+                'content' => $data['content'],
+            ]);
+
+            broadcast(new CommentCreated($comment))->toOthers();
+
+            return $comment;
+        });
     }
 }

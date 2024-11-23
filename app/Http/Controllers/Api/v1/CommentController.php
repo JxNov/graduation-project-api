@@ -8,26 +8,31 @@ use App\Http\Resources\CommentResource;
 use App\Services\CommentService;
 use App\Traits\ApiResponseTrait;
 use Exception;
-use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class CommentController extends Controller
 {
     use ApiResponseTrait;
 
-    protected $commentservice;
+    protected $commentService;
 
-    public function __construct(CommentService $commentservice)
+    public function __construct(CommentService $commentService)
     {
-        $this->commentservice = $commentservice;
+        $this->commentService = $commentService;
     }
-    public function store(CommentRequest $request,$postId){
-        try{
-            $content = $request->validated();
-           $comments = $this->commentservice->addComment($postId,$content);
-           return $this->successResponse( new CommentResource($comments),'Success');
-        }
-        catch(Exception $e){
-            return $this->errorResponse($e->getMessage());
+
+    public function store(CommentRequest $request)
+    {
+        try {
+            $data = $request->validated();
+            $comment = $this->commentService->addComment($data);
+            return $this->successResponse(
+                new CommentResource($comment),
+                'Success',
+                Response::HTTP_CREATED
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
 }
