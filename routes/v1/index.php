@@ -285,7 +285,7 @@ Route::prefix('classrooms')
         Route::get('/', [ClassroomController::class, 'getClassroomForTeacher']);
         Route::get('/{slug}', [ClassroomController::class, 'getDetailClassroomForTeacher']);
         Route::get('/assignment/{slug}', [ClassroomController::class, 'getAssignmentClassroom']);
-        Route::get('/student/{slug}', [ClassroomController::class, 'getStudentClassroom']);
+        Route::get('/people/{slug}', [ClassroomController::class, 'getStudentClassroom']);
         Route::post('/', [ClassroomController::class, 'joinClassroomByCode']); // vào lớp = mã lớp
     });
 
