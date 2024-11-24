@@ -142,10 +142,10 @@ class StudentClassController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function distributeStudents()
+    public function distributeStudents($academic_year_slug,$blockSlug)
 {
     try {
-        $result = $this->studentClassService->distributeStudents();
+        $result = $this->studentClassService->distributeStudents($academic_year_slug,$blockSlug);
         return $this->successResponse($result, 'Phân phối học sinh thành công!', Response::HTTP_OK);
     } catch (\Exception $e) {
         return $this->errorResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);

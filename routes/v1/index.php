@@ -186,7 +186,7 @@ Route::prefix('excels')
                 Route::post('import', [StudentClassController::class, 'importStudent']);
                 Route::get('/', [StudentClassController::class, 'index']);
                 Route::post('/', [StudentClassController::class, 'store']);
-                Route::post('/distributeStudents', [StudentClassController::class, 'distributeStudents']);
+                Route::post('/distributeStudents/{academic_year_slug}/{blockSlug}', [StudentClassController::class, 'distributeStudents']);
                 Route::patch('/{id}', [StudentClassController::class, 'update']);
                 Route::delete('/{id}', [StudentClassController::class, 'destroy']);
                 Route::get('restore/{id}', [StudentClassController::class, 'restore']);
@@ -276,6 +276,7 @@ Route::prefix('scores')
         Route::get('/{id}', [ScoreController::class, 'show']);
         Route::patch('/{id}', [ScoreController::class, 'update']);
         //        Route::delete('/{id}', [ScoreController::class, 'destroy']);
+        Route::get('/list/{class_slug}', [ScoreController::class, 'calculateAndSaveFinalScores']);
     });
 
 // Classroom
