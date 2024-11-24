@@ -28,7 +28,7 @@ class ArticleController extends Controller
     public function index()
     {
         try {
-            $articles = Article::select('content', 'teacher_id', 'published_at')
+            $articles = Article::select('id', 'content', 'teacher_id', 'published_at')
                 ->with(['teacher'])
                 ->paginate(10);
 
