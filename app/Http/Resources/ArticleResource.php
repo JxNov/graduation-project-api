@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,11 +16,10 @@ class ArticleResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'title' => $this->title,
+            'id' => $this->id,
             'content' => $this->content,
             'teacherName' => ($this->teacher)->name,
-            'className' => ($this->class)->name,
-            'attachments' => $this->attachments,
+            'publishedAt' => Carbon::parse($this->published_at)->format('d/m/Y H:i:s')
         ];
     }
 }

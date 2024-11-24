@@ -28,8 +28,8 @@ class ArticleController extends Controller
     public function index()
     {
         try {
-            $articles = Article::select('title', 'content', 'attachments', 'teacher_id', 'class_id')
-                ->with(['teacher', 'class'])
+            $articles = Article::select('content', 'teacher_id', 'published_at')
+                ->with(['teacher'])
                 ->paginate(10);
 
             if ($articles->isEmpty()) {
@@ -50,7 +50,7 @@ class ArticleController extends Controller
     {
         try {
             $data = $request->validated();
-            $article = $this->articleService->createNewArticle($data);
+            $article = $this->articleService->createNewArticle($data['content']);
 
             return $this->successResponse(
                 new ArticleResource($article),
@@ -62,97 +62,10 @@ class ArticleController extends Controller
         }
     }
 
-    public function show($slug)
+    public function forceDelete($id)
     {
         try {
-            $article = Article::where('slug', $slug)->first();
-
-            if ($article === null) {
-                throw new Exception('Không tìm thấy bài viết');
-            }
-
-            return $this->successResponse(
-                new ArticleResource($article),
-                'Lấy bài viết thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
-
-    public function update(ArticleRequest $request, $slug)
-    {
-        try {
-            $data = $request->validated();
-            $article = $this->articleService->updateArticle($data, $slug);
-
-            return $this->successResponse(
-                new ArticleResource($article),
-                'Sửa bài viết thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
-
-    public function destroy($slug)
-    {
-        try {
-            $this->articleService->deleteArticle($slug);
-
-            return $this->successResponse(
-                null,
-                'Xóa bài viết thành công',
-                Response::HTTP_NO_CONTENT
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
-
-    public function trash()
-    {
-        try {
-            $articles = Article::select('title', 'content', 'attachments', 'teacher_id', 'class_id')
-                ->with(['teacher', 'class'])
-                ->onlyTrashed()
-                ->paginate(10);
-
-            if ($articles->isEmpty()) {
-                return $this->errorResponse('Không có bài viết', Response::HTTP_BAD_REQUEST);
-            }
-
-            return $this->successResponse(
-                new ArticleCollection($articles),
-                'Lấy danh sách bài viết đã xóa thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
-
-    public function restore($slug)
-    {
-        try {
-            $article = $this->articleService->restoreArticle($slug);
-
-            return $this->successResponse(
-                new ArticleResource($article),
-                'Khôi phục bài viết thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
-
-    public function forceDelete($slug)
-    {
-        try {
-            $this->articleService->forceDeleteArticle($slug);
+            $this->articleService->forceDeleteArticle($id);
 
             return $this->successResponse(
                 null,

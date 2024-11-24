@@ -12,19 +12,13 @@ return new class extends Migration {
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
-            $table->string('title', 100);
-            $table->string('slug', 130)->unique();
             $table->text('content');
 
             $table->foreignId('teacher_id')
                 ->constrained('users')
                 ->onDelete('cascade');
 
-            $table->foreignId('class_id')
-                ->constrained('classes')
-                ->onDelete('cascade');
-
-            $table->string('attachments', 255)->nullable();
+            $table->date('published_at')->useCurrent();
             $table->timestamps();
             $table->softDeletes();
         });

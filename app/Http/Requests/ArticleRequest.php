@@ -25,11 +25,7 @@ class ArticleRequest extends FormRequest
     public function rulesForCreate()
     {
         return [
-            'title' => 'required|max:255',
             'content' => 'required',
-            'username' => 'required|string|exists:users,username',
-            'class_slug' => 'required|string|exists:classes,slug',
-            'attachments' => 'nullable|file|mimes:jpg,jpeg,png,pdf,docx',
         ];
     }
 
@@ -37,22 +33,14 @@ class ArticleRequest extends FormRequest
     {
 
         return [
-            'title' => 'required|max:255',
             'content' => 'required',
-            'username' => 'required|string|exists:users,username',
-            'class_slug' => 'required|string|exists:classes,slug',
-            'attachments' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf,docx',
         ];
     }
 
     public function messages()
     {
         return [
-            'title.required' => 'Tiêu đề bài viết không được để trống',
-            'title.max' => 'Tiêu đề bài viết không được vượt quá 255 ký tự',
             'content.required' => 'Nội dung bài viết không được để trống',
-            'attachments.file' => 'Tệp đính kèm phải là một tệp hợp lệ',
-            'attachments.mimes' => 'Tệp đính kèm phải có định dạng jpg, jpeg, png, pdf hoặc docx',
         ];
     }
 }
