@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Imports\StudentClassImport;
+use App\Models\AcademicYear;
 use App\Models\Block;
 use App\Models\Classes;
 use App\Models\Role;
@@ -160,69 +161,45 @@ class StudentClassService
     }
 
 
-    public function distributeStudents()
+    public function distributeStudents($academic_year_slug, $blockSlug)
 {
-    return DB::transaction(function () {
-        $maxStudentsPerClass = 40;
-        $maxClasses = 5;
+    return DB::transaction(function () use ($academic_year_slug, $blockSlug) {
+        // Lấy năm học theo slug
+        $academicYear = AcademicYear::where('slug', $academic_year_slug)->first();
 
-        // Kiểm tra số lượng lớp hiện tại và học sinh trong lớp
-        $existingClasses = Classes::withCount('students')->get();
-        $fullClasses = $existingClasses->filter(function ($class) use ($maxStudentsPerClass) {
-            return $class->students_count >= $maxStudentsPerClass;
-        });
-
-        if ($existingClasses->count() >= $maxClasses && $fullClasses->count() == $maxClasses) {
-            throw new Exception('Không thể phân lớp. Đã đủ 5 lớp 6 với 40 học sinh mỗi lớp.');
+        if (!$academicYear) {
+            throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
         }
 
-        // Lấy danh sách học sinh chưa được gắn lớp
+        // Lấy khối học theo slug
+        $block = Block::where('slug', $blockSlug)->first();
+        if (!$block) {
+            throw new Exception('Khối học không tồn tại hoặc đã bị xóa');
+        }
+
+        $blockId = $block->id;
+
+        // Lấy danh sách học sinh chưa được gắn lớp và đã nhập học vào năm học này
         $students = User::whereHas('roles', function ($query) {
             $query->where('slug', 'student');
-        })->whereDoesntHave('classes')->get();
+        })
+        ->whereDoesntHave('classes')
+        ->whereHas('generations', function ($query) use ($academicYear) {
+            $query->where('academic_year_id', $academicYear->id);
+        })
+        ->get();
 
         $totalStudents = $students->count();
 
-        if ($totalStudents < 30) {
-            throw new Exception('Không đủ học sinh để phân lớp.');
+        if ($totalStudents < 1) {
+            throw new Exception('Không có học sinh để phân lớp.');
         }
 
-        $minStudentsPerClass = 30;
+        // Tính toán số lượng lớp cần thiết
+        $maxStudentsPerClass = 40;
+        $classesNeeded = ceil($totalStudents / $maxStudentsPerClass);
 
-        $studentsForClass = [];
-        $remainingStudents = $totalStudents;
-        $classesCreated = 0;
-
-        while ($remainingStudents >= $minStudentsPerClass && $classesCreated + $existingClasses->count() < $maxClasses) {
-            $studentsForClass[] = $minStudentsPerClass;
-            $remainingStudents -= $minStudentsPerClass;
-            $classesCreated++;
-        }
-
-        $remainingStudentsForClass = $remainingStudents;
-
-        foreach ($studentsForClass as $key => $classStudents) {
-            if ($classStudents < $maxStudentsPerClass) {
-                $canAddStudents = $maxStudentsPerClass - $classStudents;
-                $studentsToAdd = min($remainingStudentsForClass, $canAddStudents);
-                $studentsForClass[$key] += $studentsToAdd;
-                $remainingStudentsForClass -= $studentsToAdd;
-
-                if ($studentsForClass[$key] >= $maxStudentsPerClass) {
-                    continue;
-                }
-            }
-
-            if ($remainingStudentsForClass <= 0) {
-                break;
-            }
-        }
-
-        if ($remainingStudentsForClass > 0 && $classesCreated + $existingClasses->count() < $maxClasses) {
-            $studentsForClass[] = $remainingStudentsForClass;
-            $classesCreated++;
-        }
-
+        // Tạo danh sách giáo viên
         $teachers = User::whereHas('roles', function ($query) {
             $query->where('slug', 'teacher');
         })->get();
@@ -231,56 +208,85 @@ class StudentClassService
             throw new Exception('Không có giáo viên nào có role teacher.');
         }
 
-        if ($teachers->count() < $classesCreated) {
+        $teachers = $teachers->shuffle();
+
+        if ($teachers->count() < $classesNeeded) {
             throw new Exception('Không đủ giáo viên để gán cho tất cả các lớp.');
         }
 
-        $teachers = $teachers->shuffle();
+        // Số lượng học sinh cho mỗi lớp
+        $studentsPerClass = (int) floor($totalStudents / $classesNeeded);
+        $remainingStudents = $totalStudents % $classesNeeded;
 
-        $blockSlug = 'khoi-6'; 
-        $block = Block::where('slug', $blockSlug)->firstOrFail();
-        $blockId = $block->id;
+        // Tạo lớp và phân phối học sinh
+        $currentStudentIndex = 0;
+        $classesCreated = [];
 
-        for ($i = 1; $i <= $classesCreated; $i++) {
+        for ($i = 1; $i <= $classesNeeded; $i++) {
             $teacher = $teachers[$i - 1];
 
+            // Tạo lớp
             $class = Classes::create([
-                'name' => "6A" . ($existingClasses->count() + $i),
-                'slug' => Str::slug("6A" . ($existingClasses->count() + $i)),
+                'name' => "6A" . ($i),
+                'slug' => Str::slug($teacher->username."-"."6A" . ($i)),
                 'code' => Str::random(7),
                 'teacher_id' => $teacher->id,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
 
+            // Ghi vào bảng block_classes
             DB::table('block_classes')->insert([
                 'block_id' => $blockId,
                 'class_id' => $class->id,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
-        }
 
-        $currentStudentIndex = 0;
-        foreach ($studentsForClass as $index => $studentsCount) {
-            $class = Classes::skip($index)->first();
+            // Ghi vào bảng academic_year_classes
+            DB::table('academic_year_classes')->insert([
+                'academic_year_id' => $academicYear->id,
+                'class_id' => $class->id,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
 
-            $classStudents = $students->slice($currentStudentIndex, $studentsCount);
-            $studentIds = $classStudents->pluck('id')->toArray();
+            // Ghi vào bảng class_teachers
+            DB::table('class_teachers')->insert([
+                'class_id' => $class->id,
+                'teacher_id' => $teacher->id,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+            // Tính số lượng học sinh cho lớp này
+            $studentsForThisClass = $studentsPerClass;
+            if ($remainingStudents > 0) {
+                $studentsForThisClass++;
+                $remainingStudents--;
+            }
+
+            // Gán học sinh vào lớp
+            $studentsForClass = $students->slice($currentStudentIndex, $studentsForThisClass);
+            $studentIds = $studentsForClass->pluck('id')->toArray();
 
             $class->students()->syncWithoutDetaching(array_fill_keys($studentIds, ['created_at' => Carbon::now()]));
 
-            $currentStudentIndex += $studentsCount;
+            $currentStudentIndex += $studentsForThisClass;
+            $classesCreated[] = $class;
         }
 
         return [
             'total_students' => $totalStudents,
-            'classes_created' => Classes::count(),
+            'classes_created' => count($classesCreated),
             'students_per_class' => Classes::withCount('students')->pluck('students_count', 'name'),
-            'remaining_students' => $remainingStudentsForClass,
         ];
     });
 }
+
+
+
+
 
 
 
