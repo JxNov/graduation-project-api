@@ -211,9 +211,7 @@ class ClassroomController extends Controller
             $class = Classes::where('slug', $slug)
                 ->with([
                     'students',
-                    'classTeachers' => function ($query) use ($user) {
-                        $query->where('teacher_id', $user->id);
-                    }
+                    'classTeachers'
                 ])
                 ->first();
 
@@ -228,9 +226,15 @@ class ClassroomController extends Controller
                 ];
             });
 
+            $teachers = $class->classTeachers->map(function ($teacher) {
+                return [
+                    'name' => $teacher->name,
+                    'image' => $teacher->image,
+                ];
+            });
+
             $data = [
-                'teacherName' => $user->name,
-                'teacherImage' => $user->image,
+                'teachers' => $teachers,
                 'students' => $students,
                 'numberOfStudents' => $students->count()
             ];
