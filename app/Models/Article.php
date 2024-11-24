@@ -11,12 +11,9 @@ class Article extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'title',
-        'slug',
         'content',
-        'attachments',
         'teacher_id',
-        'class_id'
+        'published_at',
     ];
 
     public function comments()
@@ -27,11 +24,6 @@ class Article extends Model
     public function teacher()
     {
         return $this->belongsTo(User::class, 'teacher_id');
-    }
-
-    public function class()
-    {
-        return $this->belongsTo(Classes::class, 'article_id');
     }
 
     public static function booted()

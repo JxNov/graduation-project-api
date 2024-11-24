@@ -320,16 +320,13 @@ Route::prefix('submitted_assignments')->group(function () {
     Route::patch('/{assignmentSlug}/score-feedback', [SubmittedAssignmentController::class, 'updateScoreAndFeedback']);
 });
 
-Route::prefix('articles')->group(function () {
-    Route::get('/', [ArticleController::class, 'index']);
-    Route::post('/', [ArticleController::class, 'store']);
-    Route::get('/trash', [ArticleController::class, 'trash']);
-    Route::get('/{slug}', [ArticleController::class, 'show']);
-    Route::patch('/{slug}', [ArticleController::class, 'update']);
-    Route::delete('/{slug}', [ArticleController::class, 'destroy']);
-    Route::get('/restore/{slug}', [ArticleController::class, 'restore']);
-    Route::delete('/force-delete/{slug}', [ArticleController::class, 'forceDelete']);
-});
+Route::prefix('articles')
+    ->middleware('auth:api')
+    ->group(function () {
+        Route::get('/', [ArticleController::class, 'index']);
+        Route::post('/', [ArticleController::class, 'store']);
+        Route::delete('/force-delete/{id}', [ArticleController::class, 'forceDelete']);
+    });
 
 Route::prefix('comments')->group(function () {
     Route::post('/', [CommentController::class, 'store'])->middleware('auth:api');
