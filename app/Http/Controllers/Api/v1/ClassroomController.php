@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ArticleCollection;
 use App\Http\Resources\ClassResource;
 use App\Models\Article;
 use App\Models\Classes;
@@ -84,9 +85,9 @@ class ClassroomController extends Controller
             }
 
             $articles = Article::where('teacher_id', $user->id)
-                ->where('class_id', $class->id)
-                ->select('title', 'content', 'attachments')
-                ->first();
+                ->select('id', 'content', 'teacher_id', 'published_at')
+                ->with('teacher')
+                ->get();
 
             $assignments = $class->assignments->map(function ($assignment) {
                 return [
@@ -98,12 +99,21 @@ class ClassroomController extends Controller
                 ];
             });
 
+            $articleData = $articles->map(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'content' => $article->content,
+                    'teacherName' => $article->teacher->name,
+                    'publishedAt' => $article->published_at,
+                ];
+            });
+
             $data = [
                 'className' => $class->name,
                 'classSlug' => $class->slug,
                 'classCode' => $class->code,
                 'assignments' => $assignments,
-                'articles' => $articles ?? null
+                'articles' => $articleData
             ];
 
             return $this->successResponse(
