@@ -62,9 +62,6 @@ class ClassroomController extends Controller
                         $query->where('teacher_id', $user->id)
                             ->select('users.id', 'users.name', 'users.username');
                     },
-                    'subjects' => function ($query) {
-                        $query->select('subjects.id', 'subjects.name', 'subjects.slug', 'subjects.description');
-                    },
                     'assignments' => function ($query) use ($user) {
                         $query->where('teacher_id', $user->id)
                             ->select(
@@ -91,28 +88,13 @@ class ClassroomController extends Controller
                 ->select('title', 'content', 'attachments')
                 ->first();
 
-            // nhom theo subject_id
-            $assignmentsGroup = $class->assignments->groupBy('subject_id')->map(function ($assignments) {
-                return $assignments->map(function ($assignment) {
-                    return [
-                        'title' => $assignment->title,
-                        'slug' => $assignment->slug,
-                        'description' => $assignment->description,
-                        'due_date' => $assignment->due_date,
-                        'criteria' => $assignment->criteria,
-                    ];
-                });
-            });
-
-            // dung` get->subject_id vi` o tren da nhom' theo subject_id
-            $subjects = $class->subjects->map(function ($subject) use ($assignmentsGroup) {
-                $assignmentsForSubject = $assignmentsGroup->get($subject->id, []);
-
+            $assignments = $class->assignments->map(function ($assignment) {
                 return [
-                    'name' => $subject->name,
-                    'slug' => $subject->slug,
-                    'description' => $subject->description,
-                    'assignments' => $assignmentsForSubject,
+                    'title' => $assignment->title,
+                    'slug' => $assignment->slug,
+                    'description' => $assignment->description,
+                    'due_date' => $assignment->due_date,
+                    'criteria' => $assignment->criteria,
                 ];
             });
 
@@ -120,7 +102,7 @@ class ClassroomController extends Controller
                 'className' => $class->name,
                 'classSlug' => $class->slug,
                 'classCode' => $class->code,
-                'subjects' => $subjects,
+                'assignments' => $assignments,
                 'articles' => $articles ?? null
             ];
 
@@ -145,9 +127,6 @@ class ClassroomController extends Controller
                         $query->where('teacher_id', $user->id)
                             ->select('users.id', 'users.name', 'users.username');
                     },
-                    'subjects' => function ($query) {
-                        $query->select('subjects.id', 'subjects.name', 'subjects.slug', 'subjects.description');
-                    },
                     'assignments' => function ($query) use ($user) {
                         $query->where('teacher_id', $user->id)
                             ->select(
@@ -169,32 +148,18 @@ class ClassroomController extends Controller
                 throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
             }
 
-            $assignmentsGroup = $class->assignments->groupBy('subject_id')->map(function ($assignments) {
-                return $assignments->map(function ($assignment) {
-                    return [
-                        'title' => $assignment->title,
-                        'slug' => $assignment->slug,
-                        'description' => $assignment->description,
-                        'due_date' => $assignment->due_date,
-                        'criteria' => $assignment->criteria,
-                    ];
-                });
-            });
-
-            // dung` get->subject_id vi` o tren da nhom' theo subject_id
-            $subjects = $class->subjects->map(function ($subject) use ($assignmentsGroup) {
-                $assignmentsForSubject = $assignmentsGroup->get($subject->id, []);
-
+            $assignments = $class->assignments->map(function ($assignment) {
                 return [
-                    'name' => $subject->name,
-                    'slug' => $subject->slug,
-                    'description' => $subject->description,
-                    'assignments' => $assignmentsForSubject,  // gán bài tập vào môn học
+                    'title' => $assignment->title,
+                    'slug' => $assignment->slug,
+                    'description' => $assignment->description,
+                    'due_date' => $assignment->due_date,
+                    'criteria' => $assignment->criteria,
                 ];
             });
 
             return $this->successResponse(
-                $subjects,
+                $assignments,
                 'Lấy bài tập thành công',
                 Response::HTTP_OK
             );
