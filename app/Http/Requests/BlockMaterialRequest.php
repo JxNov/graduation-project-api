@@ -6,7 +6,7 @@ use App\Models\Material;
 use Exception;
 use Illuminate\Foundation\Http\FormRequest;
 
-class MaterialRequest extends FormRequest
+class BlockMaterialRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -33,9 +33,7 @@ class MaterialRequest extends FormRequest
             'description' => 'nullable',
             'file_path' => 'required|mimes:docx',
             'subject_slug' => 'required',
-            'username' => 'required',
             'block_slug' => 'required',
-            'class_slug' => 'required',
         ];
     }
 
@@ -55,9 +53,7 @@ class MaterialRequest extends FormRequest
                 'description' => 'nullable',
                 'file_path' => 'nullable|mimes:docx',
                 'subject_slug' => 'required',
-                'username' => 'required',
                 'block_slug' => 'required',
-                'class_slug' => 'required',
             ];
         } catch (Exception $e) {
             return [
@@ -75,9 +71,7 @@ class MaterialRequest extends FormRequest
             'file_path.required' => 'Tài liệu đang trống',
             'file_path.mimes' => 'Tài liệu phải có định dạng .docx',
             'subject_slug.required' => 'Môn học chưa được chọn',
-            'username.required' => 'Giáo viên chưa được chọn',
             'block_slug.required' => 'Hãy chọn 1 khối cho tài liệu',
-            'class_slug.required' => 'Hãy chọn 1 lớp cho tài liệu',
         ];
     }
 }
