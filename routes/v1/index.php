@@ -143,15 +143,21 @@ Route::prefix('classes')
     });
 
 Route::prefix('materials')
+    ->middleware('auth:api')
     ->group(function () {
-        Route::get('/', [MaterialController::class, 'index']);
-        Route::post('/', [MaterialController::class, 'store']);
-        Route::get('/trash', [MaterialController::class, 'trash']);
-        Route::get('/{slug}', [MaterialController::class, 'show']);
-        Route::patch('/{slug}', [MaterialController::class, 'update']);
-        Route::delete('/{slug}', [MaterialController::class, 'destroy']);
+        Route::prefix('classes')
+            ->group(function () {
+                Route::post('/', [MaterialController::class, 'storeForClass']);
+                Route::patch('/{slug}', [MaterialController::class, 'updateForClass']);
+            });
+
+        Route::prefix('blocks')
+            ->group(function () {
+                Route::post('/', [MaterialController::class, 'storeForBlock']);
+                Route::patch('/{slug}', [MaterialController::class, 'updateForBlock']);
+            });
+
         Route::get('/download/{slug}', [MaterialController::class, 'download']);
-        Route::get('/restore/{slug}', [MaterialController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [MaterialController::class, 'forceDelete']);
     });
 

@@ -38,30 +38,4 @@ class Material extends Model
     {
         return $this->belongsToMany(Classes::class, 'class_materials', 'material_id', 'class_id');
     }
-
-    public static function booted()
-    {
-        static::deleting(function ($material) {
-            if ($material->classes->isNotEmpty()) {
-                $material->classes()->updateExistingPivot($material->classes->pluck('id'), ['deleted_at' => now()]);
-            }
-
-            if ($material->blocks->isNotEmpty()) {
-                $material->blocks()->updateExistingPivot($material->blocks->pluck('id'), ['deleted_at' => now()]);
-            }
-        });
-
-        static::restoring(function ($material) {
-            $materialClassTrashed = $material->classes()->withTrashed()->get();
-            $materialBlockTrashed = $material->blocks()->withTrashed()->get();
-
-            if ($materialClassTrashed->isNotEmpty()) {
-                $material->classes()->updateExistingPivot($material->classes->pluck('id'), ['deleted_at' => null]);
-            }
-
-            if ($materialBlockTrashed->isNotEmpty()) {
-                $material->blocks()->updateExistingPivot($material->blocks->pluck('id'), ['deleted_at' => null]);
-            }
-        });
-    }
 }
