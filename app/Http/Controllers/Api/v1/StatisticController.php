@@ -115,4 +115,19 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+    public function calculateTotalScore($username, $classSlug, $semesterSlug, $yearSlug)
+    {
+        try {
+            $count = $this->statisticService->calculateTotalScore($username, $classSlug, $semesterSlug, $yearSlug);
+
+            return $this->successResponse(
+                $count,
+                'thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
 }
