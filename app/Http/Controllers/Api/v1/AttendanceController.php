@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\AttendanceRequest;
-use App\Http\Resources\AttendanceCollection;
 use App\Models\Attendance;
 use App\Models\AttendanceDetail;
 use App\Models\Classes;
@@ -104,10 +102,10 @@ class AttendanceController extends Controller
         }
     }
 
-    public function save(AttendanceRequest $request)
+    public function save(Request $request)
     {
         try {
-            $data = $request->validated();
+            $data = $request->all();
 
             $this->attendanceService->saveAttendance($data);
 
@@ -121,10 +119,10 @@ class AttendanceController extends Controller
         }
     }
 
-    public function update(AttendanceRequest $request, $id)
+    public function update(Request $request, $id)
     {
         try {
-            $data = $request->validated();
+            $data = $request->all();
 
             $this->attendanceService->updateAttendance($data, $id);
 
