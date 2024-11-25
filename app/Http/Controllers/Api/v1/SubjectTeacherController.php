@@ -39,7 +39,7 @@ class SubjectTeacherController extends Controller
 
         // Trả về dữ liệu qua SubjectTeacherCollection
         return $this->successResponse(
-            SubjectTeacherCollection::make($subjects),
+             new SubjectTeacherCollection($subjects),
             'Lấy tất cả thông tin thành công',
             Response::HTTP_OK
         );
