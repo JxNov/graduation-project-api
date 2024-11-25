@@ -11,6 +11,7 @@ use App\Models\Block;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StatisticService
 {
@@ -73,7 +74,6 @@ class StatisticService
                 ->get();
 
             return $this->calculateScoreStatisticsByClassSemester($scores, $semester->name, $class->name);
-
         } catch (Exception $e) {
             throw $e;
         }
@@ -131,7 +131,6 @@ class StatisticService
             });
 
             return $blockStudentCount;
-
         } catch (Exception $e) {
             throw $e;
         }
@@ -239,6 +238,58 @@ class StatisticService
             'studentLowestScore' => $lowest_score,
             'passRate' => $pass_rate,
             'failRate' => $fail_rate,
+        ];
+    }
+
+    public function calculateTotalScore($username, $classSlug, $semesterSlug, $yearSlug)
+    {
+        $student = User::where('username', $username)->first();
+        if (!$student) {
+            throw new Exception("Không tìm thấy lớp với slug: $username");
+        }
+        // Lấy thông tin lớp
+        $class = Classes::where('slug', $classSlug)->first();
+        if (!$class) {
+            throw new Exception("Không tìm thấy lớp với slug: $classSlug");
+        }
+
+        // Lấy thông tin học kỳ
+        $semester = Semester::where('slug', $semesterSlug)->first();
+        if (!$semester) {
+            throw new Exception("Không tìm thấy học kỳ với slug: $semesterSlug");
+        }
+
+        // Lấy thông tin năm học
+        $academicYear = AcademicYear::where('slug', $yearSlug)->first();
+        if (!$academicYear) {
+            throw new Exception("Không tìm thấy năm học với slug: $yearSlug");
+        }
+
+        $subjects = $class->subjects->pluck('id');
+        Log::info($subjects);
+        // Lấy điểm của học sinh cho tất cả các môn trong lớp, học kỳ, năm học
+        $scores = Score::where('student_id', $student->id)
+            ->where('class_id', $class->id)
+            ->where('semester_id', $semester->id)
+            ->whereIn('subject_id', $subjects)
+            ->get();
+        Log::info($scores);
+        // Kiểm tra nếu chưa đủ bản ghi điểm cho 14 môn
+        // if ($scores->count() !== 14) {
+        //     throw new Exception("Học sinh chưa có đủ điểm cho 14 môn học.");
+        // }
+
+        // Tính tổng điểm
+        $totalScore = $scores->avg('average_score');
+
+        // Trả về kết quả
+        return (object) [
+            'name' => $student->name,
+            'usename' => $username,
+            'class_name' => $class->name,
+            'semester_name' => $semester->name,
+            'academic_year_name' => $academicYear->name,
+            'total_score' => $totalScore,
         ];
     }
 }
