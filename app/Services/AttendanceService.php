@@ -28,7 +28,7 @@ class AttendanceService
 
             $attendance = Attendance::create([
                 'date' => now(),
-                'shifts' => $data['shifts'],
+                'shifts' => $this->determineShift(),
                 'class_id' => $class->id
             ]);
 
@@ -80,8 +80,8 @@ class AttendanceService
             }
 
             $attendance->update([
-                'date' => $attendance->date,
-                'shifts' => $data['shifts'],
+                'date' => now(),
+                'shifts' => $this->determineShift(),
                 'class_id' => $class->id
             ]);
 
@@ -105,5 +105,11 @@ class AttendanceService
             event(new AttendanceSaved($attendance));
             return $attendance;
         });
+    }
+
+    private function determineShift()
+    {
+        $currentHour = Carbon::now('Asia/Ho_Chi_Minh')->hour;
+        return $currentHour < 12 ? 'Morning' : 'Afternoon';
     }
 }
