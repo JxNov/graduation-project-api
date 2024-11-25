@@ -12,7 +12,7 @@ class NotifyStudentsAcademicYearStart extends Command
 {
     protected $signature = 'app:notify-students-academic-year-start';
 
-    protected $description = 'Remind students about the upcoming academic year';
+    protected $description = 'Thông báo đến học sinh năm học chuẩn bị bắt đầu';
 
     public function handle()
     {
