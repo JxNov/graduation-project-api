@@ -9,6 +9,7 @@ use App\Traits\ApiResponseTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Http\Resources\ScoreResource;
 
 class StatisticController extends Controller
 {
@@ -115,14 +116,14 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function calculateTotalScore($username, $classSlug, $semesterSlug, $yearSlug)
+    public function showStudentScoreSemester($classSlug, $semesterSlug, $yearSlug)
     {
         try {
-            $count = $this->statisticService->calculateTotalScore($username, $classSlug, $semesterSlug, $yearSlug);
+            $student = $this->statisticService->showStudentScoreSemester($classSlug, $semesterSlug, $yearSlug);
 
             return $this->successResponse(
-                $count,
-                'thành công',
+                $student,
+                'Lấy thông tin điểm các môn học của học sinh thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
