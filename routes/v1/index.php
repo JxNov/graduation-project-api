@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\v1\ClassroomController;
 use App\Http\Controllers\Api\v1\CommentController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\MaterialController;
+use App\Http\Controllers\Api\v1\NotificationController;
 use App\Http\Controllers\Api\v1\PostController;
 use App\Http\Controllers\Api\v1\SemesterController;
 use App\Http\Controllers\Api\v1\StudentExcelController;
@@ -332,4 +333,11 @@ Route::prefix('comments')->group(function () {
     Route::post('/', [CommentController::class, 'store'])->middleware('auth:api');
 });
 
-
+// Thông báo
+Route::prefix('notifications')
+    ->middleware('auth:api')
+    ->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::patch('/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+        Route::patch('/{notificationId}', [NotificationController::class, 'markAsRead']);
+    });
