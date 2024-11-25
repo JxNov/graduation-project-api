@@ -10,6 +10,7 @@ use App\Models\Semester;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Notifications\NewAssignmentNotification;
 
 class AssignmentService
 {
@@ -46,7 +47,13 @@ class AssignmentService
             $assignmentNameSlug = Str::slug($data['title']);
             $data['slug'] = $classSlug . '-' . $assignmentNameSlug;
 
-            return Assignment::create($data);
+            $assignment = Assignment::create($data);
+
+            foreach ($class->students as $student) {
+                $student->notify(new NewAssignmentNotification($assignment));
+            }
+
+            return $assignment;
         });
     }
 

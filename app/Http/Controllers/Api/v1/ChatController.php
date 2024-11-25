@@ -9,7 +9,7 @@ use App\Services\ChatService;
 use App\Traits\ApiResponseTrait;
 use Exception;
 use Illuminate\Http\Response;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Auth;
 
 class ChatController extends Controller
 {
@@ -25,7 +25,7 @@ class ChatController extends Controller
     public function getConversationAdmin()
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = Auth::user();
 
             if (!$user) {
                 return $this->errorResponse('Không có quyền truy cập', Response::HTTP_FORBIDDEN);
@@ -98,7 +98,7 @@ class ChatController extends Controller
     public function getConversationStudent()
     {
         try {
-            $student = JWTAuth::parseToken()->authenticate();
+            $student = Auth::user();
 
             $conversations = Conversation::whereHas('users', function ($query) use ($student) {
                 $query->where('user_id', $student->id);
