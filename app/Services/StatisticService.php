@@ -243,44 +243,43 @@ class StatisticService
         ];
     }
 
-    public function showStudentScoreSemester($classSlug,$semesterSlug, $yearSlug)
-{
-    $student = Auth::user();
+    public function showStudentScoreSemester($classSlug, $semesterSlug, $yearSlug)
+    {
+        $student = Auth::user();
 
-    if (!$student) {
-        throw new Exception("Người dùng chưa đăng nhập.");
+        if (!$student) {
+            throw new Exception("Người dùng chưa đăng nhập.");
+        }
+
+        $class = Classes::where('slug', $classSlug)->first();
+
+        if (!$class) {
+            throw new Exception("Không tìm thấy lớp");
+        }
+
+        $semester = Semester::where('slug', $semesterSlug)->first();
+
+        if (!$semester) {
+            throw new Exception("Học kỳ không tìm thấy!.");
+        }
+        $academicYear = AcademicYear::where('slug', $yearSlug)->first();
+        if (!$academicYear) {
+            throw new Exception("Năm học không tìm thấy!.");
+        }
+        $subjectScores = DB::table('subject_scores')
+            ->where('student_id', $student->id)
+            ->where('class_id', $class->id)
+            ->where('semester_id', $semester->id)
+            ->get();
+
+        if ($subjectScores->isEmpty()) {
+            throw new Exception("Không tìm thấy điểm của bạn trong lớp {$class->name}.");
+        }
+
+        return response()->json([
+            'student' => $student->name,
+            'class' => $class->name,
+            'scores' => $subjectScores
+        ]);
     }
-
-    $class = Classes::where('slug',$classSlug)->first();
-
-    if (!$class) {
-        throw new Exception("Không tìm thấy lớp");
-    }
-
-    $semester = Semester::where('slug', $semesterSlug)->first();
-    
-    if (!$semester) {
-        throw new Exception("Học kỳ không tìm thấy!.");
-    }
-    $academicYear = AcademicYear::where('slug', $yearSlug)->first();
-    if (!$academicYear) {
-        throw new Exception("Năm học không tìm thấy!.");
-    }
-    $subjectScores = $student->subjectScores()
-        ->where('class_id', $class->id)
-        ->where('semester_id', $semester->id)
-        ->get();
-
-    if ($subjectScores->isEmpty()) {
-        throw new Exception("Không tìm thấy điểm của bạn trong lớp {$class->name}.");
-    }
-
-    return response()->json([
-        'student' => $student->name,
-        'class' => $class->name,
-        'scores' => $subjectScores
-    ]);
-}
-
-
 }
