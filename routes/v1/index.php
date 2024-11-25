@@ -22,7 +22,6 @@ use App\Http\Controllers\Api\v1\CommentController;
 use App\Http\Controllers\Api\v1\GenerationController;
 use App\Http\Controllers\Api\v1\MaterialController;
 use App\Http\Controllers\Api\v1\NotificationController;
-use App\Http\Controllers\Api\v1\PostController;
 use App\Http\Controllers\Api\v1\SemesterController;
 use App\Http\Controllers\Api\v1\StudentExcelController;
 use App\Http\Controllers\Api\v1\SubjectController;

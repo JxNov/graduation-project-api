@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Resources\SubjectTeacherCollection;
 use App\Imports\StudentClassImport;
 use App\Models\Classes;
 use App\Models\Role;
@@ -18,17 +19,24 @@ class SubjectTeacherService
     public function store(array $data)
 {
     return DB::transaction(function () use ($data) {
-        $subject = Subject::where('slug', $data['subjectSlug'])->first();
-        if ($subject === null) {
-            throw new Exception('Môn học không tồn tại hoặc đã bị xóa');
+        // Lấy các môn học theo slug
+        $subjects = Subject::whereIn('slug', $data['subjectSlug'])->get();
+        if ($subjects->isEmpty()) {
+            throw new Exception('Một hoặc nhiều môn học không tồn tại hoặc đã bị xóa');
         }
 
+        // Lấy role của giáo viên
         $roleTeacher = Role::where('slug', 'teacher')->first();
+        if (!$roleTeacher) {
+            throw new Exception('Không tìm thấy vai trò giáo viên');
+        }
 
+        // Kiểm tra xem username có phải là một mảng không
         if (!is_array($data['username'])) {
             $data['username'] = [$data['username']];
         }
 
+        // Lấy danh sách các giáo viên
         $users = User::whereIn('username', $data['username'])
             ->whereHas('roles', function ($query) use ($roleTeacher) {
                 $query->where('role_id', $roleTeacher->id);
@@ -40,19 +48,33 @@ class SubjectTeacherService
 
         $successfulUsers = [];
 
+        // Duyệt qua từng giáo viên và từng môn học
         foreach ($users as $user) {
-            if (!$user->subjects()->where('subject_id', $subject->id)->exists()) {
+            foreach ($subjects as $subject) {
+                // Kiểm tra xem giáo viên đã dạy môn học này chưa
+                if ($user->subjects()->where('subject_id', $subject->id)->exists()) {
+                    // Nếu giáo viên đã dạy môn học này rồi, báo lỗi
+                    throw new Exception("Giáo viên {$user->name} đã dạy môn {$subject->name} rồi");
+                }
+
+                // Gán môn học cho giáo viên nếu chưa có
                 $user->subjects()->syncWithoutDetaching([
                     $subject->id => ['created_at' => Carbon::now()],
                 ]);
-                // Load lại pivot để sử dụng Resource
-                $successfulUsers[] = $user->subjects()->where('subject_id', $subject->id)->first()->pivot;
+
+                
+                $pivot = $user->subjects()->where('subject_id', $subject->id)->first()->pivot ?? null;
+                if ($pivot) {
+                    $successfulUsers[] = $pivot;
+                }
             }
         }
 
-        return collect($successfulUsers);
+        return $successfulUsers;
     });
 }
+
+
 
 
 

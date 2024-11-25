@@ -15,7 +15,7 @@ class SubjectTeacherCollection extends ResourceCollection
     public function toArray(Request $request): array
 {
     return [
-        'data' => SubjectTeacherResource::collection($this->collection),  // Sử dụng collection của resource
+        'data' => SubjectTeacherResource::collection($this->resource),  // Sử dụng collection của resource
         'meta' => [
             'current_page' => $this->currentPage(),  // Trang hiện tại
             'last_page' => $this->lastPage(),        // Trang cuối cùng
