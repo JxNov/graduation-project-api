@@ -12,9 +12,6 @@ class NewAssignmentNotification extends Notification
     public function __construct($assignment)
     {
         $this->assignment = $assignment;
-        \Illuminate\Support\Facades\Log::info(
-            $this->assignment->title
-        );
     }
 
     public function via($notifiable)

@@ -181,8 +181,6 @@ class ClassroomController extends Controller
     public function getStudentClassroom($slug)
     {
         try {
-            $user = Auth::user();
-
             $class = Classes::where('slug', $slug)
                 ->with([
                     'students',
@@ -217,6 +215,47 @@ class ClassroomController extends Controller
             return $this->successResponse(
                 $data,
                 'Lấy danh sách học sinh thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function getClassMaterialClassroom($slug)
+    {
+        try {
+            $class = Classes::where('slug', $slug)
+                ->with([
+                    'subjects',
+                    'materials'
+                ])
+                ->first();
+
+            if (!$class) {
+                throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
+            }
+
+            $materialsGroupedBySubject = $class->materials->groupBy('subject_id');
+
+            $subjects = $class->subjects->map(function ($subject) use ($materialsGroupedBySubject) {
+                return [
+                    'name' => $subject->name,
+                    'slug' => $subject->slug,
+                    'materials' => collect($materialsGroupedBySubject->get($subject->id, []))->map(function ($material) {
+                        return [
+                            'title' => $material->title,
+                            'slug' => $material->slug,
+                            'description' => $material->description,
+                            'file_path' => $material->file_path,
+                        ];
+                    })
+                ];
+            });
+
+            return $this->successResponse(
+                $subjects,
+                'Lấy danh sách tài liệu của lớp thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
