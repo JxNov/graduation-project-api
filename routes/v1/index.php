@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\v1\UserController;
 use App\Http\Controllers\Api\v1\AcademicYearController;
 use App\Http\Controllers\Api\v1\AttendanceController;
 use App\Http\Controllers\Api\v1\BlockController;
+use App\Http\Controllers\Api\v1\ChatbotController;
 use App\Http\Controllers\Api\v1\ChatController;
 use App\Http\Controllers\Api\v1\ClassController;
 use App\Http\Controllers\Api\v1\ClassroomController;
@@ -348,4 +349,10 @@ Route::prefix('notifications')
         Route::get('/', [NotificationController::class, 'index']);
         Route::patch('/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
         Route::patch('/{notificationId}', [NotificationController::class, 'markAsRead']);
+    });
+
+// Chat bot
+Route::prefix('chat-bot')
+    ->group(function () {
+        Route::post('/', [ChatbotController::class, 'ask']);
     });
