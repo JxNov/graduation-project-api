@@ -116,10 +116,38 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function showStudentScoreSemester($classSlug, $semesterSlug, $yearSlug)
+    public function showStudentScoreSemester($classSlug,$semesterSlug,$yearSlug)
     {
         try {
-            $student = $this->statisticService->showStudentScoreSemester($classSlug, $semesterSlug, $yearSlug);
+            $student = $this->statisticService->showStudentScoreSemester($classSlug,$semesterSlug, $yearSlug);
+
+            return $this->successResponse(
+                $student,
+                'Lấy thông tin điểm các môn học của học sinh thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+    public function showStudentScoreSemesterClass($classSlug,$semesterSlug,$yearSlug)
+    {
+        try {
+            $student = $this->statisticService->showStudentScoreSemesterClass($classSlug,$semesterSlug, $yearSlug);
+
+            return $this->successResponse(
+                $student,
+                'Lấy thông tin điểm các môn học của học sinh thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+    public function calculateFinalScoreYearClass($classSlug,$yearSlug)
+    {
+        try {
+            $student = $this->statisticService->calculateFinalScoreYearClass($classSlug, $yearSlug);
 
             return $this->successResponse(
                 $student,

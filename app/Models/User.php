@@ -150,6 +150,6 @@ class User extends Authenticatable implements JWTSubject
     }
     public function subjectScores()
 {
-    return $this->hasMany(Score::class, 'student_id', 'id');
+    return $this->hasMany(Score::class, 'student_id');
 }
 }
