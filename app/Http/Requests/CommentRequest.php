@@ -28,7 +28,7 @@ class CommentRequest extends FormRequest
     public function rulesForCreate()
     {
         return [
-            'article_slug' => 'required|exists:articles,slug',
+            'article_id' => 'required|exists:articles,id',
             'content' => 'required|max:255'
         ];
     }
@@ -36,7 +36,7 @@ class CommentRequest extends FormRequest
     public function rulesForUpdate()
     {
         return [
-            'article_slug' => 'required|exists:articles,slug',
+            'article_id' => 'required|exists:articles,id',
             'content' => 'required|max:255'
         ];
     }
@@ -44,8 +44,8 @@ class CommentRequest extends FormRequest
     public function messages()
     {
         return [
-            'article_slug.required' => 'Không có bài viết được tìm thấy',
-            'article_slug.exists' => 'Bài viết không tồn tại',
+            'article_id.required' => 'Không có bài viết được tìm thấy',
+            'article_id.exists' => 'Bài viết không tồn tại',
             'content.required' => 'Nội dung bình luận không được trống',
             'content.max' => 'Nội dung bình luận quá dài'
         ];

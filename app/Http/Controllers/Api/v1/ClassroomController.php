@@ -87,7 +87,7 @@ class ClassroomController extends Controller
             $articles = Article::where('teacher_id', $user->id)
                 ->where('class_id', $class->id)
                 ->select('id', 'content', 'teacher_id', 'published_at')
-                ->with('teacher')
+                ->with(['teacher', 'comments'])
                 ->get();
 
             $assignments = $class->assignments->map(function ($assignment) {
@@ -105,7 +105,15 @@ class ClassroomController extends Controller
                     'id' => $article->id,
                     'content' => $article->content,
                     'teacherName' => $article->teacher->name,
+                    'teacherImage' => $article->teacher->image,
                     'publishedAt' => $article->published_at,
+                    'comments' => $article->comments->map(function ($comment) {
+                        return [
+                            'content' => $comment->content,
+                            'name' => $comment->user->name,
+                            'userImage' => $comment->user->image,
+                        ];
+                    })
                 ];
             });
 
