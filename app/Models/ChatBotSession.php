@@ -16,4 +16,8 @@ class ChatBotSession extends Model
         'title',
         'content',
     ];
+
+    protected $casts = [
+        'content' => 'array',
+    ];
 }
