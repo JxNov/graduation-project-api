@@ -26,6 +26,7 @@ class ArticleRequest extends FormRequest
     {
         return [
             'content' => 'required',
+            'class_slug' => 'required|exists:classes,slug',
         ];
     }
 
@@ -34,6 +35,7 @@ class ArticleRequest extends FormRequest
 
         return [
             'content' => 'required',
+            'class_slug' => 'required|exists:classes,slug',
         ];
     }
 
@@ -41,6 +43,8 @@ class ArticleRequest extends FormRequest
     {
         return [
             'content.required' => 'Nội dung bài viết không được để trống',
+            'class_slug.required' => 'Hãy chọn 1 lớp',
+            'class_slug.exists' => 'Lớp học không tồn tại',
         ];
     }
 }

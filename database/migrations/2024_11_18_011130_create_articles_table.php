@@ -18,6 +18,10 @@ return new class extends Migration {
                 ->constrained('users')
                 ->onDelete('cascade');
 
+                $table->foreignId('class_id')
+                ->constrained('classes')
+                ->onDelete('cascade');
+
             $table->date('published_at')->useCurrent();
             $table->timestamps();
             $table->softDeletes();

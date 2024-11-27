@@ -50,7 +50,7 @@ class ArticleController extends Controller
     {
         try {
             $data = $request->validated();
-            $article = $this->articleService->createNewArticle($data['content']);
+            $article = $this->articleService->createNewArticle($data);
 
             return $this->successResponse(
                 new ArticleResource($article),

@@ -85,6 +85,7 @@ class ClassroomController extends Controller
             }
 
             $articles = Article::where('teacher_id', $user->id)
+                ->where('class_id', $class->id)
                 ->select('id', 'content', 'teacher_id', 'published_at')
                 ->with('teacher')
                 ->get();
