@@ -355,7 +355,8 @@ Route::prefix('notifications')
     });
 
 // Chat bot
-Route::prefix('chat-bot')
+Route::prefix('chat-bots')
     ->group(function () {
-        Route::post('/', [ChatbotController::class, 'ask']);
+        Route::get('/', [ChatbotController::class, 'index']);
+        Route::post('/', action: [ChatbotController::class, 'ask']);
     });
