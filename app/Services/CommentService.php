@@ -15,14 +15,8 @@ class CommentService
         return DB::transaction(function () use ($data) {
             $user = Auth::user();
 
-            $article = Article::where('slug', $data['article_slug'])->first();
-
-            if ($article === null) {
-                throw new Exception('Bài viết không tồn tại hoặc đã bị xóa');
-            }
-
             $comment = Comment::create([
-                'article_id' => $article->id,
+                'article_id' => $data['article_id'],
                 'user_id' => $user->id,
                 'content' => $data['content'],
             ]);
