@@ -21,7 +21,7 @@ class ArticleResource extends JsonResource
             'teacherName' => ($this->teacher)->name,
             'teacherImage' => ($this->teacher)->image,
             'className' => ($this->class)->name,
-            'publishedAt' => Carbon::parse($this->published_at)->format('d/m/Y H:i:s')
+            'publishedAt' => Carbon::parse($this->created_at)->format('d/m/Y H:i:s')
         ];
     }
 }

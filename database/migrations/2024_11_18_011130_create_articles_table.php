@@ -21,8 +21,7 @@ return new class extends Migration {
                 $table->foreignId('class_id')
                 ->constrained('classes')
                 ->onDelete('cascade');
-
-            $table->date('published_at')->useCurrent();
+                
             $table->timestamps();
             $table->softDeletes();
         });

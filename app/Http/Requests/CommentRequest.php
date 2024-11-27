@@ -36,7 +36,7 @@ class CommentRequest extends FormRequest
     public function rulesForUpdate()
     {
         return [
-            'article_id' => 'required|exists:articles,id',
+            'article_id' => 'nullable|exists:articles,id',
             'content' => 'required|max:255'
         ];
     }
