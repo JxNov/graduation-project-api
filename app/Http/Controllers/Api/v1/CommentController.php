@@ -28,7 +28,24 @@ class CommentController extends Controller
             $comment = $this->commentService->addComment($data);
             return $this->successResponse(
                 new CommentResource($comment),
-                'Success',
+                'Bình luận thành công',
+                Response::HTTP_CREATED
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function update(CommentRequest $request, $id)
+    {
+        try {
+            $content = $request->content;
+
+            $comment = $this->commentService->updateComment($content, $id);
+
+            return $this->successResponse(
+                new CommentResource($comment),
+                'Sửa bình luận thành công',
                 Response::HTTP_CREATED
             );
         } catch (Exception $e) {

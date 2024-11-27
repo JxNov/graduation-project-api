@@ -27,8 +27,7 @@ class ArticleService
             $article = Article::create([
                 'content' => $data['content'],
                 'teacher_id' => $user->id,
-                'class_id' => $class->id,
-                'published_at' => now()
+                'class_id' => $class->id
             ]);
 
             return $article;

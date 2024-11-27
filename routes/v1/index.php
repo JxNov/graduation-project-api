@@ -341,9 +341,12 @@ Route::prefix('articles')
         Route::delete('/force-delete/{id}', [ArticleController::class, 'forceDelete']);
     });
 
-Route::prefix('comments')->group(function () {
-    Route::post('/', [CommentController::class, 'store'])->middleware('auth:api');
-});
+Route::prefix('comments')
+    ->middleware('auth:api')
+    ->group(function () {
+        Route::post('/', [CommentController::class, 'store']);
+        Route::patch('/{id}', [CommentController::class, 'update']);
+    });
 
 // Thông báo
 Route::prefix('notifications')

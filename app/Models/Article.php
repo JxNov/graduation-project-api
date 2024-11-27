@@ -13,8 +13,7 @@ class Article extends Model
     protected $fillable = [
         'content',
         'teacher_id',
-        'class_id',
-        'published_at',
+        'class_id'
     ];
 
     public function comments()

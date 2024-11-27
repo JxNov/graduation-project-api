@@ -9,6 +9,7 @@ use App\Models\Article;
 use App\Models\Classes;
 use App\Services\ClassroomService;
 use App\Traits\ApiResponseTrait;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -86,7 +87,7 @@ class ClassroomController extends Controller
 
             $articles = Article::where('teacher_id', $user->id)
                 ->where('class_id', $class->id)
-                ->select('id', 'content', 'teacher_id', 'published_at')
+                ->select('id', 'content', 'teacher_id', 'created_at')
                 ->with(['teacher', 'comments'])
                 ->get();
 
@@ -106,10 +107,12 @@ class ClassroomController extends Controller
                     'content' => $article->content,
                     'teacherName' => $article->teacher->name,
                     'teacherImage' => $article->teacher->image,
-                    'publishedAt' => $article->published_at,
+                    'publishedAt' => Carbon::parse($article->created_at)->format('d/m/Y'),
                     'comments' => $article->comments->map(function ($comment) {
                         return [
+                            'id' => $comment->id,
                             'content' => $comment->content,
+                            'conmentAt' => Carbon::parse($comment->created_at)->format('d/m/Y H:s:i'),
                             'name' => $comment->user->name,
                             'userImage' => $comment->user->image,
                         ];
