@@ -85,8 +85,7 @@ class ClassroomController extends Controller
                 throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
             }
 
-            $articles = Article::where('teacher_id', $user->id)
-                ->where('class_id', $class->id)
+            $articles = Article::where('class_id', $class->id)
                 ->select('id', 'content', 'teacher_id', 'created_at')
                 ->with(['teacher', 'comments'])
                 ->get();
