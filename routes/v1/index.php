@@ -200,7 +200,7 @@ Route::prefix('excels')
 Route::prefix('students')
     ->group(function () {
         Route::get('/', [StudentController::class, 'index']);
-        Route::post('/', [StudentController::class, 'store']);
+        Route::post('/{generationSlug}/{academicYearSlug}', [StudentController::class, 'store']);
         Route::put('/{username}', [StudentController::class, 'update']);
         Route::delete('/{username}', [StudentController::class, 'destroy']);
         Route::get('/restore/{username}', [StudentController::class, 'restore']);
