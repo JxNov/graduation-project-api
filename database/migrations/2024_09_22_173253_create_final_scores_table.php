@@ -33,7 +33,7 @@ return new class extends Migration {
 
             $table->string('performance_level', 50)->nullable();
 
-            $table->unique(['student_id', 'academic_year_id'], 'unique_final_scores');
+            $table->unique(['student_id', 'academic_year_id', 'semester_id'], 'unique_final_scores');
             $table->timestamps();
             $table->softDeletes();
         });
