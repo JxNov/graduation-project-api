@@ -107,12 +107,12 @@ class ClassroomController extends Controller
                     'content' => $article->content,
                     'teacherName' => $article->teacher->name,
                     'teacherImage' => $article->teacher->image,
-                    'publishedAt' => Carbon::parse($article->created_at)->format('d/m/Y'),
+                    'createdAt' => Carbon::parse($article->created_at),
                     'comments' => $article->comments->map(function ($comment) {
                         return [
                             'id' => $comment->id,
                             'content' => $comment->content,
-                            'conmentAt' => Carbon::parse($comment->created_at)->format('d/m/Y H:s:i'),
+                            'createdAt' => Carbon::parse($comment->created_at),
                             'name' => $comment->user->name,
                             'userImage' => $comment->user->image,
                         ];
