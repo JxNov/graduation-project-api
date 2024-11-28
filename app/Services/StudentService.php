@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\AcademicYear;
+use App\Models\Generation;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -10,9 +12,11 @@ use Illuminate\Support\Str;
 
 class StudentService
 {
-    public function createStudent(array $data)
+    public function createStudent(array $data, $generationSlug, $academicYearSlug)
     {
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $generationSlug, $academicYearSlug) {
+            $academicYear = AcademicYear::where('slug', $academicYearSlug)->firstOrFail();
+            $generation = Generation::where('slug', $generationSlug)->firstOrFail();
             // Tạo username duy nhất
             $username = $this->generateUsername($data['name']);
 
@@ -37,7 +41,7 @@ class StudentService
             $student = User::create([
                 'name' => $data['name'],
                 'username' => $username,
-                'image'=>$data['image'],
+                'image' => $data['image'],
                 'email' => $data['email'],
                 'password' => Hash::make('abc123456'), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],
@@ -57,6 +61,13 @@ class StudentService
                 DB::table('user_roles')->insert([
                     'user_id' => $student->id,
                     'role_id' => $roleStudent->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                DB::table('user_generations')->insert([
+                    'user_id' => $student->id,
+                    'generation_id' => $generation->id,
+                    'academic_year_id' => $academicYear->id,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -115,7 +126,7 @@ class StudentService
             $user->update([
                 'name' => $data['name'],
                 'username' => $username,
-                'image'=>$data['image'],
+                'image' => $data['image'],
                 'email' => $data['email'],
                 'password' => Hash::make('abc123456'), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],

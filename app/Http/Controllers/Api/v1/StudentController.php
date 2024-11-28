@@ -32,11 +32,11 @@ class StudentController extends Controller
             ->get();
         return StudentResource::collection($students);
     }
-    public function store(CreateStudentRequest $request)
+    public function store(CreateStudentRequest $request,$generationSlug, $academicYearSlug)
     {
         try {
             // Gọi service để tạo học sinh mới
-            $student = $this->studentService->createStudent($request->all());
+            $student = $this->studentService->createStudent($request->all(),$generationSlug, $academicYearSlug);
 
             return  $this->successResponse(new StudentResource($student), 'Thêm học sinh mới thành công', Response::HTTP_CREATED);
         } catch (\Exception $e) {
