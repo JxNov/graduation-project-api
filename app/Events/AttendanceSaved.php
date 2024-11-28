@@ -26,6 +26,11 @@ class AttendanceSaved implements ShouldBroadcast, ShouldQueue
         return new Channel('attendance.' . $this->attendance->class_id);
     }
 
+    public function broadcastAs(): string
+    {
+        return 'attendance';
+    }
+
     public function broadcastWith()
     {
         return [
