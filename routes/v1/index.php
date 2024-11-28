@@ -225,7 +225,9 @@ Route::prefix('teachers')
     });
 
 Route::prefix('attendances')
+    ->middleware('auth:api')
     ->group(function () {
+        Route::get('/show', [AttendanceController::class, 'attendanceOfStudent']); // học sinh xem điểm danh
         Route::get('/', [AttendanceController::class, 'index']);
         Route::get('/{classSlug}', [AttendanceController::class, 'studentInClass']);
         Route::post('/', [AttendanceController::class, 'save']);

@@ -157,4 +157,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(ChatBotSession::class, 'user_id', 'id');
     }
+
+    public function attendanceDetails()
+    {
+        return $this->hasMany(AttendanceDetail::class, 'student_id', 'id');
+    }
 }

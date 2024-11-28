@@ -154,4 +154,31 @@ class AttendanceController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+    public function attendanceOfStudent()
+    {
+        try {
+            $user = Auth::user();
+
+            $attendances = $user->attendanceDetails;
+
+            $data = $attendances->map(function ($attendance) {
+                return [
+                    'date' => Carbon::parse($attendance->attendance->date)->format('d/m/Y'),
+                    'shifts' => $attendance->attendance->shifts,
+                    'className' => $attendance->attendance->class->name,
+                    'status' => $attendance->status,
+                    'reason' => $attendance->reason
+                ];
+            });
+
+            return $this->successResponse(
+                $data,
+                'Lấy thông tin điểm danh thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }
