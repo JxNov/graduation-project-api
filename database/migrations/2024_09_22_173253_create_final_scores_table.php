@@ -22,6 +22,17 @@ return new class extends Migration {
                 ->constrained('academic_years')
                 ->onDelete('cascade');
 
+
+            $table->foreignId('semester_id')
+                ->constrained('semesters')
+                ->onDelete('cascade');
+
+            $table->foreignId('class_id')
+                ->constrained('classes')
+                ->onDelete('cascade');
+
+            $table->string('performance_level', 50)->nullable();
+
             $table->unique(['student_id', 'academic_year_id'], 'unique_final_scores');
             $table->timestamps();
             $table->softDeletes();

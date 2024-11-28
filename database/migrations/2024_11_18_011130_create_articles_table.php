@@ -18,10 +18,10 @@ return new class extends Migration {
                 ->constrained('users')
                 ->onDelete('cascade');
 
-                $table->foreignId('class_id')
+            $table->foreignId('class_id')
                 ->constrained('classes')
                 ->onDelete('cascade');
-                
+
             $table->timestamps();
             $table->softDeletes();
         });
