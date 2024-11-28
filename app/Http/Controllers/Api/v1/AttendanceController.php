@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
 {
@@ -27,37 +28,55 @@ class AttendanceController extends Controller
     public function index()
     {
         try {
-            $attendances = Attendance::latest('id')
+            $user = Auth::user();
+
+            $teacherClasses = $user->teachingClasses;
+
+            $today = Carbon::now();
+
+            $attendances = Attendance::whereIn('class_id', $teacherClasses->pluck('id'))
+                ->whereDate('date', $today)
+                ->latest('id')
                 ->select('id', 'date', 'shifts', 'class_id')
                 ->with(['class.teacher', 'class.students', 'attendanceDetails'])
-                ->paginate(10);
+                ->get();
 
-            if ($attendances->isEmpty()) {
-                return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
-            }
+            $data = $teacherClasses->map(function ($class) use ($attendances, $today) {
+                $attendance = $attendances->firstWhere('class_id', $class->id);
 
-            $data = $attendances->map(function ($attendance) {
-                $totalStudents = $attendance->class->students->count();
+                if ($attendance) {
+                    $totalStudents = $class->students->count();
+                    $attendedStudents = $attendance->attendanceDetails
+                        ->where('status', '!=', AttendanceDetail::_STATUS['Absent'])
+                        ->count();
 
-                // số hs đã điểm danh
-                $attendedStudents = $attendance->attendanceDetails
-                    ->where('status', '!=', AttendanceDetail::_STATUS['Absent'])
-                    ->count();
-
-                return [
-                    'id' => $attendance->id,
-                    'date' => Carbon::parse($attendance->date)->format('d/m/Y'),
-                    'shifts' => $attendance->shifts,
-                    'className' => $attendance->class->name,
-                    'teacherName' => $attendance->class->teacher->name,
-                    'totalStudents' => $totalStudents,
-                    'attendedStudents' => $attendedStudents
-                ];
+                    return [
+                        'id' => $attendance->id,
+                        'date' => Carbon::parse($attendance->date)->format('d/m/Y'),
+                        'shifts' => $attendance->shifts,
+                        'className' => $class->name,
+                        'classSlug' => $class->slug,
+                        'teacherName' => $class->teacher->name,
+                        'totalStudents' => $totalStudents,
+                        'attendedStudents' => $attendedStudents,
+                        'status' => true,
+                    ];
+                } else {
+                    return [
+                        'date' => $today->format('d/m/Y'),
+                        'className' => $class->name,
+                        'classSlug' => $class->slug,
+                        'teacherName' => $class->teacher->name,
+                        'totalStudents' => $class->students->count(),
+                        'attendedStudents' => 0,
+                        'status' => false
+                    ];
+                }
             });
 
             return $this->successResponse(
                 $data,
-                'Lấy tất cả kết quả điểm danh thành công',
+                'Lấy thông tin các lớp và kết quả điểm danh thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
@@ -65,10 +84,10 @@ class AttendanceController extends Controller
         }
     }
 
-    public function studentInClass(Request $request)
+    public function studentInClass($classSlug)
     {
         try {
-            $class = Classes::where('slug', $request->classSlug)->first();
+            $class = Classes::where('slug', $classSlug)->first();
 
             if ($class === null) {
                 throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
@@ -94,7 +113,7 @@ class AttendanceController extends Controller
                     'numberStudentInClass' => $numberStudentInClass,
                     'students' => $result
                 ],
-                'Danh sách học sinh của lớp: ' . $className,
+                'Danh sách học sinh của: ' . $className,
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
