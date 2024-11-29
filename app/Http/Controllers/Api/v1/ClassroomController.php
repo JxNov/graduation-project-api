@@ -53,6 +53,32 @@ class ClassroomController extends Controller
         }
     }
 
+    public function getClassroomForStudent(){
+        try {
+            $user = Auth::user();
+
+            $classrooms = $user->classes()
+                ->select('classes.name as className', 'classes.slug as classSlug')
+                ->get();
+            $data = $classrooms->map(function ($classroom) use ($user) {
+                return [
+                    'className' => $classroom->className,
+                    'classSlug' => $classroom->classSlug,
+                    'teacherName' => $user->name,
+                    'teacherImage' => $user->image,
+                ];
+            });
+            return $this->successResponse(
+                $data,
+                'Lấy danh sách lớp học của học sinh thành công',
+                Response::HTTP_OK
+
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     public function getDetailClassroomForTeacher($slug)
     {
         try {
