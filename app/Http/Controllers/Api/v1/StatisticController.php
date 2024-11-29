@@ -151,7 +151,7 @@ class StatisticController extends Controller
 
             return $this->successResponse(
                 $student,
-                'Lấy thông tin điểm các môn học của học sinh thành công',
+                'Success!',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
