@@ -135,9 +135,9 @@ class ClassroomController extends Controller
                     'createdAt' => Carbon::parse($article->created_at),
                     'comments' => $article->comments->map(function ($comment) {
                         return [
-                            'id' => $comment->id,
                             'content' => $comment->content,
                             'createdAt' => Carbon::parse($comment->created_at),
+                            'id' => $comment->id,
                             'name' => $comment->user->name,
                             'userImage' => $comment->user->image,
                         ];
