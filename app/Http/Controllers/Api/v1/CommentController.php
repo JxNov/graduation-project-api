@@ -39,7 +39,7 @@ class CommentController extends Controller
     public function update(CommentRequest $request, $id)
     {
         try {
-            $content = $request->content;
+            $content = $request->validated();
 
             $comment = $this->commentService->updateComment($content, $id);
 

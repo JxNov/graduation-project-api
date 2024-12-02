@@ -36,9 +36,11 @@ class CommentCreated implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'name' => optional($this->comment->user)->name,
-            'articleTitle' => optional($this->comment->article)->title,
             'content' => $this->comment->content,
+            'createdAt' => $this->comment->created_at,
+            'id' => $this->comment->id,
+            'name' => optional($this->comment->user)->name,
+            'userImage' => optional($this->comment->user)->image,
         ];
     }
 }
