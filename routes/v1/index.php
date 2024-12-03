@@ -141,6 +141,7 @@ Route::prefix('classes')
         Route::post('/assign-class/{slug}', [ClassController::class, 'assignClassToTeacher']);
         Route::get('/restore/{slug}', [ClassController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [ClassController::class, 'forceDelete']);
+        Route::post('/promote-student/{slug}', [ClassController::class, 'promoteStudent']);
     });
 
 Route::prefix('materials')

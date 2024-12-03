@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Models\AcademicYear;
 use App\Models\Block;
 use App\Models\Classes;
+use App\Models\Subject;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -131,6 +132,66 @@ class ClassService
             $class->classTeachers()->sync($userIds);
 
             return $class;
+        });
+    }
+
+    public function promoteStudent(array $data, $slug)
+    {
+        return DB::transaction(function () use ($data, $slug) {
+            $class = Classes::where('slug', $slug)->first();
+
+            if ($class === null) {
+                throw new Exception('Lớp không tồn tại hoặc đã bị xóa');
+            }
+
+            $students = $class->students;
+
+            if ($students->isEmpty()) {
+                throw new Exception('Không có học sinh nào trong lớp này');
+            }
+
+            $requiredSubjects = ['toan', 'ngu-van', 'tieng-anh'];
+
+            $subjects = Subject::whereIn('slug', $requiredSubjects)
+                ->pluck('id', 'slug');
+
+            $eligibleStudents = [];
+            foreach ($students as $student) {
+                $finalScore = DB::table('final_scores')
+                    ->where('student_id', $student->id)
+                    ->where('semester_id', null)
+                    ->where('class_id', $class->id)
+                    ->first();
+
+                if (!$finalScore || $finalScore->average_score < 5) {
+                    continue;
+                }
+
+                $failedSubjects = DB::table('subject_scores')
+                    ->whereIn('subject_id', $subjects->values())
+                    ->where('student_id', $student->id)
+                    ->where('class_id', $class->id)
+                    ->where('average_score', '<', 5)
+                    ->count();
+
+                if ($failedSubjects > 0) {
+                    continue;
+                }
+
+                $eligibleStudents[] = $student->id;
+            }
+
+            // \Illuminate\Support\Facades\Log::info($eligibleStudents);
+
+            if (empty($eligibleStudents)) {
+                throw new Exception('Không có học sinh nào trong lớp này đủ điều kiện lên lớp');
+            }
+
+            $newClass = $this->createNewClass($data);
+
+            $newClass->students()->sync($eligibleStudents);
+
+            return $newClass;
         });
     }
 
