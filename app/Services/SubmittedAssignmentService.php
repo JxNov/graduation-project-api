@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Assignment;
+use App\Models\Classes;
 use App\Models\SubmittedAssignment;
 use App\Models\User;
 use Exception;
@@ -67,6 +68,80 @@ class SubmittedAssignmentService
             return SubmittedAssignment::create($data); // Tạo bản ghi mới
         });
     }
+
+
+    // Xem bài nộp của tất cả học sinh trong assignment thuộc lớp
+    public function viewAllSubmittedAssignmentsByClass($classSlug, $assignmentSlug)
+    {
+        return DB::transaction(function () use ($classSlug, $assignmentSlug) {
+            // Lấy thông tin lớp
+            $class = Classes::where('slug', $classSlug)->first();
+            if (!$class) {
+                throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
+            }
+
+            // Lấy thông tin bài tập
+            $assignment = Assignment::where('slug', $assignmentSlug)
+                ->where('class_id', $class->id)
+                ->first();
+
+            if (!$assignment) {
+                throw new Exception('Bài tập không tồn tại trong lớp đã chọn');
+            }
+
+            // Lấy danh sách bài nộp cho bài tập này từ các học sinh trong lớp
+            $submittedAssignments = SubmittedAssignment::where('assignment_id', $assignment->id)
+                ->whereIn('student_id', $class->students->pluck('id'))
+                ->with(['student'])
+                ->get();
+
+            if ($submittedAssignments->isEmpty()) {
+                throw new Exception('Không có bài nộp nào cho bài tập này');
+            }
+
+            return $submittedAssignments;
+        });
+    }
+
+    // Xem bài nộp của một học sinh trong assignment thuộc lớp
+    public function viewOneSubmittedAssignment($classSlug, $assignmentSlug, $username)
+    {
+        return DB::transaction(function () use ($classSlug, $assignmentSlug, $username) {
+            // Lấy thông tin lớp
+            $class = Classes::where('slug', $classSlug)->first();
+            if (!$class) {
+                throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
+            }
+
+            // Kiểm tra học sinh có thuộc lớp không dựa trên username
+            $student = $class->students()->where('username', $username)->first();
+            if (!$student) {
+                throw new Exception('Học sinh không thuộc lớp này hoặc username không tồn tại');
+            }
+
+            // Lấy thông tin bài tập
+            $assignment = Assignment::where('slug', $assignmentSlug)
+                ->where('class_id', $class->id)
+                ->first();
+
+            if (!$assignment) {
+                throw new Exception('Bài tập không tồn tại trong lớp đã chọn');
+            }
+
+            // Lấy bài nộp của học sinh
+            $submittedAssignment = SubmittedAssignment::where('assignment_id', $assignment->id)
+                ->where('student_id', $student->id)
+                ->with('student')
+                ->first();
+
+            if (!$submittedAssignment) {
+                throw new Exception('Học sinh chưa nộp bài cho bài tập này');
+            }
+
+            return $submittedAssignment;
+        });
+    }
+
 
 
     public function updateScoreAndFeedback($assignmentSlug, $score, $feedback, $username)

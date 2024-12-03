@@ -317,9 +317,9 @@ Route::prefix('statistic')
 
 //Assignment
 Route::prefix('assignments')->group(function () {
-    Route::get('/', [AssignmentController::class, 'index']);
+    Route::get('/classes/{classSlug}', [AssignmentController::class, 'index']);
     Route::post('/', [AssignmentController::class, 'store']);
-    Route::get('/{assignmentSlug}', [AssignmentController::class, 'show']);
+    Route::get('/classes/{classSlug}/{assignmentSlug}', [AssignmentController::class, 'show']);
     Route::patch('/{assignmentSlug}', [AssignmentController::class, 'update']);
     Route::delete('/{assignmentSlug}', [AssignmentController::class, 'destroy']);
     Route::get('/trash', [AssignmentController::class, 'trash']);
