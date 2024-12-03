@@ -130,6 +130,23 @@ class ClassController extends Controller
         }
     }
 
+    public function promoteStudent(ClassRequest $request, $slug)
+    {
+        try {
+            $data = $request->validated();
+
+            $newClass = $this->classService->promoteStudent($data, $slug);
+
+            return $this->successResponse(
+                new ClassResource($newClass),
+                'Lên lớp thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     public function destroy($slug)
     {
         try {
