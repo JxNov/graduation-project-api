@@ -7,10 +7,12 @@ use App\Http\Requests\AssignmentRequest;
 use App\Http\Resources\AssignmentCollection;
 use App\Http\Resources\AssignmentResource;
 use App\Models\Assignment;
+use App\Models\Classes;
 use App\Services\AssignmentService;
 use App\Traits\ApiResponseTrait;
 use Exception;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class AssignmentController extends Controller
 {
@@ -22,27 +24,39 @@ class AssignmentController extends Controller
         $this->assignmentService = $assignmentService;
     }
 
-    public function index()
+    public function index($classSlug)
     {
         try {
-            $assignments = Assignment::latest('id')
-                ->select('title', 'slug','description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id', 'created_at', 'updated_at')
+            $class = Classes::where('slug', $classSlug)->first();
+
+            // Kiểm tra nếu lớp không tồn tại
+            if (!$class) {
+                return $this->errorResponse('Lớp không tồn tại', Response::HTTP_NOT_FOUND);
+            }
+
+            // Lấy danh sách assignments thuộc lớp đó
+            $assignments = Assignment::where('class_id', $class->id)
+                ->latest('id')
+                ->select('title', 'slug', 'description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id', 'created_at', 'updated_at')
                 ->with(['subject', 'teacher', 'class', 'semester'])
                 ->paginate(10);
 
+            // Kiểm tra nếu không có dữ liệu
             if ($assignments->isEmpty()) {
                 return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
             }
 
+            // Trả về dữ liệu assignments
             return $this->successResponse(
                 new AssignmentCollection($assignments),
-                'Lấy tất cả thông tin bài tập thành công',
+                'Lấy danh sách bài tập thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
 
     public function store(AssignmentRequest $request)
     {
@@ -60,15 +74,24 @@ class AssignmentController extends Controller
         }
     }
 
-    public function show($assignmentSlug)
+    public function show($classSlug, $assignmentSlug)
     {
         try {
+            // Tìm lớp học dựa trên classSlug
+            $class = Classes::where('slug', $classSlug)->first();
+
+            if (!$class) {
+                return $this->errorResponse('Lớp không tồn tại', Response::HTTP_NOT_FOUND);
+            }
+
+            // Tìm bài tập dựa trên assignmentSlug và class_id
             $assignment = Assignment::where('slug', $assignmentSlug)
-                ->select('title', 'slug', 'description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id', 'created_at', 'updated_at')
+                ->where('class_id', $class->id)
                 ->with(['subject', 'teacher', 'class', 'semester'])
                 ->first();
-            if ($assignment == null) {
-                return $this->errorResponse('Bài tập không tồn tại hoặc bị xóa mất', Response::HTTP_NOT_FOUND);
+
+            if (!$assignment) {
+                return $this->errorResponse('Bài tập không tồn tại hoặc không thuộc lớp này', Response::HTTP_NOT_FOUND);
             }
 
             return $this->successResponse(
@@ -76,12 +99,12 @@ class AssignmentController extends Controller
                 'Lấy bài Assignment thành công',
                 Response::HTTP_OK
             );
-        }
-
-        catch (Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+
 
     public function update(AssignmentRequest $request, $assignmentSlug)
     {
