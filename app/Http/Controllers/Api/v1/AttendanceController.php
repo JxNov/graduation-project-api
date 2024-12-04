@@ -129,6 +129,7 @@ class AttendanceController extends Controller
 
             return $this->successResponse(
                 [
+                    'id' => $attendance->id,
                     'className' => $className,
                     'teacherName' => $teacherName,
                     'teacherImage' => $teacherImage,
@@ -148,11 +149,13 @@ class AttendanceController extends Controller
         try {
             $data = $request->all();
 
-            $this->attendanceService->saveAttendance($data);
+            $attendance = $this->attendanceService->saveAttendance($data);
 
-            return $this->successResponse(
-                null,
-                'Đã lưu kết quả điểm danh ngày: ' . now()->format('d/m/Y'),
+            return response()->json(
+                [
+                    'id' => $attendance->id,
+                    'message' => 'Đã lưu kết quả điểm danh ngày: ' . now()->format('d/m/Y'),
+                ],
                 Response::HTTP_CREATED
             );
         } catch (Exception $e) {
