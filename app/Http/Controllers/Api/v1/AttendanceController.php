@@ -105,7 +105,7 @@ class AttendanceController extends Controller
                 ->first();
 
                 $result = $students->map(function ($student) use ($attendance) {
-                    $attendanceStatus = false;
+                    $attendanceStatus = 'Absent';
         
                     if ($attendance) {
                         $attendanceDetail = $attendance->attendanceDetails
@@ -113,7 +113,8 @@ class AttendanceController extends Controller
                             ->first();
         
                         if ($attendanceDetail) {
-                            $attendanceStatus = true;
+                            $attendanceStatus = $attendanceDetail->status;
+                            $reason = $attendanceDetail->reason ?? null;
                         }
                     }
         
@@ -121,7 +122,8 @@ class AttendanceController extends Controller
                         'name' => $student->name,
                         'username' => $student->username,
                         'userImage' => $student->image,
-                        'attendanceStatus' => $attendanceStatus,
+                        'status' => $attendanceStatus,
+                        'reason' => $reason,
                     ];
                 });
 

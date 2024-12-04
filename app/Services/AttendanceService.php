@@ -47,7 +47,7 @@ class AttendanceService
                     $attendance->attendanceDetails()->create([
                         'student_id' => $student->id,
                         'status' => 'Absent',
-                        'reason' => 'Không có mặt',
+                        'reason' => null,
                     ]);
                 }
             }
