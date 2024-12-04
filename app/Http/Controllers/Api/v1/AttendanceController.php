@@ -104,28 +104,28 @@ class AttendanceController extends Controller
                 ->whereDate('date', $today)
                 ->first();
 
-                $result = $students->map(function ($student) use ($attendance) {
-                    $attendanceStatus = 'Absent';
-        
-                    if ($attendance) {
-                        $attendanceDetail = $attendance->attendanceDetails
-                            ->where('student_id', $student->id)
-                            ->first();
-        
-                        if ($attendanceDetail) {
-                            $attendanceStatus = $attendanceDetail->status;
-                            $reason = $attendanceDetail->reason ?? null;
-                        }
+            $result = $students->map(function ($student) use ($attendance) {
+                $attendanceStatus = 'Absent';
+
+                if ($attendance) {
+                    $attendanceDetail = $attendance->attendanceDetails
+                        ->where('student_id', $student->id)
+                        ->first();
+
+                    if ($attendanceDetail) {
+                        $attendanceStatus = $attendanceDetail->status;
+                        $reason = $attendanceDetail->reason ?? null;
                     }
-        
-                    return [
-                        'name' => $student->name,
-                        'username' => $student->username,
-                        'userImage' => $student->image,
-                        'status' => $attendanceStatus,
-                        'reason' => $reason,
-                    ];
-                });
+                }
+
+                return [
+                    'name' => $student->name,
+                    'username' => $student->username,
+                    'userImage' => $student->image,
+                    'status' => $attendanceStatus,
+                    'reason' => $reason ?? null,
+                ];
+            });
 
             return $this->successResponse(
                 [
@@ -190,7 +190,7 @@ class AttendanceController extends Controller
                     'shifts' => $attendance->attendance->shifts,
                     'className' => $attendance->attendance->class->name,
                     'status' => $attendance->status,
-                    'reason' => $attendance->reason
+                    'reason' => $attendance->reason ?? null
                 ];
             });
 
