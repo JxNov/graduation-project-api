@@ -15,7 +15,8 @@ class AttendanceDetail extends Model
         'Absent' => 'Absent',
         'Late' => 'Late',
         'Excused' => 'Excused',
-        'Medical Leave' => 'Medical Leave'
+        'Medical Leave' => 'Medical Leave',
+        'Other' => 'Other',
     ];
 
     protected $fillable = [
