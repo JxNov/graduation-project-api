@@ -98,13 +98,31 @@ class AttendanceController extends Controller
             $className = $class->name;
             $numberStudentInClass = $students->count();
 
-            $result = $students->map(function ($student) {
-                return [
-                    'name' => $student->name,
-                    'username' => $student->username,
-                    'email' => $student->email,
-                ];
-            });
+            $today = Carbon::now()->format('Y-m-d');
+            $attendance = Attendance::where('class_id', $class->id)
+                ->whereDate('date', $today)
+                ->first();
+
+                $result = $students->map(function ($student) use ($attendance) {
+                    $attendanceStatus = false;
+        
+                    if ($attendance) {
+                        $attendanceDetail = $attendance->attendanceDetails
+                            ->where('student_id', $student->id)
+                            ->first();
+        
+                        if ($attendanceDetail) {
+                            $attendanceStatus = true;
+                        }
+                    }
+        
+                    return [
+                        'name' => $student->name,
+                        'username' => $student->username,
+                        'userImage' => $student->image,
+                        'attendanceStatus' => $attendanceStatus,
+                    ];
+                });
 
             return $this->successResponse(
                 [
