@@ -129,7 +129,7 @@ class AttendanceController extends Controller
 
             return $this->successResponse(
                 [
-                    'id' => $attendance->id,
+                    'id' => $attendance->id ?? null,
                     'className' => $className,
                     'teacherName' => $teacherName,
                     'teacherImage' => $teacherImage,
@@ -153,7 +153,7 @@ class AttendanceController extends Controller
 
             return response()->json(
                 [
-                    'id' => $attendance->id,
+                    'id' => $attendance->id ?? null,
                     'message' => 'Đã lưu kết quả điểm danh ngày: ' . now()->format('d/m/Y'),
                 ],
                 Response::HTTP_CREATED
