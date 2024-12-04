@@ -95,6 +95,7 @@ class AttendanceController extends Controller
 
             $students = $class->students;
             $teacherName = $class->teacher->name;
+            $teacherImage = $class->teacher->image;
             $className = $class->name;
             $numberStudentInClass = $students->count();
 
@@ -128,6 +129,7 @@ class AttendanceController extends Controller
                 [
                     'className' => $className,
                     'teacherName' => $teacherName,
+                    'teacherImage' => $teacherImage,
                     'numberStudentInClass' => $numberStudentInClass,
                     'students' => $result
                 ],
