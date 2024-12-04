@@ -63,6 +63,7 @@ class AttendanceController extends Controller
                     ];
                 } else {
                     return [
+                        'id' => $attendance->id,
                         'date' => $today->format('d/m/Y'),
                         'className' => $class->name,
                         'classSlug' => $class->slug,

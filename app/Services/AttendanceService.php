@@ -62,7 +62,6 @@ class AttendanceService
         return DB::transaction(function () use ($data, $id) {
             $attendance = Attendance::find($id);
 
-
             if ($attendance === null) {
                 throw new Exception('Không tìm thấy kết quả điểm danh');
             }
