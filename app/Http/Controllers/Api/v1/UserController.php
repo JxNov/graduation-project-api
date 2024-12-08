@@ -172,7 +172,7 @@ class UserController extends Controller
     public function updateStudent(Request $request,$username ){
         try {
             $data =[
-                'image'=>$request->image,
+                'images'=>$request->images,
                 'password'=>$request->password
             ] ;
             $user = $this->userService->updateStudent($data, $username);
