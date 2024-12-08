@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Services\ChatbotService;
+use App\Traits\ApiResponseTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ChatbotController extends Controller
 {
+    use ApiResponseTrait;
     protected $chatbotService;
 
     public function __construct(ChatbotService $chatbotService)
@@ -24,26 +26,21 @@ class ChatbotController extends Controller
             $user = Auth::user();
 
             $chats = $user->chatBotSessions;
-            $data = [];
 
-            foreach ($chats as $chat) {
-                $date = $chat->created_at->format('d/m/Y');
-                foreach ($chat->content as $item) {
-                    $data[] = [
-                        'date' => $date,
-                        'question' => $item['question'],
-                        'answer' => $item['answer'],
-                    ];
-                }
-            }
+            $data = $chats->map(function ($chat) {
+                return [
+                    'id' => $chat->id,
+                    'title' => $chat->title,
+                    'content' => collect($chat->content)->map(function ($item) {
+                        return [
+                            'question' => $item['question'],
+                            'answer' => $item['answer'],
+                        ];
+                    })->toArray(),
+                ];
+            })->toArray();
 
-            $groupedByDate = collect($data)->groupBy('date');
-
-            $result = $groupedByDate->map(function ($items) {
-                return $items->values()->all();
-            });
-
-            return response()->json($result);
+            return $this->successResponse($data);
         } catch (Exception $e) {
             return response()->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
