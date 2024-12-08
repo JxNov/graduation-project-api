@@ -21,21 +21,9 @@ class AssignmentResource extends JsonResource
             'description' => $this->description,
             'dueDate' => $this->due_date,
             'criteria' => $this->criteria,
-            'subject' => $this->whenLoaded('subject', function () {
-                return $this->subject ? [
-                    'name' => $this->subject->name,
-                ] : null;
-            }),
-            'teacher' => $this->whenLoaded('teacher', function () {
-                return $this->teacher ? [
-                    'name' => $this->teacher->name,
-                ] : null;
-            }),
-            'class' => $this->whenLoaded('class', function () {
-                return $this->class ? [
-                    'name' => $this->class->name,
-                ] : null;
-            }),
+            'subject' => $this->subject->name,
+            'teacher' =>  $this->teacher->name,
+            'class' => $this->class->name,
             'semester' => $this->whenLoaded('semester', function () {
                 return $this->semester ? [
                     'name' => $this->semester->name,
