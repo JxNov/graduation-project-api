@@ -24,9 +24,9 @@ class AcademicYearService
                 throw new Exception('Ngày bắt đầu phải nhỏ hơn ngày kết thúc');
             }
 
-            // đảm bảo 1 năm học chỉ có 1 năm
-            if ($generationTotalYear >= 2) {
-                throw new Exception('Năm học chỉ có 1 năm');
+            $durationInMonths = $startDate->diffInMonths($endDate);
+            if ($durationInMonths < 7 || $durationInMonths > 9) {
+                throw new Exception('Thời gian của năm học năm trong khoảng từ 7 đến 9 tháng');
             }
 
             $generation = Generation::where('slug', $data['generation_slug'])
@@ -98,26 +98,16 @@ class AcademicYearService
             $startDate = Carbon::parse($data['start_date']);
             $endDate = Carbon::parse($data['end_date']);
 
-            // $hasDateChanged = (
-            //     Carbon::parse($academicYear->start_date)->toDateString() !== $startDate->toDateString() ||
-            //     Carbon::parse($academicYear->end_date)->toDateString() !== $endDate->toDateString()
-            // );
-
-            // if (!$hasDateChanged) {
-            //     $academicYear->update($data);
-            //     return $academicYear;
-            // }
-
             $startYear = $startDate->year;
             $endYear = $endDate->year;
-            $generationTotalYear = $endYear - $startYear;
 
             if ($startYear >= $endYear) {
                 throw new Exception('Năm bắt đầu phải nhỏ hơn năm kết thúc');
             }
 
-            if ($generationTotalYear >= 2) {
-                throw new Exception('Năm học chỉ có 1 năm');
+            $durationInMonths = $startDate->diffInMonths($endDate);
+            if ($durationInMonths < 7 || $durationInMonths > 9) {
+                throw new Exception('Thời gian của năm học năm trong khoảng từ 7 đến 9 tháng');
             }
 
             $startGenerationDate = Carbon::parse($generation->start_date);

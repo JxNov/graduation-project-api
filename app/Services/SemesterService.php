@@ -40,9 +40,9 @@ class SemesterService
                 throw new Exception('Thời gian kết thúc của kỳ học phải nằm trong khoảng từ ' . $startAcademicYear->toDateString() . ' đến ' . $endAcademicYear->toDateString());
             }
 
-            $monthsDiff = $startDate->diffInMonths($endDate);
-            if ($monthsDiff > 5) {
-                throw new Exception('Thời gian của kỳ học không được quá 5 tháng');
+            $durationInWeeks = $startDate->diffInMonths($endDate);
+            if ($durationInWeeks < 3 || $durationInWeeks > 5) {
+                throw new Exception('Thời gian của kỳ học phải từ 15 đến 20 tuần (khoảng 3.5 - 5 tháng)');
             }
 
             $previousSemester = Semester::where('academic_year_id', $academicYear->id)
@@ -107,9 +107,9 @@ class SemesterService
                 throw new Exception('Thời gian kết thúc kỳ học phải nằm trong khoảng từ ' . $startAcademicYear->format('d/m/Y') . ' đến ' . $endAcademicYear->format('d/m/Y'));
             }
 
-            $monthsDiff = $startDate->diffInMonths($endDate);
-            if ($monthsDiff > 5) {
-                throw new Exception('Thời gian của kỳ học không được quá 5 tháng.');
+            $durationInWeeks = $startDate->diffInMonths($endDate);
+            if ($durationInWeeks < 3 || $durationInWeeks > 5) {
+                throw new Exception('Thời gian của kỳ học phải từ 15 đến 20 tuần (khoảng 3.5 - 5 tháng)');
             }
 
             $previousSemester = Semester::where('academic_year_id', $academicYear->id)
