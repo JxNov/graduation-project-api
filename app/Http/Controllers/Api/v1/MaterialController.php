@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\BlockMaterialRequest;
 use App\Http\Requests\ClassMaterialRequest;
 use App\Http\Resources\ClassMaterialResource;
+use App\Models\Block;
 use App\Services\MaterialService;
 use App\Traits\ApiResponseTrait;
 use Exception;
@@ -20,6 +21,45 @@ class MaterialController extends Controller
     public function __construct(MaterialService $materialService)
     {
         $this->materialService = $materialService;
+    }
+
+    public function getBlockMaterial()
+    {
+        try {
+            $blocks = Block::with(['subjects.materials'])->get();
+            \Illuminate\Support\Facades\Log::info($blocks->toArray());
+
+            $data = $blocks->map(function ($block) {
+                return [
+                    'blockName' => $block->name,
+                    'blockSlug' => $block->slug,
+                    'subjects' => $block->subjects->map(function ($subject) {
+                        return [
+                            'subjectName' => $subject->name,
+                            'subjectSlug' => $subject->slug,
+                            'materials' => $subject->materials->map(function ($material) {
+                                return [
+                                    'materialTitle' => $material->title,
+                                    'materialSlug' => $material->slug,
+                                    'description' => $material->description ?? null,
+                                    'file_path' => $material->file_path,
+                                    'teacherName' => $material->teacher->name,
+                                    'teacherImage' => $material->teacher->image ?? null,
+                                ];
+                            }),
+                        ];
+                    }),
+                ];
+            });
+
+            return $this->successResponse(
+                $data,
+                'Lấy danh sách tài liệu theo khối thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
     }
 
     public function storeForClass(ClassMaterialRequest $request)
