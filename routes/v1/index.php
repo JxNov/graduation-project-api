@@ -155,6 +155,7 @@ Route::prefix('materials')
 
         Route::prefix('blocks')
             ->group(function () {
+                Route::get('/', [MaterialController::class, 'getBlockMaterial']);
                 Route::post('/', [MaterialController::class, 'storeForBlock']);
                 Route::patch('/{slug}', [MaterialController::class, 'updateForBlock']);
             });
@@ -292,7 +293,6 @@ Route::prefix('scores')
 Route::prefix('classrooms')
     ->middleware('auth:api')
     ->group(function () {
-        // Route::get('/block-material/{slug}', [ClassroomController::class, 'getBlockMaterialClassroom']);
         Route::get('/class-material/{slug}', [ClassroomController::class, 'getClassMaterialClassroom']);
         Route::get('/student/{slug}', [ClassroomController::class, 'getClassroomForStudent']);
         Route::get('/', [ClassroomController::class, 'getClassroomForTeacher']);
