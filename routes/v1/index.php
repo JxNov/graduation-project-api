@@ -294,7 +294,7 @@ Route::prefix('classrooms')
     ->middleware('auth:api')
     ->group(function () {
         Route::get('/class-material/{slug}', [ClassroomController::class, 'getClassMaterialClassroom']);
-        Route::get('/student/{slug}', [ClassroomController::class, 'getClassroomForStudent']);
+        Route::get('/student', [ClassroomController::class, 'getClassroomForStudent']);
         Route::get('/', [ClassroomController::class, 'getClassroomForTeacher']);
         Route::get('/{slug}', [ClassroomController::class, 'getDetailClassroomForTeacher']);
         Route::get('/assignment/{slug}', [ClassroomController::class, 'getAssignmentClassroom']);

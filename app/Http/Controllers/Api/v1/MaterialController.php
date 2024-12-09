@@ -27,7 +27,7 @@ class MaterialController extends Controller
     {
         try {
             $blocks = Block::with(['subjects.materials'])->get();
-            \Illuminate\Support\Facades\Log::info($blocks->toArray());
+            // \Illuminate\Support\Facades\Log::info($blocks->toArray());
 
             $data = $blocks->map(function ($block) {
                 return [
