@@ -232,6 +232,7 @@ Route::prefix('attendances')
         Route::get('/', [AttendanceController::class, 'index']);
         Route::get('/{classSlug}', [AttendanceController::class, 'studentInClass']);
         Route::post('/', [AttendanceController::class, 'save']);
+        Route::patch('/student/{username}', [AttendanceController::class, 'updateStudentAttendance']);
         Route::patch('/{id}', [AttendanceController::class, 'update']);
     });
 

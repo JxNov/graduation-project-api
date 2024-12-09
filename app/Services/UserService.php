@@ -341,7 +341,7 @@ class UserService
                 foreach ($data['images'] as $index => $image) {
                     $fileName = "{$username}_image" . ($index + 1) . ".png";
                     $imageFileNames[] = $fileName;
-                    $firebasePath = "{$username}/{$fileName}";
+                    $firebasePath = "images/{$username}/{$fileName}";
 
                     $storage->upload(
                         file_get_contents($image->getRealPath()),

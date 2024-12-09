@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Services;
 
 use App\Events\AttendanceSaved;
 use App\Models\Attendance;
+use App\Models\AttendanceDetail;
 use App\Models\Classes;
 use Carbon\Carbon;
 use Exception;
@@ -103,6 +105,20 @@ class AttendanceService
 
             event(new AttendanceSaved($attendance));
             return $attendance;
+        });
+    }
+
+    public function updateStudentAttendance($data, $user, $attendance)
+    {
+        return DB::transaction(function () use ($data, $user, $attendance) {
+            $attendanceDetail = AttendanceDetail::firstOrCreate([
+                'attendance_id' => $attendance->id,
+                'student_id' => $user->id,
+                'status' => 'Present',
+            ]);
+
+            event(new AttendanceSaved($attendance));
+            return $attendanceDetail;
         });
     }
 
