@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('app:notify-students-academic-year-start')->daily();
         $schedule->command('app:reminder-submit-assignments')->daily();
+        $schedule->command('app:create-daily-attendance')->daily();
     }
 
     /**

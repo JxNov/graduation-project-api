@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\AttendanceDetail;
 use App\Models\Classes;
+use App\Models\User;
 use App\Services\AttendanceService;
 use App\Traits\ApiResponseTrait;
 use Carbon\Carbon;
@@ -202,6 +203,44 @@ class AttendanceController extends Controller
                 'Lấy thông tin điểm danh thành công',
                 Response::HTTP_OK
             );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function updateStudentAttendance(Request $request, $username)
+    {
+        $request->validate([
+            'shifts' => 'required|string',
+        ]);
+
+        try {
+            $user = User::with('classes')->where('username', $username)->first();
+
+            if ($user === null) {
+                throw new Exception('Người dùng không tồn tại hoặc đã bị xóa');
+            }
+
+            $attendance = Attendance::where('date', now()->format('Y-m-d'))
+                ->where('shifts', $request->shifts)
+                ->where('class_id', $user->classes->first()->id)
+                ->first();
+
+            if ($attendance === null) {
+                throw new Exception('Không tìm thấy thông tin điểm danh');
+            }
+
+            $data = $request->all();
+
+            $result = $this->attendanceService->updateStudentAttendance($data, $user, $attendance);
+
+            return response()->json($result);
+
+//            return $this->successResponse(
+//                null,
+//                'Đã cập nhật kết quả điểm danh ngày: ' . now()->format('d/m/Y'),
+//                Response::HTTP_OK
+//            );
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }

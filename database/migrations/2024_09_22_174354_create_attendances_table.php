@@ -13,8 +13,8 @@ return new class extends Migration {
     {
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
-            $table->dateTime('date');
-            
+            $table->date('date');
+
             $table->enum('shifts', Attendance::_SHIFTS)
             ->default(Attendance::_SHIFTS['Morning']);
 
