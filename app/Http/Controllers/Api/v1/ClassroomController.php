@@ -34,7 +34,7 @@ class ClassroomController extends Controller
             $classrooms = $user->teachingClasses()
                 ->select('classes.name as className', 'classes.slug as classSlug', 'classes.teacher_id')
                 ->get();
-                // \Illuminate\Support\Facades\Log::info($classrooms);
+            // \Illuminate\Support\Facades\Log::info($classrooms);
             $data = $classrooms->map(function ($classroom) {
                 return [
                     'className' => $classroom->className,
@@ -54,19 +54,20 @@ class ClassroomController extends Controller
         }
     }
 
-    public function getClassroomForStudent(){
+    public function getClassroomForStudent()
+    {
         try {
             $user = Auth::user();
 
             $classrooms = $user->classes()
-                ->select('classes.name as className', 'classes.slug as classSlug')
+                ->select('classes.name as className', 'classes.slug as classSlug', 'classes.teacher_id')
                 ->get();
             $data = $classrooms->map(function ($classroom) use ($user) {
                 return [
                     'className' => $classroom->className,
                     'classSlug' => $classroom->classSlug,
-                    'teacherName' => $user->name,
-                    'teacherImage' => $user->image,
+                    'teacherName' => $classroom->teacher->name,
+                    'teacherImage' => $classroom->teacher->image ?? null,
                 ];
             });
             return $this->successResponse(
