@@ -1,9 +1,8 @@
 <?php
-
 namespace Database\Seeders;
 
+use App\Models\Block;
 use App\Models\Subject;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class SubjectSeeder extends Seeder
@@ -73,7 +72,15 @@ class SubjectSeeder extends Seeder
         ];
 
         foreach ($subjects as $item) {
-            Subject::create($item);
+            $subject = Subject::create($item);
+
+            if ($subject->slug !== 'hoa-hoc') {
+                $blocks = Block::all(); 
+                $subject->blocks()->sync($blocks->pluck('id'));
+            } else {
+                $blockIds = Block::whereIn('slug', ['khoi-8', 'khoi-9'])->pluck('id');
+                $subject->blocks()->sync($blockIds);
+            }
         }
     }
 }
