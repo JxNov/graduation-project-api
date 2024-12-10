@@ -167,7 +167,13 @@ class ChatController extends Controller
             $message = $this->chatService->sendMessageToAdmin($request->message);
 
             return $this->successResponse(
-                $message->message,
+                [
+                    'messageID' => $message->id,
+                    'message' => $message->message,
+                    'isRead' => $message->is_read,
+                    'name' => $message->user->name,
+                    'username' => $message->user->username,
+                ],
                 'Gửi tin nhắn cho quản trị thành công',
                 Response::HTTP_CREATED
             );
@@ -185,7 +191,13 @@ class ChatController extends Controller
             $message = $this->chatService->sendMessageToStudent($request->message, $username);
 
             return $this->successResponse(
-                $message->message,
+                [
+                    'messageID' => $message->id,
+                    'message' => $message->message,
+                    'isRead' => $message->is_read,
+                    'name' => $message->user->name,
+                    'username' => $message->user->username,
+                ],
                 'Gửi tin nhắn cho học sinh thành công',
                 Response::HTTP_CREATED
             );
