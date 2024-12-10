@@ -15,14 +15,12 @@ class ChatWithAdmin implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public $message, public User $user)
+    public function __construct(public $messageId, public $message, public $isRead, public User $user)
     {
     }
 
     public function broadcastOn(): array
     {
-        // \Illuminate\Support\Facades\Log::info($this->message);
-
         return [
             new PrivateChannel('chat-with-admin.' . $this->user->username),
         ];
@@ -36,7 +34,11 @@ class ChatWithAdmin implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'message' => $this->message
+            'messageID' => $this->messageId,
+            'message' => $this->message,
+            'isRead' => $this->isRead,
+            'name' => $this->user->name,
+            'username' => $this->user->username,
         ];
     }
 }
