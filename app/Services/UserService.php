@@ -330,44 +330,51 @@ class UserService
     }
 
     public function updateUser($data, $username)
-    {
-        return DB::transaction(function () use ($data, $username) {
-            $user = User::where('username', $username)->firstOrFail();
-            $imageFileNames = [];
-            $firebase = app('firebase.storage');
-            $storage = $firebase->getBucket();
+{
+    return DB::transaction(function () use ($data, $username) {
+        $user = User::where('username', $username)->firstOrFail();
+        $imageFileNames = [];
+        $firebase = app('firebase.storage');
+        $storage = $firebase->getBucket();
 
-            if (isset($data['images'])) {
-                foreach ($data['images'] as $index => $image) {
-                    $fileName = "{$username}_image" . ($index + 1) . ".png";
-                    $imageFileNames[] = $fileName;
-                    $firebasePath = "images/{$username}/{$fileName}";
-                    $storage->upload(
-                        file_get_contents($image->getRealPath()),
-                        [
-                            'name' => $firebasePath
-                        ]
-                    );
-                }
-
-                $imagesJson = json_encode($imageFileNames);
-
-                $user->update([
-                    'image' => $imagesJson,
-                ]);
+        // Upload ảnh lên Firebase Storage
+        if (isset($data['images'])) {
+            foreach ($data['images'] as $index => $image) {
+                $fileName = "{$username}_image" . ($index + 1) . ".png";
+                $imageFileNames[] = $fileName;
+                $firebasePath = "images/{$username}/{$fileName}";
+                $storage->upload(
+                    file_get_contents($image->getRealPath()),
+                    [
+                        'name' => $firebasePath
+                    ]
+                );
             }
 
-            if (isset($data['password'])) {
-                $password = $data['password'];
-            } else {
-                $password = $user->password;
-            }
+            $imagesJson = json_encode($imageFileNames);
 
             $user->update([
-                'password' => Hash::make($password),
+                'image' => $imagesJson,
             ]);
+        }
 
-            return $user;
-        });
+        // Kiểm tra mật khẩu cũ
+    if (!Hash::check($data['current_password'], $user->password)) {
+        throw new \Exception('Mật khẩu hiện tại không đúng.');
     }
+
+    // Kiểm tra mật khẩu mới
+    if ($data['new_password'] !== $data['confirm_new_password']) {
+        throw new \Exception('Mật khẩu mới không khớp với xác nhận mật khẩu.');
+    }
+
+    // Cập nhật mật khẩu mới
+    $user->update([
+        'password' => Hash::make($data['new_password']),
+    ]);
+
+        return $user;
+    });
+}
+
 }
