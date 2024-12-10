@@ -12,11 +12,11 @@ use Illuminate\Support\Str;
 
 class StudentService
 {
-    public function createStudent(array $data, $generationSlug, $academicYearSlug)
+    public function createStudent(array $data)
     {
-        return DB::transaction(function () use ($data, $generationSlug, $academicYearSlug) {
-            $academicYear = AcademicYear::where('slug', $academicYearSlug)->firstOrFail();
-            $generation = Generation::where('slug', $generationSlug)->firstOrFail();
+        return DB::transaction(function () use ($data) {
+            $academicYear = AcademicYear::where('slug', $data['academicYearSlug'])->firstOrFail();
+            $generation = Generation::where('slug', $data['generationSlug'])->firstOrFail();
             // Tạo username duy nhất
             $username = $this->generateUsername($data['name']);
 
