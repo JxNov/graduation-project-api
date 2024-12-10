@@ -198,7 +198,7 @@ class StudentService
 
     public function generateEmail($username)
     {
-        return $username . '@techschool.edu.vn';
+        return $username . '@tech4school.edu.vn';
     }
     private function removeAccents($string)
     {

@@ -161,7 +161,7 @@ class StudentsImport implements ToCollection, WithChunkReading, ShouldQueue
     // Hàm tạo email
     public function generateEmail($username)
     {
-        return $username . '@techschool.edu.vn';
+        return $username . '@tech4school.edu.vn';
     }
 
     // Hàm loại bỏ dấu
