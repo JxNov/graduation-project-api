@@ -67,7 +67,7 @@ class ChatService
                 'is_read' => false,
             ]);
 
-            broadcast(new ChatWithAdmin($message->id, $message->message, $message->is_read, $student));
+            broadcast(new ChatWithAdmin($message->id, $message->message, $message->is_read, $admin));
 
             return $message;
         });
