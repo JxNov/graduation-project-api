@@ -7,8 +7,8 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
-Broadcast::channel('chat-with-admin.{userId}', function ($user, $userId) {
-    return (int) $user->id === (int) $userId || $user->isAdmin();
+Broadcast::channel('chat-with-admin.{username}', function ($user, $username) {
+    return $user->username === $username || $user->isAdmin();
 });
 
 Broadcast::channel('attendance.{classId}', function ($user, $classId) {

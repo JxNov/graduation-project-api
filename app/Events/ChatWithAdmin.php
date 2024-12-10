@@ -24,7 +24,7 @@ class ChatWithAdmin implements ShouldBroadcast
         // \Illuminate\Support\Facades\Log::info($this->message);
 
         return [
-            new PrivateChannel('chat-with-admin.' . $this->user->id),
+            new PrivateChannel('chat-with-admin.' . $this->user->username),
         ];
     }
 
