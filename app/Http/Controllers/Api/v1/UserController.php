@@ -160,44 +160,19 @@ class UserController extends Controller
             return $this->errorResponse($e->getMessage());
         }
     }
-    public function showStudent($username){
-        $roleStudent = Role::select('id', 'slug')->where('slug', 'student')->first();
-        $student = User::whereHas('roles', function ($query) use ($roleStudent) {
-            $query->where('role_id', $roleStudent->id);
-        })
-        ->where('username',$username)
+    public function showUser($username){
+        $student = User::where('username',$username)
             ->first();
         return new StudentResource($student);
     }
-    public function updateStudent(Request $request,$username ){
+    public function updateUser(Request $request,$username ){
         try {
             $data =[
                 'images'=>$request->images,
                 'password'=>$request->password
             ] ;
-            $user = $this->userService->updateStudent($data, $username);
-            return $this->successResponse(new StudentResource($user), 'Thay đổi thông tin học sinh thành công!', Response::HTTP_OK);
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage());
-        }
-    }
-    public function showTeacher($username){
-        $roleTeacher = Role::select('id', 'slug')->where('slug', 'teacher')->first();
-        $teacher = User::whereHas('roles', function ($query) use ($roleTeacher) {
-            $query->where('role_id', $roleTeacher->id);
-        })
-        ->where('username',$username)
-            ->first();
-        return new TeacherResource($teacher);
-    }
-    public function updateTeacher(Request $request,$username ){
-        try {
-            $data =[
-                'image'=>$request->image,
-                'password'=>$request->password
-            ] ;
-            $user = $this->userService->updateTeacher($data, $username);
-            return $this->successResponse(new TeacherResource($user), 'Thay đổi thông tin giáo viên thành công!', Response::HTTP_OK);
+            $user = $this->userService->updateUser($data, $username);
+            return $this->successResponse(new StudentResource($user), 'Thay đổi thông tin người dùng thành công!', Response::HTTP_OK);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }

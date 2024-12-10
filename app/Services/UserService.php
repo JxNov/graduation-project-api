@@ -329,7 +329,7 @@ class UserService
         return $permissionIds;
     }
 
-    public function updateStudent($data, $username)
+    public function updateUser($data, $username)
     {
         return DB::transaction(function () use ($data, $username) {
             $user = User::where('username', $username)->firstOrFail();
@@ -342,7 +342,6 @@ class UserService
                     $fileName = "{$username}_image" . ($index + 1) . ".png";
                     $imageFileNames[] = $fileName;
                     $firebasePath = "images/{$username}/{$fileName}";
-
                     $storage->upload(
                         file_get_contents($image->getRealPath()),
                         [
@@ -365,48 +364,6 @@ class UserService
             }
 
             $user->update([
-                'password' => Hash::make($password),
-            ]);
-
-            return $user;
-        });
-    }
-
-    public function updateTeacher($data, $username)
-    {
-        return DB::transaction(function () use ($data, $username) {
-            $user = User::where('username', $username)->firstOrFail();
-            if (isset($data['image'])) {
-                $firebase = app('firebase.storage');
-                $storage = $firebase->getBucket();
-
-                $firebasePath = 'image-user/' . $data['image']->getClientOriginalName();
-
-                if ($user->image) {
-                    $oldFirebasePath = $user->image;
-
-                    $oldFile = $storage->object($oldFirebasePath);
-
-                    if ($oldFile->exists()) {
-                        $oldFile->delete();
-                    }
-                }
-
-                $storage->upload(
-                    file_get_contents($data['image']->getRealPath()),
-                    [
-                        'name' => $firebasePath
-                    ]
-                );
-                $data['image'] = $firebasePath;
-            }
-            if (isset($data['password'])) {
-                $password = $data['password'];
-            } else {
-                $password = $user->password;
-            }
-            $user->update([
-                'image' => $data['image'],
                 'password' => Hash::make($password),
             ]);
 
