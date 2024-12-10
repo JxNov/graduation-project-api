@@ -349,6 +349,7 @@ Route::prefix('comments')
     ->group(function () {
         Route::post('/', [CommentController::class, 'store']);
         Route::patch('/{id}', [CommentController::class, 'update']);
+        Route::delete('/{id}', [CommentController::class, 'destroy']);
     });
 
 // Thông báo
