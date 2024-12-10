@@ -60,6 +60,12 @@ class ClassService
             $class->academicYears()->sync([$academicYear->id]);
             $class->blocks()->sync([$block->id]);
 
+            $subjectIds = Subject::whereHas('blocks', function ($query) use ($block) {
+                $query->where('blocks.id', $block->id);
+            })->pluck('id');
+
+            $class->subjects()->sync($subjectIds);
+
             return $class;
         });
     }
@@ -112,6 +118,12 @@ class ClassService
             $class->academicYears()->sync([$academicYear->id]);
             $class->blocks()->sync([$block->id]);
 
+            $subjectIds = Subject::whereHas('blocks', function ($query) use ($block) {
+                $query->where('blocks.id', $block->id);
+            })->pluck('id');
+
+            $class->subjects()->sync($subjectIds);
+            
             return $class;
         });
     }
