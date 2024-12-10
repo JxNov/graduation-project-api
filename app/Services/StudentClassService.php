@@ -188,6 +188,11 @@ class StudentClassService
         $maxStudentsPerClass = 45;
         $minStudentsForNewClass = 25;
 
+        // Lấy danh sách các môn học thuộc khối trừ môn Hóa học
+        $subjects = $block->subjects()
+            ->where('slug', '!=', 'hoa-hoc')
+            ->get();
+
         // Phân học sinh vào các lớp hiện tại
         foreach ($existingClasses as $class) {
             $availableSlots = $maxStudentsPerClass - $class->students_count;
@@ -249,6 +254,16 @@ class StudentClassService
             );
             $remainingStudents -= $studentsToAssign->count();
             $newClasses[] = $class;
+
+            // Thêm các môn học vào lớp
+            foreach ($subjects as $subject) {
+                DB::table('subject_classes')->insert([
+                    'subject_id' => $subject->id,
+                    'class_id' => $class->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
 
         // Học sinh không đủ để phân lớp
@@ -264,6 +279,7 @@ class StudentClassService
         ];
     });
 }
+
 
 
 
