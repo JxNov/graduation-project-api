@@ -234,13 +234,13 @@ class AttendanceController extends Controller
 
             $result = $this->attendanceService->updateStudentAttendance($data, $user, $attendance);
 
-            return response()->json($result);
-
-//            return $this->successResponse(
-//                null,
-//                'Đã cập nhật kết quả điểm danh ngày: ' . now()->format('d/m/Y'),
-//                Response::HTTP_OK
-//            );
+            return response()->json([
+                'username' => $user->username,
+                'date' => $attendance->date,
+                'shifts' => $attendance->shifts,
+                'status' => $result['status'] ?? 'Absent',
+                'reason' => $result['reason'] ?? null
+            ]);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
