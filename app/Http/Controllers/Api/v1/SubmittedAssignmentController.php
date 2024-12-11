@@ -100,6 +100,46 @@ class SubmittedAssignmentController extends Controller
         }
     }
 
+    public function getAllSubmittedAssignments(SubmittedAssignmentRequest $request, $classSlug, $assignmentSlug)
+    {
+        try {
+            // Tìm lớp học theo slug
+            $class = Classes::where('slug', $classSlug)->first();
+            if (!$class) {
+                throw new Exception('Lớp không tồn tại.');
+            }
+
+            // Tìm bài tập theo slug và lớp học
+            $assignment = Assignment::where('slug', $assignmentSlug)
+                ->where('class_id', $class->id)
+                ->first();
+            if (!$assignment) {
+                throw new Exception('Bài tập không tồn tại hoặc không thuộc lớp này.');
+            }
+
+            // Lấy danh sách bài nộp của bài tập này
+            $submittedAssignments = SubmittedAssignment::where('assignment_id', $assignment->id)
+                ->with(['student'])
+                ->latest('submitted_at')
+                ->paginate(10);
+
+            if ($submittedAssignments->isEmpty()) {
+                return $this->errorResponse('Không có bài nộp nào cho bài tập này.', Response::HTTP_NOT_FOUND);
+            }
+
+            // Trả về dữ liệu theo định dạng resource
+            return $this->successResponse(
+                new SubmittedAssignmentCollection($submittedAssignments),
+                'Lấy danh sách bài nộp thành công.',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+
+
     public function showAssignmentStudent()
     {
         try {
@@ -128,7 +168,6 @@ class SubmittedAssignmentController extends Controller
                 return [
                     'assignment_id' => $assignment->id,
                     'title' => $assignment->title,
-                    'description' => $assignment->description,
                     'due_date' => $assignment->due_date,
                     'submitted' => $submitted ? true : false, // Đã nộp hay chưa
                     'submission' => $submitted ? [

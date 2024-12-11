@@ -15,7 +15,7 @@ class SubmittedAssignmentCollection extends ResourceCollection
     public function toArray(Request $request): array
     {
         return [
-            'data' => SubjectTeacherResource::collection($this->collection),
+            'data' => SubmittedAssignmentResource::collection($this->collection),
             'meta' => [
                 'current_page' => $this->currentPage(), // trang hiện tại
                 'last_page' => $this->lastPage(), // trang cuối cùng
