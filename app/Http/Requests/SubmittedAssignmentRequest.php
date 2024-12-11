@@ -97,8 +97,6 @@ class SubmittedAssignmentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'student_username.required' => 'Tên sinh viên không thể để trống',
-            'student_username.exists' => 'Sinh viên không tồn tại',
             'file_path.required' => 'File nộp bài không thể để trống',
             'file_path.mimes' => 'File nộp bài phải có định dạng pdf, docx, hoặc zip',
             'score.numeric' => 'Điểm phải là một số hợp lệ',

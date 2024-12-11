@@ -144,10 +144,10 @@ class SubmittedAssignmentService
 
 
 
-    public function updateScoreAndFeedback($assignmentSlug, $data)
+    public function updateScoreAndFeedback($assignmentSlug, $score, $feedback, $username)
     {
-        // Kiểm tra thông tin người dùng
-        $student = User::where('username', $data['username'])->first();
+        // Kiểm tra thông tin học sinh
+        $student = User::where('username', $username)->first();
         if (!$student) {
             throw new Exception('Không tồn tại học sinh với username này.');
         }
@@ -168,8 +168,8 @@ class SubmittedAssignmentService
         }
 
         // Cập nhật điểm và phản hồi
-        $submittedAssignment->score = $data['score'];
-        $submittedAssignment->feedback = $data['feedback'];
+        $submittedAssignment->score = $score;
+        $submittedAssignment->feedback = $feedback;
 
         // Lưu vào cơ sở dữ liệu
         $submittedAssignment->save();
