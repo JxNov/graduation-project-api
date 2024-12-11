@@ -76,14 +76,16 @@ class SubmittedAssignmentController extends Controller
 
 
     //controller để dành cho giáo viên chấm điểm và give feedback
-    public function updateScoreAndFeedback(SubmittedAssignmentRequest $request, $assignmentSlug)
+    public function updateScoreAndFeedback(SubmittedAssignmentRequest $request, $assignmentSlug, $studentName)
     {
         try {
             $data = $request->validated();
 
             $submittedAssignment = $this->submittedAssignmentService->updateScoreAndFeedback(
                 $assignmentSlug,
-                $data
+                $data['score'],
+                $data['feedback'],
+                $studentName
             );
 
             return $this->successResponse(
@@ -95,6 +97,8 @@ class SubmittedAssignmentController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+
 
     public function getAllSubmittedAssignments(SubmittedAssignmentRequest $request, $classSlug, $assignmentSlug)
     {
