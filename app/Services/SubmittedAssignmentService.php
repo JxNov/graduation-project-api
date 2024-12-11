@@ -144,43 +144,39 @@ class SubmittedAssignmentService
 
 
 
-    public function updateScoreAndFeedback($assignmentSlug, $score, $feedback, $username)
+    public function updateScoreAndFeedback($assignmentSlug, $data)
     {
-        // Kiểm tra xem người dùng có phải là giáo viên không
-        $user = User::where('username', $username)->first();
-        if (!$user) {
-            throw new Exception('Không tồn tại người dùng');
-        }
-
-        $isTeacher = $user->roles()->where('slug', 'teacher')->exists();
-        if (!$isTeacher) {
-            throw new Exception('Người dùng không phải giáo viên');
+        // Kiểm tra thông tin người dùng
+        $student = User::where('username', $data['username'])->first();
+        if (!$student) {
+            throw new Exception('Không tồn tại học sinh với username này.');
         }
 
         // Kiểm tra bài tập
         $assignment = Assignment::where('slug', $assignmentSlug)->first();
         if (!$assignment) {
-            throw new Exception('Bài tập không tồn tại hoặc đã bị xóa');
+            throw new Exception('Bài tập không tồn tại hoặc đã bị xóa.');
         }
 
-        // Kiểm tra bài nộp của sinh viên
+        // Kiểm tra bài nộp
         $submittedAssignment = SubmittedAssignment::where('assignment_id', $assignment->id)
-            ->where('student_id', $user->id)
+            ->where('student_id', $student->id)
             ->first();
 
         if (!$submittedAssignment) {
-            throw new Exception('Bài nộp không tồn tại hoặc không thuộc về sinh viên này.');
+            throw new Exception('Bài nộp không tồn tại hoặc không thuộc về học sinh này.');
         }
 
         // Cập nhật điểm và phản hồi
-        $submittedAssignment->score = $score;
-        $submittedAssignment->feedback = $feedback;
+        $submittedAssignment->score = $data['score'];
+        $submittedAssignment->feedback = $data['feedback'];
 
-        // Lưu các thay đổi vào cơ sở dữ liệu
+        // Lưu vào cơ sở dữ liệu
         $submittedAssignment->save();
 
         return $submittedAssignment;
     }
+
 
     private function deleteFileFromFirebase($filePath)
     {
