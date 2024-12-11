@@ -34,7 +34,7 @@ class MaterialController extends Controller
                         'title' => $material->title,
                         'slug' => $material->slug,
                         'description' => $material->description ?? null,
-                        'file_path' => $material->file_path,
+                        'filePath' => $material->file_path,
                         'subjectName' => $material->subject->name,
                         'subjectSlug' => $material->subject->slug,
                     ];

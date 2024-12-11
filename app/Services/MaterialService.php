@@ -288,7 +288,6 @@ class MaterialService
             $data['teacher_id'] = $teacher->id;
 
             if (isset($data['file_path'])) {
-                // Xóa file cũ trên Google Drive nếu tồn tại
                 if ($material->file_path) {
                     $client->request('DELETE', 'https://www.googleapis.com/drive/v3/files/' . $material->file_path, [
                         'headers' => [
@@ -297,7 +296,6 @@ class MaterialService
                     ]);
                 }
 
-                // Tải file mới lên Google Drive
                 $fileName = $data['file_path']->getClientOriginalName();
                 $mimeType = $data['file_path']->getClientMimeType();
 
