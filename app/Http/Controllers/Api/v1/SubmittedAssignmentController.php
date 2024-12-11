@@ -192,7 +192,7 @@ class SubmittedAssignmentController extends Controller
             $teacher = Auth::user();
 
             // Kiểm tra nếu giáo viên không có vai trò 'teacher'
-            if (!$teacher->roles->contains('name', 'teacher')) {
+            if (!$teacher->roles->contains('slug', 'teacher')) {
                 throw new Exception("Bạn không có quyền xem thông tin này.");
             }
 
