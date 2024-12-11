@@ -280,7 +280,7 @@ class ClassroomController extends Controller
                     'title' => $material->title,
                     'slug' => $material->slug,
                     'description' => $material->description,
-                    'file_path' => $material->file_path,
+                    'filePath' => $material->file_path,
                     'subjectName' => $material->subject->name,
                     'subjectSlug' => $material->subject->slug
                 ];

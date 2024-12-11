@@ -143,7 +143,7 @@ Route::prefix('classes')
     });
 
 Route::prefix('materials')
-    // ->middleware('auth:api')
+    ->middleware('auth:api')
     ->group(function () {
         Route::prefix('classes')
             ->group(function () {
