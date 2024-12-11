@@ -146,7 +146,7 @@ class GenerationService
                 if ($currentStartDate->diffInMonths($endDate) >= 10) {
                     $academicYears[] = [
                         'name' => "{$currentStartDate->year}-{$endDate->year}",
-                        'slug' => Str::slug("{$currentStartDate->year}-{$endDate->year}"),
+                        'slug' => Str::slug("{$generation->slug}-{$currentStartDate->year}-{$endDate->year}"),
                         'start_date' => $currentStartDate->toDateString(),
                         'end_date' => $endDate->toDateString(),
                         'generation_id' => $generation->id,
@@ -159,7 +159,7 @@ class GenerationService
 
             $academicYears[] = [
                 'name' => "{$currentStartDate->year}-{$nextStartDate->year}",
-                'slug' => Str::slug("{$currentStartDate->year}-{$nextStartDate->year}"),
+                'slug' => Str::slug("{$generation->slug}-{$currentStartDate->year}-{$nextStartDate->year}"),
                 'start_date' => $currentStartDate->toDateString(),
                 'end_date' => $nextStartDate->toDateString(),
                 'generation_id' => $generation->id,
@@ -174,8 +174,8 @@ class GenerationService
         AcademicYear::insert($academicYears);
 
         $newAcademicYears = AcademicYear::orderBy('created_at', 'desc')
-                ->limit(4)
-                ->get();
+            ->limit(4)
+            ->get();
 
         foreach ($newAcademicYears as $academicYear) {
             for ($i = 1; $i <= 2; $i++) {
