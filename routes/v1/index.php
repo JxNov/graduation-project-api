@@ -334,7 +334,7 @@ Route::prefix('submitted_assignments')->group(function () {
     Route::post('/{assignmentSlug}', [SubmittedAssignmentController::class, 'store']);
     Route::get('/{classSlug}/{assignmentSlug}/submitted-assignments', [SubmittedAssignmentController::class, 'getAllSubmittedAssignments']); //Hiển thị toàn bộ danh sách submitted Assignment
     //Route::put('/{id}', [SubmittedAssignmentController::class, 'update']);
-    Route::patch('/{assignmentSlug}/score-feedback', [SubmittedAssignmentController::class, 'updateScoreAndFeedback']);
+    Route::patch('/{assignmentSlug}/{studentName}/score-feedback', [SubmittedAssignmentController::class, 'updateScoreAndFeedback']);
 });
 
 Route::prefix('articles')
