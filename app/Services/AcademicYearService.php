@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AcademicYear;
 use App\Models\Generation;
+use App\Models\Semester;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -16,8 +17,6 @@ class AcademicYearService
         return DB::transaction(function () use ($data) {
             $startDate = Carbon::parse($data['start_date']);
             $endDate = Carbon::parse($data['end_date']);
-
-            $generationTotalYear = $endDate->year - $startDate->year;
 
             // năm bắt đầu phải < năm kết thúc
             if ($startDate->gte($endDate)) {
@@ -75,7 +74,11 @@ class AcademicYearService
             $data['slug'] = Str::slug($data['name']);
             $data['slug'] = $generationSlug . '-' . $data['slug'];
 
-            return AcademicYear::create($data);
+            $newCademicYear = AcademicYear::create($data);
+
+            $this->createSemesterWhenCreateNewAcademicYear($newCademicYear);
+
+            return $newCademicYear;
         });
     }
 
@@ -86,6 +89,9 @@ class AcademicYearService
             if (!$academicYear) {
                 throw new Exception('Năm học không tồn tại');
             }
+
+            $oldStartDate = $academicYear->start_date;
+            $oldEndDate = $academicYear->end_date;
 
             $generation = Generation::where('slug', $data['generation_slug'])
                 ->select('id', 'name', 'slug', 'start_date', 'end_date')
@@ -139,6 +145,11 @@ class AcademicYearService
             $data['generation_id'] = $generation->id;
 
             $academicYear->update($data);
+
+            if ($oldStartDate !== $data['start_date'] || $oldEndDate !== $data['end_date']) {
+                $this->createSemesterWhenCreateNewAcademicYear($academicYear);
+            }
+
             return $academicYear;
         });
     }
@@ -190,5 +201,22 @@ class AcademicYearService
 
             return $academicYear;
         });
+    }
+
+    private function createSemesterWhenCreateNewAcademicYear($academicYear)
+    {
+        Semester::where('academic_year_id', $academicYear->id)->forceDelete();
+
+        for ($i = 1; $i <= 2; $i++) {
+            $semesterData = [
+                'name' => 'Kỳ ' . $i,
+                'slug' => Str::slug("{$academicYear['slug']}-Kỳ-$i-" . rand(333, 999)),
+                'start_date' => $i == 1 ? $academicYear['start_date'] : Carbon::parse($academicYear['start_date'])->addMonths(4)->addDays(3)->toDateString(),
+                'end_date' => $i == 1 ? Carbon::parse($academicYear['start_date'])->addMonths(4)->toDateString() : $academicYear['end_date'],
+                'academic_year_id' => $academicYear['id'],
+            ];
+
+            Semester::create($semesterData);
+        }
     }
 }

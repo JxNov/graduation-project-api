@@ -29,16 +29,7 @@ class SemesterService
                 throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
             }
 
-            $startAcademicYear = Carbon::parse($academicYear->start_date);
-            $endAcademicYear = Carbon::parse($academicYear->end_date);
-
-            if ($startDate->lt($startAcademicYear) || $startDate->gt($endAcademicYear)) {
-                throw new Exception('Thời gian bắt đầu kỳ học phải nằm trong khoảng từ ' . $startAcademicYear->toDateString() . ' đến ' . $endAcademicYear->toDateString());
-            }
-
-            if ($endDate->lt($startAcademicYear) || $endDate->gt($endAcademicYear)) {
-                throw new Exception('Thời gian kết thúc của kỳ học phải nằm trong khoảng từ ' . $startAcademicYear->toDateString() . ' đến ' . $endAcademicYear->toDateString());
-            }
+            $this->validateSemesterDates($startDate, $endDate, $academicYear);
 
             $durationInWeeks = $startDate->diffInMonths($endDate);
             if ($durationInWeeks < 3 || $durationInWeeks > 5) {
@@ -96,16 +87,7 @@ class SemesterService
                 throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
             }
 
-            $startAcademicYear = Carbon::parse($academicYear->start_date);
-            $endAcademicYear = Carbon::parse($academicYear->end_date);
-
-            if ($startDate->lt($startAcademicYear) || $startDate->gt($endAcademicYear)) {
-                throw new Exception('Thời gian bắt đầu kỳ học phải nằm trong khoảng từ ' . $startAcademicYear->format('d/m/Y') . ' đến ' . $endAcademicYear->format('d/m/Y'));
-            }
-
-            if ($endDate->lt($startAcademicYear) || $endDate->gt($endAcademicYear)) {
-                throw new Exception('Thời gian kết thúc kỳ học phải nằm trong khoảng từ ' . $startAcademicYear->format('d/m/Y') . ' đến ' . $endAcademicYear->format('d/m/Y'));
-            }
+            $this->validateSemesterDates($startDate, $endDate, $academicYear);
 
             $durationInWeeks = $startDate->diffInMonths($endDate);
             if ($durationInWeeks < 3 || $durationInWeeks > 5) {
@@ -173,4 +155,19 @@ class SemesterService
             return $semester;
         });
     }
+
+    private function validateSemesterDates($startDate, $endDate, $academicYear)
+    {
+        $startAcademicYear = Carbon::parse($academicYear->start_date);
+        $endAcademicYear = Carbon::parse($academicYear->end_date);
+
+        if ($startDate->lt($startAcademicYear) || $startDate->gt($endAcademicYear)) {
+            throw new Exception('Thời gian bắt đầu kỳ học phải nằm trong khoảng từ ' . $startAcademicYear->toDateString() . ' đến ' . $endAcademicYear->toDateString());
+        }
+
+        if ($endDate->lt($startAcademicYear) || $endDate->gt($endAcademicYear)) {
+            throw new Exception('Thời gian kết thúc kỳ học phải nằm trong khoảng từ ' . $startAcademicYear->toDateString() . ' đến ' . $endAcademicYear->toDateString());
+        }
+    }
+
 }

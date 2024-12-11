@@ -1,7 +1,10 @@
 <?php
 
 namespace App\Services;
+
+use App\Models\AcademicYear;
 use App\Models\Generation;
+use App\Models\Semester;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -17,8 +20,8 @@ class GenerationService
             $startDate = Carbon::parse($data['start_date']);
             $endDate = Carbon::parse($data['end_date']);
 
-            if ($endDate->year - $startDate->year != 4) {
-                throw new Exception('Khóa học cần có độ dài là 4 năm');
+            if ($startDate->diffInMonths($endDate) != 48) {
+                throw new Exception('Khóa học cần có độ dài 48 tháng');
             }
 
             if ($generations->isNotEmpty()) {
@@ -35,6 +38,8 @@ class GenerationService
 
             $newGeneration = Generation::create($data);
 
+            $this->createAcademicYearAndSemesterWhenCreateNewGeneration($newGeneration, $startDate, $endDate);
+
             return $newGeneration;
         });
     }
@@ -43,6 +48,8 @@ class GenerationService
     {
         return DB::transaction(function () use ($data, $slug) {
             $currentGeneration = Generation::where('slug', $slug)->first();
+            $oldStartDate = $currentGeneration->start_date;
+            $oldEndDate = $currentGeneration->end_date;
 
             if ($currentGeneration === null) {
                 throw new Exception('Không tìm thấy khóa học này');
@@ -51,8 +58,8 @@ class GenerationService
             $startDate = Carbon::parse($data['start_date']);
             $endDate = Carbon::parse($data['end_date']);
 
-            if ($endDate->year - $startDate->year != 4) {
-                throw new Exception('Khóa học cần có độ dài là 4 năm');
+            if ($startDate->diffInMonths($endDate) != 48) {
+                throw new Exception('Khóa học cần có độ dài 48 tháng');
             }
 
             $generations = Generation::where('id', '<', $currentGeneration->id)
@@ -70,6 +77,10 @@ class GenerationService
             }
 
             $currentGeneration->update($data);
+
+            if ($oldStartDate !== $data['start_date'] || $oldEndDate !== $data['end_date']) {
+                $this->createAcademicYearAndSemesterWhenCreateNewGeneration($currentGeneration, $startDate, $endDate);
+            }
 
             return $currentGeneration;
         });
@@ -123,4 +134,61 @@ class GenerationService
         });
     }
 
+    private function createAcademicYearAndSemesterWhenCreateNewGeneration($generation, $startDate, $endDate)
+    {
+        $academicYears = [];
+        $currentStartDate = Carbon::parse($startDate);
+
+        while (true) {
+            $nextStartDate = $currentStartDate->copy()->addMonths(8)->day(30);
+
+            if ($nextStartDate->gt($endDate)) {
+                if ($currentStartDate->diffInMonths($endDate) >= 10) {
+                    $academicYears[] = [
+                        'name' => "{$currentStartDate->year}-{$endDate->year}",
+                        'slug' => Str::slug("{$currentStartDate->year}-{$endDate->year}"),
+                        'start_date' => $currentStartDate->toDateString(),
+                        'end_date' => $endDate->toDateString(),
+                        'generation_id' => $generation->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+                break;
+            }
+
+            $academicYears[] = [
+                'name' => "{$currentStartDate->year}-{$nextStartDate->year}",
+                'slug' => Str::slug("{$currentStartDate->year}-{$nextStartDate->year}"),
+                'start_date' => $currentStartDate->toDateString(),
+                'end_date' => $nextStartDate->toDateString(),
+                'generation_id' => $generation->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $currentStartDate = $nextStartDate->copy()->addMonths(4);
+        }
+
+        AcademicYear::where('generation_id', $generation->id)->forceDelete();
+        AcademicYear::insert($academicYears);
+
+        $newAcademicYears = AcademicYear::orderBy('created_at', 'desc')
+                ->limit(4)
+                ->get();
+
+        foreach ($newAcademicYears as $academicYear) {
+            for ($i = 1; $i <= 2; $i++) {
+                $semesterData = [
+                    'name' => 'Kỳ ' . $i,
+                    'slug' => Str::slug("{$academicYear['slug']}-Kỳ-$i-" . rand(333, 999)),
+                    'start_date' => $i == 1 ? $academicYear['start_date'] : Carbon::parse($academicYear['start_date'])->addMonths(4)->addDays(3)->toDateString(),
+                    'end_date' => $i == 1 ? Carbon::parse($academicYear['start_date'])->addMonths(4)->toDateString() : $academicYear['end_date'],
+                    'academic_year_id' => $academicYear['id'],
+                ];
+
+                Semester::create($semesterData);
+            }
+        }
+    }
 }
