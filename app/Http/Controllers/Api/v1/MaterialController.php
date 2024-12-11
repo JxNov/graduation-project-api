@@ -26,29 +26,24 @@ class MaterialController extends Controller
     public function getBlockMaterial()
     {
         try {
-            $blocks = Block::with(['subjects.materials'])->get();
-            // \Illuminate\Support\Facades\Log::info($blocks->toArray());
+            $blocks = Block::with(['classFromMaterials'])->get();
 
             $data = $blocks->map(function ($block) {
+                $materials = $block->classFromMaterials->map(function ($material) {
+                    return [
+                        'title' => $material->title,
+                        'slug' => $material->slug,
+                        'description' => $material->description ?? null,
+                        'file_path' => $material->file_path,
+                        'subjectName' => $material->subject->name,
+                        'subjectSlug' => $material->subject->slug,
+                    ];
+                });
+
                 return [
                     'blockName' => $block->name,
                     'blockSlug' => $block->slug,
-                    'subjects' => $block->subjects->map(function ($subject) {
-                        return [
-                            'subjectName' => $subject->name,
-                            'subjectSlug' => $subject->slug,
-                            'materials' => $subject->materials->map(function ($material) {
-                                return [
-                                    'materialTitle' => $material->title,
-                                    'materialSlug' => $material->slug,
-                                    'description' => $material->description ?? null,
-                                    'file_path' => $material->file_path,
-                                    'teacherName' => $material->teacher->name,
-                                    'teacherImage' => $material->teacher->image ?? null,
-                                ];
-                            }),
-                        ];
-                    }),
+                    'materials' => $materials,
                 ];
             });
 

@@ -275,25 +275,19 @@ class ClassroomController extends Controller
                 throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
             }
 
-            $materialsGroupedBySubject = $class->materials->groupBy('subject_id');
-
-            $subjects = $class->subjects->map(function ($subject) use ($materialsGroupedBySubject) {
+            $materials = $class->materials->map(function ($material) {
                 return [
-                    'name' => $subject->name,
-                    'slug' => $subject->slug,
-                    'materials' => collect($materialsGroupedBySubject->get($subject->id, []))->map(function ($material) {
-                        return [
-                            'title' => $material->title,
-                            'slug' => $material->slug,
-                            'description' => $material->description,
-                            'file_path' => $material->file_path,
-                        ];
-                    })
+                    'title' => $material->title,
+                    'slug' => $material->slug,
+                    'description' => $material->description,
+                    'file_path' => $material->file_path,
+                    'subjectName' => $material->subject->name,
+                    'subjectSlug' => $material->subject->slug
                 ];
             });
 
             return $this->successResponse(
-                $subjects,
+                $materials,
                 'Lấy danh sách tài liệu của lớp thành công',
                 Response::HTTP_OK
             );
