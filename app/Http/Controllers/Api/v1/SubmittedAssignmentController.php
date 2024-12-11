@@ -81,13 +81,9 @@ class SubmittedAssignmentController extends Controller
         try {
             $data = $request->validated();
 
-            $user = $request->user();
-
             $submittedAssignment = $this->submittedAssignmentService->updateScoreAndFeedback(
                 $assignmentSlug,
-                $data['score'],
-                $data['feedback'],
-                $user->username
+                $data
             );
 
             return $this->successResponse(
@@ -144,7 +140,7 @@ class SubmittedAssignmentController extends Controller
     {
         try {
             $student = Auth::user(); // Lấy thông tin học sinh hiện tại
-            if (!$student->roles->contains('name', 'student')) {
+            if (!$student->roles->contains('slug', 'student')) {
                 throw new Exception("Người dùng chưa đăng nhập.");
             }
             $classes = $student->classes; // Lấy danh sách các lớp mà học sinh đang học
