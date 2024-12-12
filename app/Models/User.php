@@ -130,6 +130,11 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->roles()->where('name', 'admin')->exists();
     }
+    public function isTeacher(): bool
+    {
+        return $this->roles()->where('name', 'teacher')->exists();
+    }
+
     public function classes()
     {
         return $this->belongsToMany(Classes::class, 'class_students', 'student_id', 'class_id');
