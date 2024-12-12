@@ -115,26 +115,26 @@ class StatisticService
     {
         try {
             $academicYear = AcademicYear::where('slug', $academic_year_slug)->first();
+
             if ($academicYear === null) {
                 throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
             }
 
-            $classInAcademicYear = $academicYear->classes;
-            // \Illuminate\Support\Facades\Log::info($classInAcademicYear->toArray());
-
-            $blockStudentCount = $classInAcademicYear->flatMap(function ($class) use ($academicYear) {
-                $studentCount = $class->students->count();
-
-                return $class->blocks->map(function ($block) use ($studentCount, $academicYear) {
+            $blockStudentCount = $academicYear->classes->flatMap(function ($class) {
+                return $class->blocks->map(function ($block) use ($class) {
                     return [
-                        'academicYearName' => $academicYear->name,
                         'blockName' => $block->name,
-                        'quantity' => $studentCount,
+                        'studentCount' => $class->students->count(),
                     ];
                 });
             });
 
-            return $blockStudentCount;
+            return $blockStudentCount->groupBy('blockName')->map(function ($students, $blockName) {
+                return [
+                    'blockName' => $blockName,
+                    'totalStudents' => $students->sum('studentCount'),
+                ];
+            })->values();
         } catch (Exception $e) {
             throw $e;
         }
@@ -384,129 +384,129 @@ class StatisticService
 
     // hàm tính điểm tổng kết cuối năm dành cho giáo viên chủ nhiệm(cả lớp), có cả điểm theo kì.
     public function calculateFinalScoreYearClass($classSlug, $yearSlug)
-{
-    $teacher = Auth::user();
+    {
+        $teacher = Auth::user();
 
-    if (!$teacher) {
-        throw new Exception("Người dùng chưa đăng nhập.");
-    }
+        if (!$teacher) {
+            throw new Exception("Người dùng chưa đăng nhập.");
+        }
 
-    // Lấy thông tin lớp và năm học
-    $class = Classes::where('slug', $classSlug)
-        ->where('teacher_id', $teacher->id)
-        ->first();
+        // Lấy thông tin lớp và năm học
+        $class = Classes::where('slug', $classSlug)
+            ->where('teacher_id', $teacher->id)
+            ->first();
 
-    if (!$class) {
-        throw new Exception("Bạn không phải là giáo viên chủ nhiệm của lớp này hoặc lớp không tồn tại.");
-    }
+        if (!$class) {
+            throw new Exception("Bạn không phải là giáo viên chủ nhiệm của lớp này hoặc lớp không tồn tại.");
+        }
 
-    $academicYear = AcademicYear::where('slug', $yearSlug)->first();
-    if (!$academicYear) {
-        throw new Exception("Năm học không tìm thấy!");
-    }
+        $academicYear = AcademicYear::where('slug', $yearSlug)->first();
+        if (!$academicYear) {
+            throw new Exception("Năm học không tìm thấy!");
+        }
 
-    $semesters = $academicYear->semesters;
+        $semesters = $academicYear->semesters;
 
-    if ($semesters->isEmpty()) {
-        throw new Exception("Năm học này không có kỳ học nào.");
-    }
+        if ($semesters->isEmpty()) {
+            throw new Exception("Năm học này không có kỳ học nào.");
+        }
 
-    $students = $class->students;
-    $subjects = $class->subjects; 
+        $students = $class->students;
+        $subjects = $class->subjects;
 
-    if ($students->isEmpty()) {
-        throw new Exception("Không có học sinh trong lớp này.");
-    }
+        if ($students->isEmpty()) {
+            throw new Exception("Không có học sinh trong lớp này.");
+        }
 
-    $finalScores = [];
+        $finalScores = [];
 
-    foreach ($students as $student) {
-        $semesterAverages = [];
-        $semesterPerformance = []; // Học lực của từng kỳ
-        $hasValidScoresForYear = true;
+        foreach ($students as $student) {
+            $semesterAverages = [];
+            $semesterPerformance = []; // Học lực của từng kỳ
+            $hasValidScoresForYear = true;
 
-        foreach ($semesters as $semester) {
-            $scores = DB::table('subject_scores')
-                ->where('student_id', $student->id)
-                ->where('class_id', $class->id)
-                ->where('semester_id', $semester->id)
-                ->pluck('average_score', 'subject_id');
+            foreach ($semesters as $semester) {
+                $scores = DB::table('subject_scores')
+                    ->where('student_id', $student->id)
+                    ->where('class_id', $class->id)
+                    ->where('semester_id', $semester->id)
+                    ->pluck('average_score', 'subject_id');
 
-            // Kiểm tra học sinh có đủ điểm của tất cả các môn thuộc lớp không
-            $allSubjectsHaveScores = $subjects->pluck('id')->diff($scores->keys())->isEmpty();
+                // Kiểm tra học sinh có đủ điểm của tất cả các môn thuộc lớp không
+                $allSubjectsHaveScores = $subjects->pluck('id')->diff($scores->keys())->isEmpty();
 
-            if ($allSubjectsHaveScores) {
-                // Tính điểm trung bình kỳ học
-                $averageScore = round(array_sum($scores->toArray()) / count($scores), 2);
-                $semesterAverages[$semester->id] = $averageScore;
-                $semesterPerformance[$semester->id] = $this->determinePerformanceLevel($averageScore);
+                if ($allSubjectsHaveScores) {
+                    // Tính điểm trung bình kỳ học
+                    $averageScore = round(array_sum($scores->toArray()) / count($scores), 2);
+                    $semesterAverages[$semester->id] = $averageScore;
+                    $semesterPerformance[$semester->id] = $this->determinePerformanceLevel($averageScore);
 
-                // Lưu điểm và học lực kỳ vào bảng final_scores
+                    // Lưu điểm và học lực kỳ vào bảng final_scores
+                    DB::table('final_scores')->updateOrInsert(
+                        [
+                            'student_id' => $student->id,
+                            'academic_year_id' => $academicYear->id,
+                            'semester_id' => $semester->id,
+                        ],
+                        [
+                            'average_score' => $averageScore,
+                            'performance_level' => $semesterPerformance[$semester->id],
+                            'class_id' => $class->id,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]
+                    );
+                } else {
+                    $semesterAverages[$semester->name] = null;
+                    $semesterPerformance[$semester->name] = "Chưa đủ điểm để xét học lực";
+                    $hasValidScoresForYear = false; // không đủ điểm cho năm học
+                }
+            }
+
+            // Tính điểm tổng kết năm học nếu đủ điểm cả hai kỳ
+            if ($hasValidScoresForYear) {
+                $validAverages = array_filter($semesterAverages, fn($score) => $score !== null);
+                $finalScoreYear = !empty($validAverages) ? round(array_sum($validAverages) / count($validAverages), 2) : 0;
+                $finalPerformance = $this->determinePerformanceLevel($finalScoreYear);
+
+                // Lưu điểm tổng kết năm vào bảng final_scores
                 DB::table('final_scores')->updateOrInsert(
                     [
                         'student_id' => $student->id,
                         'academic_year_id' => $academicYear->id,
-                        'semester_id' => $semester->id,
+                        'class_id' => $class->id,
+                        'semester_id' => null, // tổng kết cuối năm sẽ không có semester
                     ],
                     [
-                        'average_score' => $averageScore,
-                        'performance_level' => $semesterPerformance[$semester->id],
-                        'class_id' => $class->id,
+                        'average_score' => $finalScoreYear,
+                        'performance_level' => $finalPerformance,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]
                 );
             } else {
-                $semesterAverages[$semester->name] = null;
-                $semesterPerformance[$semester->name] = "Chưa đủ điểm để xét học lực";
-                $hasValidScoresForYear = false; // không đủ điểm cho năm học
+                $finalScoreYear = null;
+                $finalPerformance = "Chưa đủ điểm để xét học lực";
             }
+
+            $finalScores[] = [
+                'studentName' => $student->name,
+                'username' => $student->username,
+                'semesterScores' => $semesterAverages,
+                'semesterPerformance' => $semesterPerformance,
+                'yearScore' => $finalScoreYear,
+                'yearPerformance' => $finalPerformance,
+            ];
         }
 
-        // Tính điểm tổng kết năm học nếu đủ điểm cả hai kỳ
-        if ($hasValidScoresForYear) {
-            $validAverages = array_filter($semesterAverages, fn($score) => $score !== null);
-            $finalScoreYear = !empty($validAverages) ? round(array_sum($validAverages) / count($validAverages), 2) : 0;
-            $finalPerformance = $this->determinePerformanceLevel($finalScoreYear);
-
-            // Lưu điểm tổng kết năm vào bảng final_scores
-            DB::table('final_scores')->updateOrInsert(
-                [
-                    'student_id' => $student->id,
-                    'academic_year_id' => $academicYear->id,
-                    'class_id' => $class->id,
-                    'semester_id' => null, // tổng kết cuối năm sẽ không có semester
-                ],
-                [
-                    'average_score' => $finalScoreYear,
-                    'performance_level' => $finalPerformance,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
-        } else {
-            $finalScoreYear = null;
-            $finalPerformance = "Chưa đủ điểm để xét học lực";
-        }
-
-        $finalScores[] = [
-            'studentName' => $student->name,
-            'username' => $student->username,
-            'semesterScores' => $semesterAverages,
-            'semesterPerformance' => $semesterPerformance,
-            'yearScore' => $finalScoreYear,
-            'yearPerformance' => $finalPerformance,
+        return (object) [
+            'teacherName' => $teacher->name,
+        'username'=>$teacher->username,
+            'class' => $class->name,
+            'academicYear' => $academicYear->name,
+            'finalScores' => $finalScores,
         ];
     }
-
-    return (object)[
-        'teacherName' => $teacher->name,
-        'username'=>$teacher->username,
-        'class' => $class->name,
-        'academicYear' => $academicYear->name,
-        'finalScores' => $finalScores,
-    ];
-}
 
 
     // Hàm xác định học lực
