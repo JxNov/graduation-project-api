@@ -6,6 +6,7 @@ use App\Models\Classes;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class ArticleService
 {
@@ -38,9 +39,13 @@ class ArticleService
     {
         return DB::transaction(function () use ($id) {
             $article = Article::where('id', $id)->first();
-
+            
             if ($article === null) {
                 throw new Exception('Không tìm thấy bài viết');
+            }
+            
+            if (!Gate::allows('forceDelete', $article)) {
+                throw new Exception('Bạn không thể xóa bài viết');
             }
 
             $article->forceDelete();
