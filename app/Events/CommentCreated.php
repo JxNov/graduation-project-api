@@ -40,6 +40,7 @@ class CommentCreated implements ShouldBroadcast
             'createdAt' => $this->comment->created_at,
             'id' => $this->comment->id,
             'name' => optional($this->comment->user)->name,
+            'username' => optional($this->comment->user)->username,
             'userImage' => optional($this->comment->user)->image,
         ];
     }
