@@ -70,7 +70,7 @@ class ArticleController extends Controller
             return $this->successResponse(
                 null,
                 'Xóa vĩnh viền bài viết thành công',
-                Response::HTTP_NO_CONTENT
+                Response::HTTP_OK
             );
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
