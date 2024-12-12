@@ -160,52 +160,84 @@ class UserController extends Controller
             return $this->errorResponse($e->getMessage());
         }
     }
-    public function showUser($username){
-        $student = User::where('username',$username)
+    public function showUser($username)
+    {
+        $student = User::where('username', $username)
             ->first();
         return new StudentResource($student);
     }
     public function updateUser(Request $request, $username)
-{
-    try {
-        // Xác thực dữ liệu đầu vào
-        $validatedData = $request->validate([
-            'current_password' => 'required|string|min:6',  
-            'new_password' => 'required|string|min:6',  
-            'confirm_new_password' => 'required|string|min:6|same:new_password', 
-        ], [
-            'current_password.required' => 'Trường mật khẩu hiện tại là bắt buộc.',
-            'current_password.string' => 'Mật khẩu hiện tại phải là chuỗi ký tự.',
-            'current_password.min' => 'Mật khẩu hiện tại phải có ít nhất :min ký tự.',
-            
-            'new_password.required' => 'Trường mật khẩu mới là bắt buộc.',
-            'new_password.string' => 'Mật khẩu mới phải là chuỗi ký tự.',
-            'new_password.min' => 'Mật khẩu mới phải có ít nhất :min ký tự.',
-            
-            'confirm_new_password.required' => 'Xác nhận mật khẩu mới là bắt buộc.',
-            'confirm_new_password.string' => 'Xác nhận mật khẩu mới phải là chuỗi ký tự.',
-            'confirm_new_password.same' => 'Xác nhận mật khẩu mới phải khớp với mật khẩu mới.',
-            
-        ]);
+    {
+        try {
+            // Xác thực dữ liệu đầu vào
+            $validatedData = $request->validate([
+                'current_password' => 'required|string|min:6',
+                'new_password' => 'required|string|min:6',
+                'confirm_new_password' => 'required|string|min:6|same:new_password',
+            ], [
+                'current_password.required' => 'Trường mật khẩu hiện tại là bắt buộc.',
+                'current_password.string' => 'Mật khẩu hiện tại phải là chuỗi ký tự.',
+                'current_password.min' => 'Mật khẩu hiện tại phải có ít nhất :min ký tự.',
 
-        // Lấy dữ liệu đầu vào
-        $data = [
-            'images' => $request->images,
-            'current_password' => $request->current_password,
-            'new_password' => $request->new_password,
-            'confirm_new_password' =>$request->confirm_new_password
-        ];
+                'new_password.required' => 'Trường mật khẩu mới là bắt buộc.',
+                'new_password.string' => 'Mật khẩu mới phải là chuỗi ký tự.',
+                'new_password.min' => 'Mật khẩu mới phải có ít nhất :min ký tự.',
 
-        // Lấy người dùng từ username
-        $user = $this->userService->updateUser($data, $username);
+                'confirm_new_password.required' => 'Xác nhận mật khẩu mới là bắt buộc.',
+                'confirm_new_password.string' => 'Xác nhận mật khẩu mới phải là chuỗi ký tự.',
+                'confirm_new_password.same' => 'Xác nhận mật khẩu mới phải khớp với mật khẩu mới.',
 
-        // Trả về phản hồi thành công
-        return $this->successResponse(new StudentResource($user), 'Thay đổi thông tin người dùng thành công!', Response::HTTP_OK);
-    } catch (Exception $e) {
-        // Xử lý lỗi
-        return $this->errorResponse($e->getMessage());
+            ]);
+
+            // Lấy dữ liệu đầu vào
+            $data = [
+                'images' => $request->images,
+                'current_password' => $request->current_password,
+                'new_password' => $request->new_password,
+                'confirm_new_password' => $request->confirm_new_password
+            ];
+
+            // Lấy người dùng từ username
+            $user = $this->userService->updateUser($data, $username);
+
+            // Trả về phản hồi thành công
+            return $this->successResponse(new StudentResource($user), 'Thay đổi thông tin người dùng thành công!', Response::HTTP_OK);
+        } catch (Exception $e) {
+            // Xử lý lỗi
+            return $this->errorResponse($e->getMessage());
+        }
     }
-}
 
+    public function store(Request $request)
+    {
+        try {
+            $data = $request->validate(
+                [
+                    'name' => 'required|max:50',
+                    'date_of_birth' => 'required',
+                    'gender' => 'required',
+                    'address' => 'required',
+                    'phone_number' => 'required|min:10|numeric',
+                ],
+                [
+                    'name.required' => 'Tên đang trống',
+                    'name.max' => 'Tên quá dài',
+                    'date_of_birth.required' => 'Ngày sinh đang trống',
+                    'gender.required' => 'Giới tính đang trống',
+                    'address.required' => 'Địa chỉ đang trống',
+                    'phone_number.required' => 'Số điện thoại đang trống',
+                ]
+            );
 
+            $newUser = $this->userService->createNewUser($data);
+
+            return $this->successResponse(
+                new StudentResource($newUser),
+                'Tạo mới người dùng thành công',
+                Response::HTTP_CREATED
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }
