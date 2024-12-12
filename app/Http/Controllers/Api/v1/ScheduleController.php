@@ -25,11 +25,13 @@ class ScheduleController extends Controller
         $this->scheduleService = $scheduleService;
     }
 
-    public function store(Request $request): JsonResponse
+    public function store($academicYearSlug, $blockSlug)
     {
-        $result = $this->scheduleService->generateTimetable();
+        
+        $result = $this->scheduleService->generateSchedules($academicYearSlug, $blockSlug);
         return response()->json($result);
     }
+
 
     public function show($classSlug)
     {
