@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Resources\ScoreResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
 
 class StatisticService
 {
@@ -244,96 +246,142 @@ class StatisticService
     }
     // học sinh xem chi tiết điểm các môn học của mình
     public function showStudentScoreSemester($classSlug, $semesterSlug, $yearSlug)
-    {
-        $student = Auth::user();
+{
+    $student = Auth::user();
 
-        if (!$student->roles->contains('name', 'student')) {
-            throw new Exception("Người dùng chưa đăng nhập.");
-        }
-
-
-        $class = Classes::where('slug', $classSlug)->first();
-
-        if (!$class) {
-            throw new Exception("Không tìm thấy lớp");
-        }
-
-        $semester = Semester::where('slug', $semesterSlug)->first();
-
-        if (!$semester) {
-            throw new Exception("Học kỳ không tìm thấy!.");
-        }
-        $academicYear = AcademicYear::where('slug', $yearSlug)->first();
-        if (!$academicYear) {
-            throw new Exception("Năm học không tìm thấy!.");
-        }
-
-
-        $subjectScores = $student->subjectScores()
-            ->where('class_id', $class->id)
-            ->where('semester_id', $semester->id)
-            ->get();
-
-        if ($subjectScores->isEmpty()) {
-            throw new Exception("Không tìm thấy điểm của bạn trong lớp {$class->name}.");
-        }
-
-        return (object)[
-            'student' => $student->name,
-            'class' => $class->name,
-            'scores' => $subjectScores
-        ];
+    if (!$student->roles->contains('name', 'student')) {
+        throw new Exception("Người dùng chưa đăng nhập.");
     }
+
+    $class = Classes::where('slug', $classSlug)->first();
+    if (!$class) {
+        throw new Exception("Không tìm thấy lớp.");
+    }
+
+    $semester = Semester::where('slug', $semesterSlug)->first();
+    if (!$semester) {
+        throw new Exception("Không tìm thấy học kỳ.");
+    }
+
+    $academicYear = AcademicYear::where('slug', $yearSlug)->first();
+    if (!$academicYear) {
+        throw new Exception("Không tìm thấy năm học.");
+    }
+
+    $subjectScores = $student->subjectScores()
+        ->where('class_id', $class->id)
+        ->where('semester_id', $semester->id)
+        ->get();
+
+    if ($subjectScores->isEmpty()) {
+        throw new Exception("Không tìm thấy điểm của bạn trong lớp {$class->name}.");
+    }
+
+    $formattedScores = $subjectScores->map(function ($score) {
+        $subject = Subject::find($score->subject_id); // Lấy thông tin môn học
+
+        // Đổi key từ snake_case sang camelCase
+        $detailedScores = collect($score->detailed_scores)->mapWithKeys(function ($value, $key) {
+            return [Str::camel($key) => $value];
+        });
+
+        return [
+            'subjectName' => $subject->name ?? 'N/A', // Tên môn học
+            'detailedScores' => $detailedScores,
+            'averageScore' => $score->average_score
+        ];
+    });
+
+    return (object)[
+        'studentName' => $student->name,
+        'username'=> $student->username,
+        'class' => $class->name,
+        'semester' => $semester->name,
+        'scores' => $formattedScores
+    ];
+}
+
+
     // giáo viên xem chi tiết điểm các môn học của học sinh
     public function showStudentScoreSemesterClass($classSlug, $semesterSlug, $yearSlug)
-    {
-        // Lấy thông tin giáo viên đăng nhập
-        $teacher = Auth::user();
+{
+    // Lấy thông tin giáo viên đăng nhập
+    $teacher = Auth::user();
 
-        if (!$teacher) {
-            throw new Exception("Người dùng chưa đăng nhập.");
-        }
-
-        // Lấy thông tin lớp dựa trên slug
-        $class = Classes::where('slug', $classSlug)
-            ->where('teacher_id', $teacher->id) // Kiểm tra giáo viên chủ nhiệm
-            ->first();
-
-        if (!$class) {
-            throw new Exception("Bạn không phải là giáo viên chủ nhiệm của lớp này hoặc lớp không tồn tại.");
-        }
-
-        // Lấy thông tin học kỳ
-        $semester = Semester::where('slug', $semesterSlug)->first();
-        if (!$semester) {
-            throw new Exception("Học kỳ không tìm thấy!.");
-        }
-
-        // Lấy thông tin năm học
-        $academicYear = AcademicYear::where('slug', $yearSlug)->first();
-        if (!$academicYear) {
-            throw new Exception("Năm học không tìm thấy!.");
-        }
-
-        // Lấy điểm của tất cả học sinh trong lớp đó
-        $subjectScores = DB::table('subject_scores')
-            ->join('users', 'subject_scores.student_id', '=', 'users.id') // Kết nối bảng users
-            ->select('users.name as student_name', 'subject_scores.*') // Lấy thông tin học sinh và điểm
-            ->where('subject_scores.class_id', $class->id)
-            ->where('subject_scores.semester_id', $semester->id)
-            ->get();
-
-        if ($subjectScores->isEmpty()) {
-            throw new Exception("Không tìm thấy điểm của lớp {$class->name} trong học kỳ này.");
-        }
-
-        // Trả về dữ liệu
-        return response()->json([
-            'teacher' => $teacher->name,
-            'class' => $class->name,
-            'scores' => $subjectScores
-        ]);
+    if (!$teacher) {
+        throw new Exception("Người dùng chưa đăng nhập.");
     }
+
+    // Lấy thông tin lớp dựa trên slug
+    $class = Classes::where('slug', $classSlug)
+        ->where('teacher_id', $teacher->id) // Kiểm tra giáo viên chủ nhiệm
+        ->first();
+
+    if (!$class) {
+        throw new Exception("Bạn không phải là giáo viên chủ nhiệm của lớp này hoặc lớp không tồn tại.");
+    }
+
+    // Lấy thông tin học kỳ
+    $semester = Semester::where('slug', $semesterSlug)->first();
+    if (!$semester) {
+        throw new Exception("Học kỳ không tìm thấy!");
+    }
+
+    // Lấy thông tin năm học
+    $academicYear = AcademicYear::where('slug', $yearSlug)->first();
+    if (!$academicYear) {
+        throw new Exception("Năm học không tìm thấy!");
+    }
+
+    // Lấy điểm của tất cả học sinh trong lớp đó
+    $subjectScores = DB::table('subject_scores')
+        ->join('users', 'subject_scores.student_id', '=', 'users.id') // Kết nối bảng users
+        ->join('subjects', 'subject_scores.subject_id', '=', 'subjects.id') // Kết nối bảng subjects
+        ->select(
+            'users.name as student_name',
+            'subjects.name as subject_name',
+            'subject_scores.detailed_scores',
+            'subject_scores.average_score',
+        )
+        ->where('subject_scores.class_id', $class->id)
+        ->where('subject_scores.semester_id', $semester->id)
+        ->get();
+
+    if ($subjectScores->isEmpty()) {
+        throw new Exception("Không tìm thấy điểm của lớp {$class->name} trong học kỳ này.");
+    }
+
+    // Xử lý dữ liệu detailed_scores và đổi tên key
+    $processedScores = $subjectScores->map(function ($score) use ($semester) {
+        $detailedScores = json_decode($score->detailed_scores, true);
+
+        $formattedScores = [
+            'diemMieng' => $detailedScores['diem_mieng'] ?? [],
+            'diem15Phut' => $detailedScores['diem_15_phut'] ?? [],
+            'diemCuoiKi' => $detailedScores['diem_cuoi_ki'] ?? [],
+            'diemGiuaKi' => $detailedScores['diem_giua_ki'] ?? [],
+            'diemMotTiet1' => $detailedScores['diem_mot_tiet_1'] ?? [],
+            'diemMotTiet2' => $detailedScores['diem_mot_tiet_2'] ?? []
+        ];
+
+        return [
+            'studentName' => $score->student_name,
+            'subjectName' => $score->subject_name,
+            'semesterName' => $semester->name,
+            'detailedScores' => $formattedScores,
+            'averageScore' => $score->average_score,
+        ];
+    });
+
+    // Trả về dữ liệu
+    return (object)[
+        'teacherName' => $teacher->name,
+        'username'=>$teacher->username,
+        'class' => $class->name,
+        'scores' => $processedScores
+    ];
+}
+
     // hàm tính điểm tổng kết cuối năm dành cho giáo viên chủ nhiệm(cả lớp), có cả điểm theo kì.
     public function calculateFinalScoreYearClass($classSlug, $yearSlug)
 {
@@ -409,8 +457,8 @@ class StatisticService
                     ]
                 );
             } else {
-                $semesterAverages[$semester->id] = null;
-                $semesterPerformance[$semester->id] = "Chưa đủ điểm";
+                $semesterAverages[$semester->name] = null;
+                $semesterPerformance[$semester->name] = "Chưa đủ điểm để xét học lực";
                 $hasValidScoresForYear = false; // không đủ điểm cho năm học
             }
         }
@@ -438,24 +486,25 @@ class StatisticService
             );
         } else {
             $finalScoreYear = null;
-            $finalPerformance = "Chưa đủ điểm";
+            $finalPerformance = "Chưa đủ điểm để xét học lực";
         }
 
         $finalScores[] = [
-            'student_name' => $student->name,
+            'studentName' => $student->name,
             'username' => $student->username,
-            'semester_scores' => $semesterAverages,
-            'semester_performance' => $semesterPerformance,
-            'year_score' => $finalScoreYear,
-            'year_performance' => $finalPerformance,
+            'semesterScores' => $semesterAverages,
+            'semesterPerformance' => $semesterPerformance,
+            'yearScore' => $finalScoreYear,
+            'yearPerformance' => $finalPerformance,
         ];
     }
 
     return (object)[
-        'teacher' => $teacher->name,
+        'teacherName' => $teacher->name,
+        'username'=>$teacher->username,
         'class' => $class->name,
-        'academic_year' => $academicYear->name,
-        'final_scores' => $finalScores,
+        'academicYear' => $academicYear->name,
+        'finalScores' => $finalScores,
     ];
 }
 
