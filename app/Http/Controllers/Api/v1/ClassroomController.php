@@ -305,7 +305,12 @@ class ClassroomController extends Controller
             $class = $this->classroomService->joinClassroomByCode($code);
 
             return $this->successResponse(
-                new ClassResource($class),
+                [
+                    'className' => $class->name,
+                    'classSlug' => $class->slug,
+                    'teacherName' => $class->teacher->name,
+                    'teacherImage' => $class->teacher->image ?? null,
+                ],
                 'Tham gia lớp học thành công',
                 Response::HTTP_OK
             );
