@@ -240,7 +240,7 @@ Route::prefix('schedules')
     ->group(function () {
         Route::get('/', [ScheduleController::class, 'index']);
         Route::post('/', [ScheduleController::class, 'store']);
-        Route::get('/{id}', [ScheduleController::class, 'show']);
+        Route::get('/{classSlug}', [ScheduleController::class, 'show']); // xem lịch học của 1 lớp
         Route::patch('/{id}', [ScheduleController::class, 'update']);
         Route::delete('/{id}', [ScheduleController::class, 'destroy']);
     });
