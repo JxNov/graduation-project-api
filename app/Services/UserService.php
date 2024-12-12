@@ -330,51 +330,382 @@ class UserService
     }
 
     public function updateUser($data, $username)
-{
-    return DB::transaction(function () use ($data, $username) {
-        $user = User::where('username', $username)->firstOrFail();
-        $imageFileNames = [];
-        $firebase = app('firebase.storage');
-        $storage = $firebase->getBucket();
+    {
+        return DB::transaction(function () use ($data, $username) {
+            $user = User::where('username', $username)->firstOrFail();
+            $imageFileNames = [];
+            $firebase = app('firebase.storage');
+            $storage = $firebase->getBucket();
 
-        // Upload ảnh lên Firebase Storage
-        if (isset($data['images'])) {
-            foreach ($data['images'] as $index => $image) {
-                $fileName = "{$username}_image" . ($index + 1) . ".png";
-                $imageFileNames[] = $fileName;
-                $firebasePath = "images/{$username}/{$fileName}";
-                $storage->upload(
-                    file_get_contents($image->getRealPath()),
-                    [
-                        'name' => $firebasePath
-                    ]
-                );
+            // Upload ảnh lên Firebase Storage
+            if (isset($data['images'])) {
+                foreach ($data['images'] as $index => $image) {
+                    $fileName = "{$username}_image" . ($index + 1) . ".png";
+                    $imageFileNames[] = $fileName;
+                    $firebasePath = "images/{$username}/{$fileName}";
+                    $storage->upload(
+                        file_get_contents($image->getRealPath()),
+                        [
+                            'name' => $firebasePath
+                        ]
+                    );
+                }
+
+                $imagesJson = json_encode($imageFileNames);
+
+                $user->update([
+                    'image' => $imagesJson,
+                ]);
             }
 
-            $imagesJson = json_encode($imageFileNames);
+            // Kiểm tra mật khẩu cũ
+            if (!Hash::check($data['current_password'], $user->password)) {
+                throw new \Exception('Mật khẩu hiện tại không đúng.');
+            }
 
+            // Kiểm tra mật khẩu mới
+            if ($data['new_password'] !== $data['confirm_new_password']) {
+                throw new \Exception('Mật khẩu mới không khớp với xác nhận mật khẩu.');
+            }
+
+            // Cập nhật mật khẩu mới
             $user->update([
-                'image' => $imagesJson,
+                'password' => Hash::make($data['new_password']),
             ]);
+
+            return $user;
+        });
+    }
+
+    public function createnewUser(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+            $existingUsernames = User::pluck('username')->toArray();
+
+            $data['username'] = $this->generateUsername($data['name'], $existingUsernames);
+            $data['email'] = $this->generateEmail($data['username']);
+            $data['password'] = Hash::make('abc12');
+
+            $newUser =  User::create($data);
+
+            return $newUser;
+        });
+    }
+
+    public function generateUsername($fullName, $existingUsernames)
+    {
+        $cleanedName = $this->removeAccents($fullName);
+
+        $nameParts = explode(" ", $cleanedName);
+
+        $firstName = strtolower(array_pop($nameParts));
+        $lastName = strtolower(array_shift($nameParts));
+        $lastNameInitial = substr($lastName, 0, 1);
+
+        $middleNameInitials = '';
+        foreach ($nameParts as $middleName) {
+            if (!empty($middleName)) {
+                $middleNameInitials .= strtolower(substr($middleName, 0, 1));
+            }
         }
 
-        // Kiểm tra mật khẩu cũ
-    if (!Hash::check($data['current_password'], $user->password)) {
-        throw new \Exception('Mật khẩu hiện tại không đúng.');
+        $usernameBase = $firstName . $lastNameInitial . $middleNameInitials;
+
+        $username = $usernameBase . 'ps' . rand(10000, 99999);
+        while (in_array($username, $existingUsernames)) {
+            $username = $usernameBase . 'ps' . rand(10000, 99999);
+        }
+
+        return $username;
     }
 
-    // Kiểm tra mật khẩu mới
-    if ($data['new_password'] !== $data['confirm_new_password']) {
-        throw new \Exception('Mật khẩu mới không khớp với xác nhận mật khẩu.');
+    public function generateEmail($username)
+    {
+        return $username . '@tech4school.edu.vn';
     }
 
-    // Cập nhật mật khẩu mới
-    $user->update([
-        'password' => Hash::make($data['new_password']),
-    ]);
+    private function removeAccents($string)
+    {
+        $accents = [
+            'à',
+            'á',
+            'ạ',
+            'ả',
+            'ã',
+            'â',
+            'ầ',
+            'ấ',
+            'ậ',
+            'ẩ',
+            'ẫ',
+            'ă',
+            'ằ',
+            'ắ',
+            'ặ',
+            'ẳ',
+            'ẵ',
+            'è',
+            'é',
+            'ẹ',
+            'ẻ',
+            'ẽ',
+            'ê',
+            'ề',
+            'ế',
+            'ệ',
+            'ể',
+            'ễ',
+            'ì',
+            'í',
+            'ị',
+            'ỉ',
+            'ĩ',
+            'ò',
+            'ó',
+            'ọ',
+            'ỏ',
+            'õ',
+            'ô',
+            'ồ',
+            'ố',
+            'ộ',
+            'ổ',
+            'ỗ',
+            'ơ',
+            'ờ',
+            'ớ',
+            'ợ',
+            'ở',
+            'ỡ',
+            'ù',
+            'ú',
+            'ụ',
+            'ủ',
+            'ũ',
+            'ư',
+            'ừ',
+            'ứ',
+            'ự',
+            'ử',
+            'ữ',
+            'ỳ',
+            'ý',
+            'ỵ',
+            'ỷ',
+            'ỹ',
+            'À',
+            'Á',
+            'Ạ',
+            'Ả',
+            'Ã',
+            'Â',
+            'Ầ',
+            'Ấ',
+            'Ậ',
+            'Ẩ',
+            'Ẫ',
+            'Ă',
+            'Ằ',
+            'Ắ',
+            'Ặ',
+            'Ẳ',
+            'Ẵ',
+            'È',
+            'É',
+            'Ẹ',
+            'Ẻ',
+            'Ẽ',
+            'Ê',
+            'Ề',
+            'Ế',
+            'Ệ',
+            'Ể',
+            'Ễ',
+            'Ì',
+            'Í',
+            'Ị',
+            'Ỉ',
+            'Ĩ',
+            'Ò',
+            'Ó',
+            'Ọ',
+            'Ỏ',
+            'Õ',
+            'Ô',
+            'Ồ',
+            'Ố',
+            'Ộ',
+            'Ổ',
+            'Ỗ',
+            'Ơ',
+            'Ờ',
+            'Ớ',
+            'Ợ',
+            'Ở',
+            'Ỡ',
+            'Ù',
+            'Ú',
+            'Ụ',
+            'Ủ',
+            'Ũ',
+            'Ư',
+            'Ừ',
+            'Ứ',
+            'Ự',
+            'Ử',
+            'Ữ',
+            'Ỳ',
+            'Ý',
+            'Ỵ',
+            'Ỷ',
+            'Ỹ',
+            'Đ',
+            'đ'
+        ];
 
-        return $user;
-    });
-}
+        $noAccents = [
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'a',
+            'e',
+            'e',
+            'e',
+            'e',
+            'e',
+            'e',
+            'e',
+            'e',
+            'e',
+            'e',
+            'e',
+            'i',
+            'i',
+            'i',
+            'i',
+            'i',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'o',
+            'u',
+            'u',
+            'u',
+            'u',
+            'u',
+            'u',
+            'u',
+            'u',
+            'u',
+            'u',
+            'u',
+            'y',
+            'y',
+            'y',
+            'y',
+            'y',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'A',
+            'E',
+            'E',
+            'E',
+            'E',
+            'E',
+            'E',
+            'E',
+            'E',
+            'E',
+            'E',
+            'E',
+            'I',
+            'I',
+            'I',
+            'I',
+            'I',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'O',
+            'U',
+            'U',
+            'U',
+            'U',
+            'U',
+            'U',
+            'U',
+            'U',
+            'U',
+            'U',
+            'U',
+            'Y',
+            'Y',
+            'Y',
+            'Y',
+            'Y',
+            'D',
+            'd'
+        ];
 
+        return str_replace($accents, $noAccents, $string);
+    }
+
+    private function cleanString($string)
+    {
+        $string = preg_replace('/[^\p{L}\p{N}\s]/u', '', $string);
+        return trim(preg_replace('/\s+/', ' ', $string));
+    }
 }
