@@ -293,18 +293,13 @@ class StatisticService
                 ? json_decode($score->detailed_scores, true)
                 : $score->detailed_scores;
 
-            $diemMotTiet = array_merge(
-        $detailedScores['diem_mot_tiet_1'] ?? [],
-                $detailedScores['diem_mot_tiet_2'] ?? []
-            );
-
 
             $formattedScores = [
                 'diemMieng' => $detailedScores['diem_mieng'] ?? [],
                 'diem15Phut' => $detailedScores['diem_15_phut'] ?? [],
                 'diemCuoiKi' => $detailedScores['diem_cuoi_ki'] ?? [],
                 'diemGiuaKi' => $detailedScores['diem_giua_ki'] ?? [],
-                'diemMotTiet' => $diemMotTiet,
+                'diemMotTiet' => $detailedScores['diem_mot_tiet'] ?? [],
             ];
 
             return [
@@ -380,18 +375,14 @@ class StatisticService
         $processedScores = $subjectScores->map(function ($score) use ($semester) {
             $detailedScores = json_decode($score->detailed_scores, true);
 
-            // lấy các điểm 1 tiết
-            $diemMotTiet = array_merge(
-                $detailedScores['diem_mot_tiet_1'] ?? [],
-                $detailedScores['diem_mot_tiet_2'] ?? []
-            );
+    
 
             $formattedScores = [
                 'diemMieng' => $detailedScores['diem_mieng'] ?? [],
                 'diem15Phut' => $detailedScores['diem_15_phut'] ?? [],
                 'diemCuoiKi' => $detailedScores['diem_cuoi_ki'] ?? [],
                 'diemGiuaKi' => $detailedScores['diem_giua_ki'] ?? [],
-                'diemMotTiet' => $diemMotTiet,
+                'diemMotTiet' => $detailedScores['diem_mot_tiet'] ?? [],
             ];
 
             return [
