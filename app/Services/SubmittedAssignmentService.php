@@ -8,11 +8,32 @@ use App\Models\SubmittedAssignment;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class SubmittedAssignmentService
 {
+    public function token()
+    {
+        $client_id = \Config('services.google.client_id');
+        $client_secret = \Config('services.google.client_secret');
+        $refresh_token = \Config('services.google.refresh_token');
+        // $folder_id = \Config('services.google.folder_id');
+
+        $response = Http::post('https://oauth2.googleapis.com/token', [
+            'client_id' => $client_id,
+            'client_secret' => $client_secret,
+            'refresh_token' => $refresh_token,
+            'grant_type' => 'refresh_token',
+        ]);
+
+        // dd($response->json());
+
+        $accessToken = json_decode((string) $response->getBody(), true)['access_token'];
+        // dd($accessToken);
+        return $accessToken;
+    }
+
     public function createOrUpdateSubmittedAssignment($data)
     {
         return DB::transaction(function () use ($data) {
@@ -35,30 +56,45 @@ class SubmittedAssignmentService
                 ->where('student_id', $student->id)
                 ->first();
 
-            // Nếu đã tồn tại bài nộp, xóa file cũ trước khi cập nhật
-            if ($existingSubmission) {
-                $this->deleteFileFromFirebase($existingSubmission->file_path);
-                $existingSubmission->delete(); // Xóa bản ghi cũ trước khi tạo bản ghi mới
-            }
-
             // Xử lý file upload
             if (isset($data['file_path'])) {
-                $firebase = app('firebase.storage');
-                $storage = $firebase->getBucket();
+                $accessToken = $this->token();
+                $client = new \GuzzleHttp\Client();
 
                 // Tạo tên ngẫu nhiên cho file trước khi upload
-                $firebasePath = 'submitted_assignment/' . Str::random(9) . $data['file_path']->getClientOriginalName();
+                $fileName = 'submitted_assignment/' . Str::random(9) . $data['file_path']->getClientOriginalName();
+                $mimeType = $data['file_path']->getClientMimeType();
 
-                // Upload file lên Firebase Storage
-                $storage->upload(
-                    file_get_contents($data['file_path']->getRealPath()),
-                    [
-                        'name' => $firebasePath
-                    ]
-                );
+                // Upload file lên Google Drive
+                $response = $client->request('POST', 'https://www.googleapis.com/upload/drive/v3/files', [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Content-Type' => 'multipart/related; boundary="foo_bar_baz"',
+                    ],
+                    'body' => implode("\r\n", [
+                        '--foo_bar_baz',
+                        'Content-Type: application/json; charset=UTF-8',
+                        '',
+                        json_encode([
+                            'name' => $fileName,
+                            'parents' => [config('services.google.folder_id')],
+                            'mimeType' => $mimeType,
+                        ]),
+                        '--foo_bar_baz',
+                        'Content-Type: ' . $mimeType,
+                        'Content-Transfer-Encoding: base64',
+                        '',
+                        base64_encode(file_get_contents($data['file_path']->getRealPath())),
+                        '--foo_bar_baz--',
+                    ]),
+                ]);
 
-                // Cập nhật đường dẫn file trong dữ liệu
-                $data['file_path'] = $firebasePath;
+                if ($response->getStatusCode() == 200) {
+                    $file_id = json_decode($response->getBody()->getContents())->id;
+                    $data['file_path'] = $file_id;
+                } else {
+                    throw new Exception('Tải file mới lên Google Drive không thành công');
+                }
             } else {
                 throw new Exception('File nộp bài là bắt buộc');
             }
@@ -68,7 +104,6 @@ class SubmittedAssignmentService
             return SubmittedAssignment::create($data); // Tạo bản ghi mới
         });
     }
-
 
     // Xem bài nộp của tất cả học sinh trong assignment thuộc lớp
     public function viewAllSubmittedAssignmentsByClass($classSlug, $assignmentSlug)
