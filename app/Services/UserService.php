@@ -359,19 +359,31 @@ class UserService
             }
 
             // Kiểm tra mật khẩu cũ
-            if (!Hash::check($data['current_password'], $user->password)) {
-                throw new \Exception('Mật khẩu hiện tại không đúng.');
+            if (isset($data['current_password'])) {
+                if (empty($data['new_password'])) {
+                    throw new \Exception('Vui lòng nhập mật khẩu mới.');
+                }
+
+                if (!Hash::check($data['current_password'], $user->password)) {
+                    throw new \Exception('Mật khẩu hiện tại không đúng.');
+                }
             }
 
-            // Kiểm tra mật khẩu mới
-            if ($data['new_password'] !== $data['confirm_new_password']) {
-                throw new \Exception('Mật khẩu mới không khớp với xác nhận mật khẩu.');
+            if (!empty($data['current_password']) && empty($data['new_password'])) {
+                throw new \Exception('Vui lòng nhập mật khẩu mới.');
             }
 
-            // Cập nhật mật khẩu mới
-            $user->update([
-                'password' => Hash::make($data['new_password']),
-            ]);
+            if (isset($data['new_password']) && isset($data['confirm_new_password'])) {
+                // Kiểm tra mật khẩu mới
+                if ($data['new_password'] !== $data['confirm_new_password']) {
+                    throw new \Exception('Mật khẩu mới không khớp với xác nhận mật khẩu.');
+                }
+
+                // Cập nhật mật khẩu mới
+                $user->update([
+                    'password' => Hash::make($data['new_password']),
+                ]);
+            }
 
             return $user;
         });
@@ -386,7 +398,7 @@ class UserService
             $data['email'] = $this->generateEmail($data['username']);
             $data['password'] = Hash::make('abc12');
 
-            $newUser =  User::create($data);
+            $newUser = User::create($data);
 
             return $newUser;
         });
