@@ -33,6 +33,29 @@ class ScheduleController extends Controller
         $result = $this->scheduleService->generateSchedules($blockSlug);
         return response()->json($result);
     }
+    public function update(Request $request, $classSlug)
+    {
+        // Lấy dữ liệu từ request
+        $data = $request->validate([
+            'subjectSlug' => 'required|string',
+            'days' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'usernameTeacher'=>'required',
+            'is_morning' => 'required|boolean',
+        ]);
+
+        try {
+            $result = $this->scheduleService->updateScheduleClass($data, $classSlug);
+            
+            return $this->successResponse(
+                $result,
+                'Thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
 
 
     public function show($classSlug)

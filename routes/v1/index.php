@@ -239,6 +239,7 @@ Route::prefix('attendances')
 Route::prefix('schedules')
     ->group(function () {
         Route::get('/', [ScheduleController::class, 'index']);
+        Route::patch('/{classSlug}', [ScheduleController::class, 'update']);
         Route::get('/student', [ScheduleController::class, 'scheduleOfStudent']); // học sinh xem lịc học của mihf
         Route::get('/teacher', [ScheduleController::class, 'scheduleOfTeacher']); // giaso vien xem lịc dạy
         Route::post('{blockSlug}', [ScheduleController::class, 'store']);
