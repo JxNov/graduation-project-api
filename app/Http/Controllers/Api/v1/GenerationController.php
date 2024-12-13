@@ -26,7 +26,7 @@ class GenerationController extends Controller
 
     public function index()
     {
-        $generations = Generation::select('id', 'name', 'slug', 'start_date', 'end_date')->latest('id')->paginate(6);
+        $generations = Generation::select('id', 'name', 'slug', 'start_date', 'end_date')->latest('id')->get();
 
         if ($generations->isEmpty()) {
             return $this->errorResponse(
@@ -148,7 +148,7 @@ class GenerationController extends Controller
     {
         $generations = Generation::onlyTrashed()
             ->select('id', 'name', 'slug', 'start_date', 'end_date')
-            ->paginate(6);
+            ->get();
 
         if ($generations->isEmpty()) {
             return $this->successResponse(

@@ -26,7 +26,7 @@ class BlockController extends Controller
     {
         $blocks = Block::select('id', 'name', 'slug')
             ->latest('id')
-            ->paginate(6);
+            ->get();
 
         if ($blocks->isEmpty()) {
             return $this->errorResponse(
@@ -114,7 +114,7 @@ class BlockController extends Controller
         $blocks = Block::onlyTrashed()
             ->select('id', 'name', 'slug')
             ->latest('id')
-            ->paginate(6);
+            ->get();
 
         if ($blocks->isEmpty()) {
             return $this->errorResponse(

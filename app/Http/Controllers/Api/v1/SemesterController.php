@@ -28,7 +28,7 @@ class SemesterController extends Controller
     {
         $semesters = Semester::select('id', 'name', 'slug', 'start_date', 'end_date', 'academic_year_id')
             ->latest('id')
-            ->paginate(6);
+            ->get();
 
         if ($semesters->isEmpty()) {
             return $this->errorResponse(
@@ -156,7 +156,7 @@ class SemesterController extends Controller
         $semesters = Semester::onlyTrashed()
             ->select('id', 'name', 'slug', 'start_date', 'end_date', 'academic_year_id')
             ->latest('id')
-            ->paginate(6);
+            ->get();
 
         if ($semesters->isEmpty()) {
             return $this->successResponse(

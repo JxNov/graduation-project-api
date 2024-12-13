@@ -28,7 +28,7 @@ class AcademicYearController extends Controller
         $academicYears = AcademicYear::select('id', 'name', 'slug', 'start_date', 'end_date', 'generation_id')
             ->latest('id')
             ->with('generation')
-            ->paginate(6);
+            ->get();
 
         if ($academicYears->isEmpty()) {
             return $this->errorResponse(
@@ -162,7 +162,7 @@ class AcademicYearController extends Controller
             ->select('id', 'name', 'slug', 'start_date', 'end_date', 'generation_id')
             ->latest('id')
             ->with('generation')
-            ->paginate(6);
+            ->get();
 
         if ($academicYears->isEmpty()) {
             return $this->successResponse(
