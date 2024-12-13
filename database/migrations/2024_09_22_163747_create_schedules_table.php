@@ -5,8 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -31,7 +30,10 @@ return new class extends Migration
 
             $table->foreignId('class_period_id')
                 ->constrained('class_periods')
-                ->onDelete('cascade');
+                ->onDelete('cascade')
+                ->nullable();
+                
+            $table->boolean('is_morning')->nullable()->default(true);
 
             $table->unique(['class_id', 'subject_id', 'class_period_id', 'days'], 'unique_schedule');
 

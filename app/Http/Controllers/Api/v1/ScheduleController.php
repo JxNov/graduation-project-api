@@ -14,6 +14,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class ScheduleController extends Controller
 {
@@ -57,15 +58,17 @@ class ScheduleController extends Controller
                 $teacher = User::find($schedule->teacher_id);
 
                 $scheduleData[$schedule->days][] = [
-                    'period' => $classPeriod->lesson,
                     'start_time' => $classPeriod->start_time,
                     'end_time' => $classPeriod->end_time,
                     'subject' => $subject->name,
-                    'teacher' => $teacher->name
+                    'teacher' => $teacher->name,
+                    'is_morning' => $schedule->is_morning,
                 ];
             }
 
-            // danh sách môn hjoc và giáo viên để sửa lịc học
+            $sortedScheduleData = $this->sortScheduleData($scheduleData);
+
+            // danh sách môn học và giáo viên để sửa lịch học
             $subjects = Subject::all();
             $subjectTeachers = $subjects->map(function ($subject) {
                 return [
@@ -82,11 +85,100 @@ class ScheduleController extends Controller
             });
 
             return response()->json([
-                'schedule' => $scheduleData,
+                'schedule' => $sortedScheduleData,
                 'subjectTeachers' => $subjectTeachers,
             ], Response::HTTP_OK);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+    public function scheduleOfStudent()
+    {
+        try {
+            $user = Auth::user();
+            $classes = $user->classes;
+
+            $scheduleData = [];
+
+            foreach ($classes as $class) {
+                $schedules = Schedule::where('class_id', $class->id)->get();
+
+                if ($schedules->isEmpty()) {
+                    continue;
+                }
+
+                $classSchedule = [];
+                foreach ($schedules as $schedule) {
+                    $classPeriod = ClassPeriod::find($schedule->class_period_id);
+                    $subject = Subject::find($schedule->subject_id);
+                    $teacher = User::find($schedule->teacher_id);
+
+                    $classSchedule[$schedule->days][] = [
+                        'start_time' => $classPeriod->start_time,
+                        'end_time' => $classPeriod->end_time,
+                        'subject' => $subject->name,
+                        'teacher' => $teacher->name,
+                        'is_morning' => $schedule->is_morning,
+                    ];
+                }
+
+                $scheduleData[$class->name] = $this->sortScheduleData($classSchedule);
+            }
+
+            return response()->json($scheduleData, Response::HTTP_OK);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function scheduleOfTeacher()
+    {
+        try {
+            $teacher = Auth::user();
+
+            $schedules = Schedule::where('teacher_id', $teacher->id)->get();
+
+            if ($schedules->isEmpty()) {
+                return $this->errorResponse('Giảng viên không có lịch giảng dạy', Response::HTTP_BAD_REQUEST);
+            }
+
+            $scheduleData = [];
+            foreach ($schedules as $schedule) {
+                $class = Classes::find($schedule->class_id);
+                $classPeriod = ClassPeriod::find($schedule->class_period_id);
+                $subject = Subject::find($schedule->subject_id);
+
+                $scheduleData[$schedule->days][] = [
+                    'class' => $class->name,
+                    'subject' => $subject->name,
+                    'start_time' => $classPeriod->start_time,
+                    'end_time' => $classPeriod->end_time,
+                    'is_morning' => $schedule->is_morning,
+                ];
+            }
+
+            $sortedScheduleData = $this->sortScheduleData($scheduleData);
+
+            return response()->json($sortedScheduleData, Response::HTTP_OK);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    private function sortScheduleData($scheduleData)
+    {
+        $daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        $sortedScheduleData = [];
+
+        foreach ($daysOrder as $day) {
+            if (isset($scheduleData[$day])) {
+                $sortedScheduleData[$day] = $scheduleData[$day];
+            }
+        }
+
+        return $sortedScheduleData;
+    }
+
 }

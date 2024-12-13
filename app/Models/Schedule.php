@@ -26,6 +26,7 @@ class Schedule extends Model
         'teacher_id',
         'class_period_id',
         'days',
+        'is_morning',
     ];
 
     public function class(): BelongsTo
@@ -42,4 +43,8 @@ class Schedule extends Model
     {
         return $this->belongsTo(ClassPeriod::class);
     }
+
+    protected $casts = [
+        'is_morning' => 'boolean'
+    ];
 }
