@@ -58,11 +58,11 @@ class ScheduleController extends Controller
                 $teacher = User::find($schedule->teacher_id);
 
                 $scheduleData[$schedule->days][] = [
-                    'start_time' => $classPeriod->start_time,
-                    'end_time' => $classPeriod->end_time,
+                    'startTime' => $classPeriod->start_time,
+                    'endTime' => $classPeriod->end_time,
                     'subject' => $subject->name,
                     'teacher' => $teacher->name,
-                    'is_morning' => $schedule->is_morning,
+                    'isMorning' => $schedule->is_morning,
                 ];
             }
 
@@ -115,18 +115,24 @@ class ScheduleController extends Controller
                     $teacher = User::find($schedule->teacher_id);
 
                     $classSchedule[$schedule->days][] = [
-                        'start_time' => $classPeriod->start_time,
-                        'end_time' => $classPeriod->end_time,
+                        'startTime' => $classPeriod->start_time,
+                        'endTime' => $classPeriod->end_time,
                         'subject' => $subject->name,
                         'teacher' => $teacher->name,
-                        'is_morning' => $schedule->is_morning,
+                        'isMorning' => $schedule->is_morning,
                     ];
                 }
 
-                $scheduleData[$class->name] = $this->sortScheduleData($classSchedule);
+                $scheduleData = $this->sortScheduleData($classSchedule);
             }
 
-            return response()->json($scheduleData, Response::HTTP_OK);
+            return response()->json(
+                [
+                    'class' => $class->name,
+                    'schedule' => $scheduleData
+                ],
+                Response::HTTP_OK
+            );
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
@@ -152,9 +158,9 @@ class ScheduleController extends Controller
                 $scheduleData[$schedule->days][] = [
                     'class' => $class->name,
                     'subject' => $subject->name,
-                    'start_time' => $classPeriod->start_time,
-                    'end_time' => $classPeriod->end_time,
-                    'is_morning' => $schedule->is_morning,
+                    'startTime' => $classPeriod->start_time,
+                    'endTime' => $classPeriod->end_time,
+                    'isMorning' => $schedule->is_morning,
                 ];
             }
 
