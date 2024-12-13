@@ -80,6 +80,8 @@ class SubmittedAssignmentController extends Controller
     {
         try {
             $data = $request->validated();
+            $data['score'] = $data['score'] ?? null; // Đảm bảo có giá trị mặc định
+            $data['feedback'] = $data['feedback'] ?? null;
 
             $submittedAssignment = $this->submittedAssignmentService->updateScoreAndFeedback(
                 $assignmentSlug,
