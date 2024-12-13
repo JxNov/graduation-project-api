@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Semester;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Notifications\NewAssignmentNotification;
 
@@ -52,7 +53,7 @@ class AssignmentService
             foreach ($class->students as $student) {
                 $student->notify(new NewAssignmentNotification($assignment));
             }
-
+            \Log::info($assignment->toArray());
             return $assignment;
         });
     }

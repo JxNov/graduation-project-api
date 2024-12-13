@@ -10,7 +10,6 @@ class SubmittedAssignmentResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'assignmentId' => $this->assignment_id,
             'studentUsername' => optional($this->student)->username,
             'studentName' => optional($this->student)->name,
             'filePath' => $this->file_path,
