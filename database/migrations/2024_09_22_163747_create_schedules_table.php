@@ -23,6 +23,10 @@ return new class extends Migration
                 ->constrained('subjects')
                 ->onDelete('cascade');
 
+            $table->foreignId('teacher_id')
+                ->constrained('users')
+                ->onDelete('cascade');
+
             $table->enum('days', Schedule::_DAYS)->default(Schedule::_DAYS["Monday"]);
 
             $table->foreignId('class_period_id')

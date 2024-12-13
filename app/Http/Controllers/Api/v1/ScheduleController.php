@@ -7,6 +7,7 @@ use App\Models\Classes;
 use App\Models\ClassPeriod;
 use App\Models\Schedule;
 use App\Models\Subject;
+use App\Models\User;
 use App\Services\ScheduleService;
 use App\Traits\ApiResponseTrait;
 use Exception;
@@ -25,10 +26,10 @@ class ScheduleController extends Controller
         $this->scheduleService = $scheduleService;
     }
 
-    public function store($academicYearSlug, $blockSlug)
+    public function store($blockSlug)
     {
-        
-        $result = $this->scheduleService->generateSchedules($academicYearSlug, $blockSlug);
+
+        $result = $this->scheduleService->generateSchedules($blockSlug);
         return response()->json($result);
     }
 
@@ -53,14 +54,14 @@ class ScheduleController extends Controller
             foreach ($schedules as $schedule) {
                 $classPeriod = ClassPeriod::find($schedule->class_period_id);
                 $subject = Subject::find($schedule->subject_id);
-                $teacher = $subject->teachers->first();
+                $teacher = User::find($schedule->teacher_id);
 
                 $scheduleData[$schedule->days][] = [
                     'period' => $classPeriod->lesson,
                     'start_time' => $classPeriod->start_time,
                     'end_time' => $classPeriod->end_time,
                     'subject' => $subject->name,
-                    'teacher' => $teacher ? $teacher->name : 'Unknown',
+                    'teacher' => $teacher->name
                 ];
             }
 

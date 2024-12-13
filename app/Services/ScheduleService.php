@@ -9,15 +9,11 @@ use App\Models\Block;
 
 class ScheduleService
 {
-    public function generateSchedules($academicYearSlug, $blockSlug)
+    public function generateSchedules($blockSlug)
     {
-        // Lấy năm học theo slug
-        $academicYear = AcademicYear::where('slug', $academicYearSlug)->first();
-
         // Lấy block theo slug
         $block = Block::where('slug', $blockSlug)->first();
 
-        // Lấy tất cả các lớp trong block đó (Dùng Eloquent)
         $classes = $block->classes()->whereNull('classes.deleted_at')->get();
 
         // Lấy tất cả môn học trong block và thuộc năm học
@@ -69,6 +65,11 @@ class ScheduleService
                 $periodsPerWeek = $subjectHoursPerWeek[$subject->slug];
                 $remainingPeriods = $periodsPerWeek;
 
+                // Lấy danh sách giáo viên dạy môn học đó
+                $teachers = DB::table('subject_teachers')
+                    ->where('subject_id', $subject->id)
+                    ->pluck('teacher_id');
+
                 // Phân bổ số tiết vào các ngày trong tuần
                 while ($remainingPeriods > 0) {
                     // Sử dụng hàm shuffle để xáo trộn các ngày trong tuần
@@ -89,10 +90,12 @@ class ScheduleService
 
                             if (!empty($availablePeriods)) {
                                 $periodId = $availablePeriods[array_rand($availablePeriods)];
+                                $teacherId = $teachers->random();
 
                                 $classSchedule[] = [
-                                    'class_id' => $class->id,  // Sử dụng $class->id để lấy ID của lớp
+                                    'class_id' => $class->id,
                                     'subject_id' => $subject->id,
+                                    'teacher_id' => $teacherId,
                                     'class_period_id' => $periodId,
                                     'days' => $day,
                                 ];
@@ -133,10 +136,12 @@ class ScheduleService
 
                                 if (!empty($availablePeriods)) {
                                     $periodId = $availablePeriods[array_rand($availablePeriods)];
+                                    $teacherId = $teachers->random();
 
                                     $classSchedule[] = [
-                                        'class_id' => $class->id,  // Sử dụng $class->id để lấy ID của lớp
+                                        'class_id' => $class->id,
                                         'subject_id' => $subject->id,
+                                        'teacher_id' => $teacherId,
                                         'class_period_id' => $periodId,
                                         'days' => $day,
                                     ];
@@ -151,7 +156,7 @@ class ScheduleService
             }
 
             // Lưu lịch học vào mảng
-            $schedule[$class->id] = $classSchedule;  // Sử dụng ID của lớp làm chỉ mục mảng
+            $schedule[$class->id] = $classSchedule;
         }
 
         // Lưu lịch vào cơ sở dữ liệu
@@ -163,4 +168,5 @@ class ScheduleService
 
         return $schedule;
     }
+
 }
