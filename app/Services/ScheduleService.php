@@ -198,23 +198,23 @@ class ScheduleService
             throw new Exception('Giáo viên không dạy môn học này');
         }
 
-        // Kiểm tra tính hợp lệ của days
+        // Kiểm tra days
         $validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         if (!isset($data['days']) || !in_array($data['days'], $validDays)) {
             throw new Exception('Day không hợp lệ. Phải là một trong các ngày: ' . implode(', ', $validDays));
         }
 
-        // Kiểm tra tính hợp lệ của is_morning
+        // Kiểm tra is_morning
         if (!isset($data['is_morning']) || !in_array($data['is_morning'], [0, 1])) {
             throw new Exception('is_morning không hợp lệ (chỉ được là 0 hoặc 1)');
         }
 
-        // Nếu is_morning là 0 (chiều), kiểm tra xem giáo viên đã dạy môn này vào buổi chiều (is_morning = 0) ở lớp khác chưa
+        // kiểm tra xem gv đã dạy lớp khác buổi chiều chưa
         if ($data['is_morning'] == 0) {
             $existingSchedule = Schedule::where('teacher_id', $teacher->id)
                 ->where('subject_id', $subject->id)
                 ->where('days', $data['days'])
-                ->where('is_morning', 0) // Kiểm tra là buổi chiều
+                ->where('is_morning', 0)
                 ->exists();
 
             if ($existingSchedule) {
@@ -222,7 +222,7 @@ class ScheduleService
             }
         }
 
-        // Cập nhật hoặc tạo mới lịch học
+
         $schedule = Schedule::updateOrCreate(
             [
                 'class_id' => $class->id,
@@ -231,7 +231,7 @@ class ScheduleService
             ],
             [
                 'subject_id' => $subject->id,
-                'teacher_id' => $teacher->id, // Thêm teacher_id
+                'teacher_id' => $teacher->id, 
             ]
         );
 
