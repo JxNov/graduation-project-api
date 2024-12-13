@@ -239,6 +239,8 @@ Route::prefix('attendances')
 Route::prefix('schedules')
     ->group(function () {
         Route::get('/', [ScheduleController::class, 'index']);
+        Route::get('/student', [ScheduleController::class, 'scheduleOfStudent']); // học sinh xem lịc học của mihf
+        Route::get('/teacher', [ScheduleController::class, 'scheduleOfTeacher']); // giaso vien xem lịc dạy
         Route::post('{blockSlug}', [ScheduleController::class, 'store']);
         Route::get('/{classSlug}', [ScheduleController::class, 'show']); // xem lịch học của 1 lớp
         Route::patch('/{id}', [ScheduleController::class, 'update']);
