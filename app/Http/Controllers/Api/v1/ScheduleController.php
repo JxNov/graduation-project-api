@@ -66,7 +66,6 @@ class ScheduleController extends Controller
                 ];
             }
 
-            // Sắp xếp lịch học theo thứ và tiết
             $sortedScheduleData = $this->sortScheduleData($scheduleData);
 
             // danh sách môn học và giáo viên để sửa lịch học
