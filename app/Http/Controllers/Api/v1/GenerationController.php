@@ -11,7 +11,7 @@ use App\Services\GenerationService;
 use App\Traits\ApiResponseTrait;
 use Exception;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 
 class GenerationController extends Controller
 {
@@ -91,6 +91,39 @@ class GenerationController extends Controller
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
+    }
+
+    public function assignStudentGeneration(Request $request)
+    {
+        $data = $request->validate(
+            [
+                "username" => "required|exists:users,username",
+                "academic_year_slug" => "required|exists:academic_years,slug"
+            ],
+            [
+                "username.required" => "Không có học sinh được chọn",
+                "username.exists" => "Không tìm thấy học sinh",
+                "academic_year_slug.required" => "Năm học đang trống",
+                "academic_year_slug.exists" => "Không tìm thấy năm học",
+            ]
+        );
+
+        $newStudent = $this->generationService->assignStudentGeneration($data);
+
+        return $this->successResponse(
+            [
+                "name" => $newStudent->name,
+                "username" => $newStudent->username,
+                "email" => $newStudent->email,
+                "image" => $newStudent->image,
+                "dateOfBirth" => $newStudent->date_of_birth,
+                "gender" => $newStudent->gender,
+                "address" => $newStudent->address,
+                "phoneNumber" => $newStudent->phone_number,
+            ],
+            'Đã gán khóa học cho học sinh thành công',
+            Response::HTTP_CREATED
+        );
     }
 
     public function destroy($slug)

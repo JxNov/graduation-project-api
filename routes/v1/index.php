@@ -76,6 +76,7 @@ Route::prefix('generations')
     ->group(function () {
         Route::get('/', [GenerationController::class, 'index']);
         Route::post('/', [GenerationController::class, 'store']);
+        Route::post('/assign-student', [GenerationController::class, 'assignStudentGeneration']);
         Route::get('/trash', [GenerationController::class, 'trash']);
         Route::get('/{slug}', [GenerationController::class, 'show']);
         Route::patch('/{slug}', [GenerationController::class, 'update']);
