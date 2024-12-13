@@ -48,7 +48,7 @@ class StatisticService
         $average_score = $scores->avg('average_score');
 
         // Trả về dữ liệu dưới dạng đối tượng stdClass
-        return (object) [
+        return (object)[
             'class_name' => $class->name,
             'subject_name' => $subject->name,
             'semester_slug' => $semester->name,
@@ -244,6 +244,7 @@ class StatisticService
             'failRate' => $fail_rate,
         ];
     }
+
     // học sinh xem chi tiết điểm các môn học của mình
     public function showStudentScoreSemester($classSlug, $semesterSlug, $yearSlug)
     {
@@ -285,41 +286,38 @@ class StatisticService
         }
 
         // Xử lý và định dạng điểm
-        $formattedScores = $subjectScores->map(function ($score) {
+        return $subjectScores->map(function ($score) {
             $subject = Subject::find($score->subject_id); // Lấy thông tin môn học
+
+            $teacher = User::with('subjects')
+                ->whereHas('subjects', function ($query) use ($subject) {
+                    $query->where('subject_id', $subject->id);
+                })->first(); // Lấy thông tin giáo viên dạy môn học
+
+            $class = Classes::find($score->class_id); // Lấy thông tin lớp học
+            $semester = Semester::find($score->semester_id); // Lấy thông tin học kỳ
+            $academicYear = AcademicYear::find($semester->academic_year_id); // Lấy thông tin năm học
 
             // Kiểm tra và xử lý detailed_scores
             $detailedScores = is_string($score->detailed_scores)
                 ? json_decode($score->detailed_scores, true)
                 : $score->detailed_scores;
 
-
-            $formattedScores = [
-                'diemMieng' => $detailedScores['diem_mieng'] ?? [],
-                'diem15Phut' => $detailedScores['diem_15_phut'] ?? [],
-                'diemCuoiKi' => $detailedScores['diem_cuoi_ki'] ?? [],
-                'diemGiuaKi' => $detailedScores['diem_giua_ki'] ?? [],
-                'diemMotTiet' => $detailedScores['diem_mot_tiet'] ?? [],
-            ];
-
             return [
+                'teacherName' => $teacher->name ?? 'N/A',
                 'subjectName' => $subject->name ?? 'N/A',
-                'detailedScores' => $formattedScores,
+                'className' => $class->name ?? 'N/A',
+                'semesterName' => $semester->name ?? 'N/A',
+                'academicYearName' => $academicYear->name ?? 'N/A',
+                'mouthPoints' => $detailedScores['diem_mieng'] ?? [],
+                'fifteenMinutesPoints' => $detailedScores['diem_15_phut'] ?? [],
+                'onePeriodPoints' => $detailedScores['diem_mot_tiet'] ?? [],
+                'midSemesterPoints' => $detailedScores['diem_giua_ki'] ?? [],
+                'endSemesterPoints' => $detailedScores['diem_cuoi_ki'] ?? [],
                 'averageScore' => $score->average_score
             ];
         });
-
-        // Trả về dữ liệu
-        return (object)[
-            'studentName' => $student->name,
-            'username' => $student->username,
-            'class' => $class->name,
-            'semester' => $semester->name,
-            'scores' => $formattedScores
-        ];
     }
-
-
 
 
     // giáo viên xem chi tiết điểm các môn học của học sinh
@@ -359,9 +357,11 @@ class StatisticService
             ->join('subjects', 'subject_scores.subject_id', '=', 'subjects.id') // Kết nối bảng subjects
             ->select(
                 'users.name as student_name',
+                'users.username as student_username',
                 'subjects.name as subject_name',
                 'subject_scores.detailed_scores',
                 'subject_scores.average_score',
+                'subject_id'
             )
             ->where('subject_scores.class_id', $class->id)
             ->where('subject_scores.semester_id', $semester->id)
@@ -371,36 +371,31 @@ class StatisticService
             throw new Exception("Không tìm thấy điểm của lớp {$class->name} trong học kỳ này.");
         }
 
-        // Xử lý dữ liệu detailed_scores và đổi tên key
-        $processedScores = $subjectScores->map(function ($score) use ($semester) {
-            $detailedScores = json_decode($score->detailed_scores, true);
-
-    
-
-            $formattedScores = [
-                'diemMieng' => $detailedScores['diem_mieng'] ?? [],
-                'diem15Phut' => $detailedScores['diem_15_phut'] ?? [],
-                'diemCuoiKi' => $detailedScores['diem_cuoi_ki'] ?? [],
-                'diemGiuaKi' => $detailedScores['diem_giua_ki'] ?? [],
-                'diemMotTiet' => $detailedScores['diem_mot_tiet'] ?? [],
-            ];
-
-            return [
-                'studentName' => $score->student_name,
-                'subjectName' => $score->subject_name ?? 'N/A',
-                'semesterName' => $semester->name,
-                'detailedScores' => $formattedScores,
-                'averageScore' => $score->average_score,
-            ];
-        });
+        $subject = Subject::find($subjectScores->first()->subject_id); // Lấy thông tin môn học
+        $teacherUser = User::with('subjects')
+            ->whereHas('subjects', function ($query) use ($subject) {
+                $query->where('subject_id', $subject->id);
+            })->first(); // Lấy thông tin giáo viên dạy môn học
 
         // Trả về dữ liệu
-        return (object)[
-            'teacherName' => $teacher->name,
-            'username' => $teacher->username,
-            'class' => $class->name,
-            'scores' => $processedScores
-        ];
+        return $subjectScores->map(function ($score) use ($semester, $teacherUser, $class) {
+            $detailedScores = json_decode($score->detailed_scores, true);
+
+            return [
+                'teacherUsername' => $teacherUser->username,
+                'studentName' => $score->student_name,
+                'studentUsername' => $score->student_username,
+                'className' => $class->name,
+                'semesterName' => $semester->name,
+                'academicYearName' => $semester->academicYear->name,
+                'mouthPoints' => $detailedScores['diem_mieng'] ?? [],
+                'fifteenMinutesPoints' => $detailedScores['diem_15_phut'] ?? [],
+                'onePeriodPoints' => $detailedScores['diem_mot_tiet'] ?? [],
+                'midSemesterPoints' => $detailedScores['diem_giua_ki'] ?? [],
+                'endSemesterPoints' => $detailedScores['diem_cuoi_ki'] ?? [],
+                'averageScore' => $score->average_score
+            ];
+        });
     }
 
     // hàm tính điểm tổng kết cuối năm dành cho giáo viên chủ nhiệm(cả lớp), có cả điểm theo kì.
@@ -520,7 +515,7 @@ class StatisticService
             ];
         }
 
-        return (object) [
+        return (object)[
             'teacherName' => $teacher->name,
             'username' => $teacher->username,
             'class' => $class->name,
