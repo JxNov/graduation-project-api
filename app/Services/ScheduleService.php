@@ -6,6 +6,11 @@ use App\Models\AcademicYear;
 use Illuminate\Support\Facades\DB;
 use App\Models\Subject;
 use App\Models\Block;
+use App\Models\Classes;
+use App\Models\Schedule;
+use App\Models\User;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class ScheduleService
 {
@@ -168,5 +173,83 @@ class ScheduleService
 
         return $schedule;
     }
+    public function updateScheduleClass($data, $classSlug)
+{
+    return DB::transaction(function () use ($data, $classSlug) {
+        
+        $class = Classes::where('slug', $classSlug)->first();
+        if ($class === null) {
+            throw new Exception('Class không tồn tại hoặc đã bị xóa');
+        }
+
+        
+        $subject = Subject::where('slug', $data['subjectSlug'])->first();
+        if ($subject === null) {
+            throw new Exception('Subject không tồn tại hoặc đã bị xóa');
+        }
+
+        $teacher = User::where('username', $data['usernameTeacher'])->first();
+        if (!$teacher) {
+            throw new Exception('Không tìm thấy giáo viên');
+        }
+
+        $isTeacherAssignedToSubject = $subject->teachers()->where('teacher_id', $teacher->id)->exists();
+        if (!$isTeacherAssignedToSubject) {
+            throw new Exception('Giáo viên không dạy môn học này');
+        }
+
+        // Kiểm tra tính hợp lệ của days
+        $validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        if (!isset($data['days']) || !in_array($data['days'], $validDays)) {
+            throw new Exception('Day không hợp lệ. Phải là một trong các ngày: ' . implode(', ', $validDays));
+        }
+
+        // Kiểm tra tính hợp lệ của is_morning
+        if (!isset($data['is_morning']) || !in_array($data['is_morning'], [0, 1])) {
+            throw new Exception('is_morning không hợp lệ (chỉ được là 0 hoặc 1)');
+        }
+
+        // Nếu is_morning là 0 (chiều), kiểm tra xem giáo viên đã dạy môn này vào buổi chiều (is_morning = 0) ở lớp khác chưa
+        if ($data['is_morning'] == 0) {
+            $existingSchedule = Schedule::where('teacher_id', $teacher->id)
+                ->where('subject_id', $subject->id)
+                ->where('days', $data['days'])
+                ->where('is_morning', 0) // Kiểm tra là buổi chiều
+                ->exists();
+
+            if ($existingSchedule) {
+                throw new Exception('Giáo viên đã dạy môn này vào buổi chiều ở lớp khác vào ngày ' . $data['days']);
+            }
+        }
+
+        // Cập nhật hoặc tạo mới lịch học
+        $schedule = Schedule::updateOrCreate(
+            [
+                'class_id' => $class->id,
+                'days' => $data['days'],
+                'is_morning' => $data['is_morning'],
+            ],
+            [
+                'subject_id' => $subject->id,
+                'teacher_id' => $teacher->id, // Thêm teacher_id
+            ]
+        );
+
+
+        return (object)[
+            'className' => $class->name, 
+            'subjectName' => $subject->name, 
+            'teacherName' => $teacher->name, 
+            'usernameTeacher'=>$teacher->username,
+            'days' => $schedule->days, 
+            'is_morning' => $schedule->is_morning,
+        ];
+    });
+}
+
+
+
+
+
 
 }
