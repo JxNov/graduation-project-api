@@ -29,43 +29,43 @@ class SubjectTeacherController extends Controller
         $this->SubjectTeacherService = $SubjectTeacherService;
     }
     public function index()
-{
-    try {
-        $subjects = DB::table('subject_teachers')->select('id','teacher_id','subject_id')->paginate(10); 
+    {
+        try {
+            $subjects = DB::table('subject_teachers')->select('id', 'teacher_id', 'subject_id')->get();
 
-        if ($subjects->isEmpty()) {
-            return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
+            if ($subjects->isEmpty()) {
+                return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
+            }
+
+            // Trả về dữ liệu qua SubjectTeacherCollection
+            return $this->successResponse(
+                new SubjectTeacherCollection($subjects),
+                'Lấy tất cả thông tin thành công',
+                Response::HTTP_OK
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
-
-        // Trả về dữ liệu qua SubjectTeacherCollection
-        return $this->successResponse(
-             new SubjectTeacherCollection($subjects),
-            'Lấy tất cả thông tin thành công',
-            Response::HTTP_OK
-        );
-    } catch (\Exception $e) {
-        return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
     }
-}
 
 
 
-public function store(SubjectTeacherRequest $request)
-{
-    try {
-        // Gọi service để xử lý logic
-        $subjectTeachers = $this->SubjectTeacherService->store($request->all());
+    public function store(SubjectTeacherRequest $request)
+    {
+        try {
+            // Gọi service để xử lý logic
+            $subjectTeachers = $this->SubjectTeacherService->store($request->all());
 
-        // Trả về danh sách các giáo viên đã thêm thành công
-        return $this->successResponse(
-            SubjectTeacherResource::collection($subjectTeachers),
-            'Thêm giáo viên dạy môn học thành công',
-            Response::HTTP_CREATED
-        );
-    } catch (\Exception $e) {
-        return $this->errorResponse($e->getMessage());
+            // Trả về danh sách các giáo viên đã thêm thành công
+            return $this->successResponse(
+                SubjectTeacherResource::collection($subjectTeachers),
+                'Thêm giáo viên dạy môn học thành công',
+                Response::HTTP_CREATED
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
     }
-}
 
     public function update(SubjectTeacherRequest $request, $id)
     {
@@ -95,26 +95,28 @@ public function store(SubjectTeacherRequest $request)
         }
     }
     public function trash()
-{
-    try {
-        $subjects = DB::table('subject_teachers')->select('id','teacher_id','subject_id')->whereNotNull('subject_teachers.deleted_at')->paginate(10); 
+    {
+        try {
+            $subjects = DB::table('subject_teachers')
+            ->select('id', 'teacher_id', 'subject_id')
+            ->whereNotNull('subject_teachers.deleted_at')
+            ->get();
 
-        if ($subjects->isEmpty()) {
-            return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
+            if ($subjects->isEmpty()) {
+                return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
+            }
+
+            // Trả về dữ liệu qua SubjectTeacherCollection
+            return $this->successResponse(
+                SubjectTeacherCollection::make($subjects),
+                'Lấy tất cả thông tin thành công',
+                Response::HTTP_OK
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
-
-        // Trả về dữ liệu qua SubjectTeacherCollection
-        return $this->successResponse(
-            SubjectTeacherCollection::make($subjects),
-            'Lấy tất cả thông tin thành công',
-            Response::HTTP_OK
-        );
-    } catch (\Exception $e) {
-        return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
     }
-    
-}
-public function forceDelete($id)
+    public function forceDelete($id)
     {
         try {
             $this->SubjectTeacherService->forceDelete($id);

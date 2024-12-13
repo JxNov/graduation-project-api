@@ -36,7 +36,6 @@ class StudentController extends Controller
     {
         try {
             $data = $request->all();
-            // Gọi service để tạo học sinh mới
             $student = $this->studentService->createStudent($data);
 
             return  $this->successResponse(new StudentResource($student), 'Thêm học sinh mới thành công', Response::HTTP_CREATED);
