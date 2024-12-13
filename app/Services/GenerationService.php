@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AcademicYear;
 use App\Models\Generation;
 use App\Models\Semester;
+use App\Models\User;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -83,6 +84,33 @@ class GenerationService
             }
 
             return $currentGeneration;
+        });
+    }
+
+    public function assignStudentGeneration(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+            $student = User::where('username', $data['username'])->first();
+
+            if ($student === null) {
+                throw new Exception('Không tìm thấy học sinh');
+            }
+
+            $academicYear = AcademicYear::where('slug', $data['academic_year_slug'])->first();
+
+            if ($academicYear === null) {
+                throw new Exception('Không tìm thấy năm học');
+            }
+
+            DB::table('user_generations')->insert(
+                [
+                    'user_id' => $student->id,
+                    'generation_id' => $academicYear->generation->id,
+                    'academic_year_id' => $academicYear->id,
+                ]
+            );
+
+            return $student;
         });
     }
 
