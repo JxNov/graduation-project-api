@@ -28,7 +28,7 @@ class SubjectController extends Controller
         try {
             $subject = Subject::select('id', 'name','slug','description')
                 ->latest('id')
-                ->paginate(10);
+                ->get();
 
             if ($subject->isEmpty()) {
                 return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
@@ -94,7 +94,7 @@ class SubjectController extends Controller
             $subject = Subject::onlyTrashed()
                 ->select('id', 'name','slug','description')
                 ->latest('id')
-                ->paginate(10);
+                ->get();
 
             if ($subject->isEmpty()) {
                 return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);

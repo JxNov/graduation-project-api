@@ -45,7 +45,7 @@ class StudentClassController extends Controller
         $classes = Classes::select('id', 'name', 'slug', 'code', 'teacher_id')
             ->latest('id')
             ->with('students') // Lấy thông tin học sinh
-            ->paginate(10);
+            ->get();
 
         if ($classes->isEmpty()) {
             return $this->errorResponse(
@@ -63,7 +63,7 @@ class StudentClassController extends Controller
     {
         $data = [
             'classSlug' => $request->classSlug,
-            'username' => $request->username,
+            'usernames' => $request->usernames,
         ];
 
         try {
@@ -112,7 +112,7 @@ class StudentClassController extends Controller
                 ->wherePivot('deleted_at', '!=', null);
         }])
             ->latest('id')
-            ->paginate(10);
+            ->get();
 
         if ($classes->isEmpty()) {
             return $this->errorResponse(

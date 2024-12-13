@@ -28,47 +28,65 @@ class StudentClassService
     }
 
     public function store(array $data)
-    {
-        return DB::transaction(function () use ($data) {
-            // Lấy thông tin lớp học
-            $class = Classes::where('slug', $data['classSlug'])->firstOrFail();
-            if ($class === null) {
-                throw new Exception('Class không tồn tại hoặc đã bị xóa');
-            }
+{
+    return DB::transaction(function () use ($data) {
+        // Lấy thông tin lớp học
+        $class = Classes::where('slug', $data['classSlug'])->firstOrFail();
+        if ($class === null) {
+            throw new Exception('Class không tồn tại hoặc đã bị xóa');
+        }
 
-            // Lấy vai trò 'student'
-            $roleStudent = Role::select('id', 'slug')->where('slug', 'student')->first();
+        // Lấy vai trò 'student'
+        $roleStudent = Role::select('id', 'slug')->where('slug', 'student')->first();
 
-            // Tìm người dùng có username và vai trò 'student'
-            $user = User::where('username', $data['username'])
-                ->whereHas('roles', function ($query) use ($roleStudent) {
-                    $query->where('role_id', $roleStudent->id);
-                })->first();
-            if (!$user) {
-                throw new Exception('Username này không phải là học sinh');
-            }
-            // Kiểm tra xem học sinh đã thuộc lớp này chưa
-            $existingClass = $user->classes()->where('class_id', $class->id)->first();
-            if ($existingClass) {
-                throw new Exception('Học sinh đã thuộc lớp này');
-            }
+        // Danh sách username học sinh
+        $usernames = $data['usernames']; // Mảng username học sinh
+        if (empty($usernames)) {
+            throw new Exception('Danh sách học sinh không được để trống');
+        }
 
-            // Kiểm tra xem học sinh đã tham gia lớp khác chưa
-            $otherClass = $user->classes()->first();
-            if ($otherClass) {
-                throw new Exception('Học sinh chỉ được tham gia một lớp');
-            }
+        foreach ($usernames as $username) {
+                // Tìm người dùng có username và vai trò 'student'
+                $user = User::where('username', $username)
+                    ->whereHas('roles', function ($query) use ($roleStudent) {
+                        $query->where('role_id', $roleStudent->id);
+                    })->first();
 
-            // Thêm học sinh vào lớp với mốc thời gian tạo
-            $user->classes()->sync([
-                $class->id => [
-                    'created_at' => Carbon::now()
-                ]
-            ]);
+                if (!$user) {
+                    throw new Exception("Username {$username} không phải là học sinh");
+                }
 
-            return $user;
-        });
-    }
+                // Kiểm tra xem học sinh đã thuộc lớp này chưa
+                $existingClass = $user->classes()->where('class_id', $class->id)->first();
+                if ($existingClass) {
+                    throw new Exception("Học sinh {$username} đã thuộc lớp này");
+                }
+
+                // Kiểm tra xem học sinh đã tham gia lớp khác chưa
+                $otherClass = $user->classes()->first();
+                if ($otherClass) {
+                    throw new Exception("Học sinh {$username} chỉ được tham gia một lớp");
+                }
+
+                // Thêm học sinh vào lớp với mốc thời gian tạo
+                $user->classes()->syncWithoutDetaching([
+                    $class->id => [
+                        'created_at' => Carbon::now(),
+                    ],
+                ]);
+
+                $success[] = $username;
+                
+        }
+
+        // Trả về kết quả
+        return (object)[
+            'className' =>$class->name,
+            'usernames' => $success,
+        ];
+    });
+}
+
 
 
     public function update(array $data, $id)

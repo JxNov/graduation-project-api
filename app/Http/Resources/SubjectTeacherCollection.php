@@ -16,12 +16,7 @@ class SubjectTeacherCollection extends ResourceCollection
 {
     return [
         'data' => SubjectTeacherResource::collection($this->resource),  // Sử dụng collection của resource
-        'meta' => [
-            'current_page' => $this->currentPage(),  // Trang hiện tại
-            'last_page' => $this->lastPage(),        // Trang cuối cùng
-            'per_page' => $this->perPage(),          // Số bản ghi trên một trang
-            'total' => $this->total(),               // Tổng số bản ghi
-        ],
+        
     ];
 }
 
