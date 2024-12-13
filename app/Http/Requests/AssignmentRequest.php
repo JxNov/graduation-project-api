@@ -27,7 +27,7 @@ class AssignmentRequest extends FormRequest
     public function rulesForCreate(): array
     {
         return [
-            'title' => 'required|max:100|unique:assignments,title',
+            'title' => 'required|max:200|unique:assignments,title',
             'description' => 'nullable',
             'due_date' => 'required|date',
             'criteria' => 'required',
