@@ -52,40 +52,25 @@ class SubmittedAssignmentRequest extends FormRequest
      */
     public function rulesForUpdate(): array
     {
+        $studentUsername = $this->route('studentName');
+
         try {
             $assignmentSlug = $this->route('assignmentSlug');
-            $studentUsername = $this->route('student_username');
 
-            $assignment = Assignment::where('slug', $assignmentSlug)->first();
+            $assignment = Assignment::where('slug', $assignmentSlug)->firstOrFail();
+            $student = User::where('username', $studentUsername)->firstOrFail();
 
-            if (!$assignment) {
-                throw new Exception('Bài tập không tồn tại');
-            }
-
-            // Lấy ID sinh viên từ username
-            $student = User::where('username', $studentUsername)->first();
-
-            if (!$student) {
-                throw new Exception('Sinh viên không tồn tại');
-            }
-
-            $submittedAssignment = SubmittedAssignment::where('assignment_id', $assignment->id)
+            SubmittedAssignment::where('assignment_id', $assignment->id)
                 ->where('student_id', $student->id)
-                ->first();
-
-            if (!$submittedAssignment) {
-                throw new Exception('Không tìm thấy bài nộp của sinh viên này cho bài tập này');
-            }
+                ->firstOrFail();
 
             return [
-                'score' => 'nullable|numeric|min:0|max:10',
-                'feedback' => 'nullable|string|max:1000',
-                'file_path' => 'nullable|mimes:pdf,docx,zip',
+                'score' => 'sometimes|nullable|numeric|min:0|max:10',
+                'feedback' => 'sometimes|nullable|string|max:1000',
+                'file_path' => 'sometimes|nullable|mimes:pdf,docx,zip',
             ];
         } catch (Exception $e) {
-            return [
-                'error' => $e->getMessage()
-            ];
+            throw new Exception($e->getMessage());
         }
     }
 
