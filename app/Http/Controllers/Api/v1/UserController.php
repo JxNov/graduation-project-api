@@ -160,49 +160,65 @@ class UserController extends Controller
             return $this->errorResponse($e->getMessage());
         }
     }
+
     public function showUser($username)
     {
         $student = User::where('username', $username)
             ->first();
         return new StudentResource($student);
     }
+
     public function updateUser(Request $request, $username)
     {
         try {
             // Xác thực dữ liệu đầu vào
-            $validatedData = $request->validate([
-                'current_password' => 'required|string|min:6',
-                'new_password' => 'required|string|min:6',
-                'confirm_new_password' => 'required|string|min:6|same:new_password',
-            ], [
-                'current_password.required' => 'Trường mật khẩu hiện tại là bắt buộc.',
-                'current_password.string' => 'Mật khẩu hiện tại phải là chuỗi ký tự.',
-                'current_password.min' => 'Mật khẩu hiện tại phải có ít nhất :min ký tự.',
+            if ($request->input('current_password') && $request->input('new_password') && $request->input('confirm_new_password')) {
+                $validatedData = $request->validate([
+                    'current_password' => 'required|string|min:6',
+                    'new_password' => 'required|string|min:6',
+                    'confirm_new_password' => 'required|string|min:6|same:new_password',
+                ], [
+                    'current_password.required' => 'Trường mật khẩu hiện tại là bắt buộc.',
+                    'current_password.string' => 'Mật khẩu hiện tại phải là chuỗi ký tự.',
+                    'current_password.min' => 'Mật khẩu hiện tại phải có ít nhất :min ký tự.',
 
-                'new_password.required' => 'Trường mật khẩu mới là bắt buộc.',
-                'new_password.string' => 'Mật khẩu mới phải là chuỗi ký tự.',
-                'new_password.min' => 'Mật khẩu mới phải có ít nhất :min ký tự.',
+                    'new_password.required' => 'Trường mật khẩu mới là bắt buộc.',
+                    'new_password.string' => 'Mật khẩu mới phải là chuỗi ký tự.',
+                    'new_password.min' => 'Mật khẩu mới phải có ít nhất :min ký tự.',
 
-                'confirm_new_password.required' => 'Xác nhận mật khẩu mới là bắt buộc.',
-                'confirm_new_password.string' => 'Xác nhận mật khẩu mới phải là chuỗi ký tự.',
-                'confirm_new_password.same' => 'Xác nhận mật khẩu mới phải khớp với mật khẩu mới.',
+                    'confirm_new_password.required' => 'Xác nhận mật khẩu mới là bắt buộc.',
+                    'confirm_new_password.string' => 'Xác nhận mật khẩu mới phải là chuỗi ký tự.',
+                    'confirm_new_password.same' => 'Xác nhận mật khẩu mới phải khớp với mật khẩu mới.',
 
-            ]);
+                ]);
+            }
 
             // Lấy dữ liệu đầu vào
-            $data = [
-                'images' => $request->images,
-                'current_password' => $request->current_password,
-                'new_password' => $request->new_password,
-                'confirm_new_password' => $request->confirm_new_password
-            ];
+            $data = [];
+
+            if ($request->has('images')) {
+                $data['images'] = $request->images;
+            }
+
+            if ($request->has('current_password')) {
+                $data['current_password'] = $request->current_password;
+            }
+
+            if ($request->has('new_password')) {
+                $data['new_password'] = $request->new_password;
+            }
+
+            if ($request->has('confirm_new_password')) {
+                $data['confirm_new_password'] = $request->confirm_new_password;
+            }
 
             // Lấy người dùng từ username
             $user = $this->userService->updateUser($data, $username);
 
             // Trả về phản hồi thành công
             return $this->successResponse(new StudentResource($user), 'Thay đổi thông tin người dùng thành công!', Response::HTTP_OK);
-        } catch (Exception $e) {
+        } catch
+        (Exception $e) {
             // Xử lý lỗi
             return $this->errorResponse($e->getMessage());
         }
