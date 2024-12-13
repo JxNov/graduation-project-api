@@ -38,12 +38,6 @@ class Generation extends Model
                         $material->delete();
                     }
 
-                    $blocks = $class->blocks;
-
-                    foreach ($blocks as $block) {
-                        $block->delete();
-                    }
-
                     $classTeachers = $class->classTeachers;
 
                     if ($classTeachers->isNotEmpty()) {
@@ -69,15 +63,6 @@ class Generation extends Model
                     $materials = $class->materials()->withTrashed()->get();
                     foreach ($materials as $material) {
                         $material->restore();
-                    }
-
-                    $blocks = $class->blocks()->withTrashed()->get();
-                    foreach ($blocks as $block) {
-                        $materialBlock = $block->classFromMaterials()->withTrashed()->get();
-                        if ($materialBlock->isNotEmpty()) {
-                            $block->classFromMaterials()->updateExistingPivot($materialBlock->pluck('id'), ['deleted_at' => null]);
-                        }
-                        $block->restore();
                     }
 
                     $classTeachers = $class->classTeachers()->withTrashed()->get();
