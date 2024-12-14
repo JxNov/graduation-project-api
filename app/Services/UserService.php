@@ -396,7 +396,7 @@ class UserService
 
             $data['username'] = $this->generateUsername($data['name'], $existingUsernames);
             $data['email'] = $this->generateEmail($data['username']);
-            $data['password'] = Hash::make('abc12');
+            $data['password'] = Hash::make(env('PASSWORD_DEFAULT'));
 
             $newUser = User::create($data);
 

@@ -72,7 +72,7 @@ class StudentsImport implements ToCollection, WithChunkReading, ShouldQueue
                 'address' => $address,
                 'phone_number' => $phoneNumber,
                 'email' => $this-> generateEmail($username) ,
-                'password' => Hash::make('abc123'),
+                'password' => Hash::make(env('PASSWORD_DEFAULT')),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
