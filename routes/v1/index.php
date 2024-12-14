@@ -69,6 +69,7 @@ Route::prefix('users')
         Route::patch('/assign-roles-permissions', [UserController::class, 'assignRolesAndPermissions']);
         Route::delete('/assign-roles-permissions', [UserController::class, 'revokeRolesAndPermissions']);
         Route::patch('/updateUser/{username}', [UserController::class, 'updateUser']);
+        Route::delete('/{username}', [UserController::class, 'destroy']);
     });
 
 // khóa học sinh
