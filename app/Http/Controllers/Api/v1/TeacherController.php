@@ -28,7 +28,8 @@ class TeacherController extends Controller
         $teacher = User::whereHas('roles', function ($query) use ($roleTeacher) {
             $query->where('role_id', $roleTeacher->id);
         })
-            ->get();
+        ->with('subjects')
+        ->get();
         return TeacherResource::collection($teacher);
     }
     public function store(TeacherRequest $request)

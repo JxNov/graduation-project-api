@@ -25,6 +25,7 @@ class TeacherResource extends JsonResource
             'phoneNumber' => $this->phone_number,
             'email' => $this->email,
             // 'password' => $this->password,
+            'subjects' => $this->subjects->pluck('name'),
         ];
     }
 }
