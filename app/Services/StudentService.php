@@ -13,69 +13,55 @@ use Illuminate\Support\Str;
 class StudentService
 {
     public function createStudent(array $data)
-    {
-        return DB::transaction(function () use ($data) {
-            $academicYear = AcademicYear::where('slug', $data['academicYearSlug'])->firstOrFail();
-            $generation = Generation::where('slug', $data['generationSlug'])->firstOrFail();
-            // Tạo username duy nhất
-            $username = $this->generateUsername($data['name']);
+{
+    return DB::transaction(function () use ($data) {
+        $academicYear = AcademicYear::where('slug', $data['academicYearSlug'])->firstOrFail();
+        $generation = Generation::where('slug', $data['generationSlug'])->firstOrFail();
+        // Tạo username duy nhất
+        $username = $this->generateUsername($data['name']);
 
-            // Tạo email dựa trên tên và username
-            $data['email'] = $this->generateEmail($username);
-            if (isset($data['image'])) {
-                $firebase = app('firebase.storage');
-                $storage = $firebase->getBucket();
+        // Tạo email dựa trên tên và username
+        $data['email'] = $this->generateEmail($username);
+        // Lưu thông tin học sinh vào cơ sở dữ liệu
+        $student = User::create([
+            'name' => $data['name'],
+            'username' => $username,
+            'email' => $data['email'],
+            'password' => Hash::make(env('PASSWORD_DEFAULT')), // Mật khẩu mặc định
+            'date_of_birth' => $data['date_of_birth'],
+            'gender' => $data['gender'],
+            'address' => $data['address'],
+            'phone_number' => $data['phone_number'],
+        ]);
+        
+        // Lấy ID role cho học sinh
+        $roleStudent = Role::where('slug', 'student')->first();
 
-                $firebasePath = 'image-user/' . Str::random(9) . $data['image']->getClientOriginalName();
-
-                $storage->upload(
-                    file_get_contents($data['image']->getRealPath()),
-                    [
-                        'name' => $firebasePath
-                    ]
-                );
-            }
-
-            $data['image'] = $firebasePath;
-            // Lưu thông tin học sinh vào cơ sở dữ liệu
-            $student = User::create([
-                'name' => $data['name'],
-                'username' => $username,
-                'image' => $data['image'],
-                'email' => $data['email'],
-                'password' => Hash::make(env('PASSWORD_DEFAULT')), // Mật khẩu mặc định
-                'date_of_birth' => $data['date_of_birth'],
-                'gender' => $data['gender'],
-                'address' => $data['address'],
-                'phone_number' => $data['phone_number'],
+        if (!$roleStudent) {
+            throw new \Exception("Quyền 'student' không tồn tại trong hệ thống.");
+        }
+        
+        // Gắn role 'student' cho học sinh
+        if ($roleStudent) {
+            DB::table('user_roles')->insert([
+                'user_id' => $student->id,
+                'role_id' => $roleStudent->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
+            DB::table('user_generations')->insert([
+                'user_id' => $student->id,
+                'generation_id' => $generation->id,
+                'academic_year_id' => $academicYear->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        
+        return $student;
+    });
+}
 
-            // Lấy ID role cho học sinh
-            $roleStudent = Role::where('slug', 'student')->first();
-
-            if (!$roleStudent) {
-                throw new \Exception("Quyền 'student' không tồn tại trong hệ thống.");
-            }
-            // Gắn role 'student' cho học sinh
-            if ($roleStudent) {
-                DB::table('user_roles')->insert([
-                    'user_id' => $student->id,
-                    'role_id' => $roleStudent->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-                DB::table('user_generations')->insert([
-                    'user_id' => $student->id,
-                    'generation_id' => $generation->id,
-                    'academic_year_id' => $academicYear->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            return $student;
-        });
-    }
 
     public function updateStudent($data, $username)
     {
@@ -95,38 +81,11 @@ class StudentService
                 // Ghép phần mới với đuôi cũ
                 $username = $usernameBase . $suffix;
             }
-
-
             // Cập nhật thông tin người dùng
             $data['email'] = $this->generateEmail($username);
-            if (isset($data['image'])) {
-                $firebase = app('firebase.storage');
-                $storage = $firebase->getBucket();
-
-                $firebasePath = 'image-user/' . $data['image']->getClientOriginalName();
-
-                if ($user->image) {
-                    $oldFirebasePath = $user->image;
-
-                    $oldFile = $storage->object($oldFirebasePath);
-
-                    if ($oldFile->exists()) {
-                        $oldFile->delete();
-                    }
-                }
-
-                $storage->upload(
-                    file_get_contents($data['image']->getRealPath()),
-                    [
-                        'name' => $firebasePath
-                    ]
-                );
-                $data['image'] = $firebasePath;
-            }
             $user->update([
                 'name' => $data['name'],
                 'username' => $username,
-                'image' => $data['image'],
                 'email' => $data['email'],
                 'password' => Hash::make(env('PASSWORD_DEFAULT')), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],
