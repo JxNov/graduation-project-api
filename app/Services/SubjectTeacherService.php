@@ -17,114 +17,127 @@ use Maatwebsite\Excel\Facades\Excel;
 class SubjectTeacherService
 {
     public function store(array $data)
-{
-    return DB::transaction(function () use ($data) {
-        // Lấy các môn học theo slug
-        $subjects = Subject::whereIn('slug', $data['subjectSlug'])->get();
-        if ($subjects->isEmpty()) {
-            throw new Exception('Một hoặc nhiều môn học không tồn tại hoặc đã bị xóa');
-        }
+    {
+        return DB::transaction(function () use ($data) {
+            // Lấy các môn học theo slug
+            $subjects = Subject::whereIn('slug', $data['subjectSlug'])->get();
+            if ($subjects->isEmpty()) {
+                throw new Exception('Một hoặc nhiều môn học không tồn tại hoặc đã bị xóa');
+            }
 
-        // Lấy role của giáo viên
-        $roleTeacher = Role::where('slug', 'teacher')->first();
-        if (!$roleTeacher) {
-            throw new Exception('Không tìm thấy vai trò giáo viên');
-        }
+            // Lấy role của giáo viên
+            $roleTeacher = Role::where('slug', 'teacher')->first();
+            if (!$roleTeacher) {
+                throw new Exception('Không tìm thấy vai trò giáo viên');
+            }
 
-        // Kiểm tra xem username có phải là một mảng không
-        if (!is_array($data['username'])) {
-            $data['username'] = [$data['username']];
-        }
+            // Kiểm tra xem username có phải là một mảng không
+            if (!is_array($data['username'])) {
+                $data['username'] = [$data['username']];
+            }
 
-        // Lấy danh sách các giáo viên
-        $users = User::whereIn('username', $data['username'])
-            ->whereHas('roles', function ($query) use ($roleTeacher) {
-                $query->where('role_id', $roleTeacher->id);
-            })->get();
+            // Lấy danh sách các giáo viên
+            $users = User::whereIn('username', $data['username'])
+                ->whereHas('roles', function ($query) use ($roleTeacher) {
+                    $query->where('role_id', $roleTeacher->id);
+                })->get();
 
-        if ($users->isEmpty()) {
-            throw new Exception('Không có giáo viên nào với username này hoặc không phải là giáo viên');
-        }
+            if ($users->isEmpty()) {
+                throw new Exception('Không có giáo viên nào với username này hoặc không phải là giáo viên');
+            }
 
-        $successfulUsers = [];
+            $successfulUsers = [];
 
-        // Duyệt qua từng giáo viên và từng môn học
-        foreach ($users as $user) {
-            foreach ($subjects as $subject) {
-                // Kiểm tra xem giáo viên đã dạy môn học này chưa
-                if ($user->subjects()->where('subject_id', $subject->id)->exists()) {
-                    // Nếu giáo viên đã dạy môn học này rồi, báo lỗi
-                    throw new Exception("Giáo viên {$user->name} đã dạy môn {$subject->name} rồi");
-                }
+            // Duyệt qua từng giáo viên và từng môn học
+            foreach ($users as $user) {
+                foreach ($subjects as $subject) {
+                    // Kiểm tra xem giáo viên đã dạy môn học này chưa
+                    if ($user->subjects()->where('subject_id', $subject->id)->exists()) {
+                        // Nếu giáo viên đã dạy môn học này rồi, báo lỗi
+                        throw new Exception("Giáo viên {$user->name} đã dạy môn {$subject->name} rồi");
+                    }
 
-                // Gán môn học cho giáo viên nếu chưa có
-                $user->subjects()->syncWithoutDetaching([
-                    $subject->id => ['created_at' => Carbon::now()],
-                ]);
+                    // Gán môn học cho giáo viên nếu chưa có
+                    $user->subjects()->syncWithoutDetaching([
+                        $subject->id => ['created_at' => Carbon::now()],
+                    ]);
 
-                
-                $pivot = $user->subjects()->where('subject_id', $subject->id)->first()->pivot ?? null;
-                if ($pivot) {
-                    $successfulUsers[] = $pivot;
+
+                    $pivot = $user->subjects()->where('subject_id', $subject->id)->first()->pivot ?? null;
+                    if ($pivot) {
+                        $successfulUsers[] = $pivot;
+                    }
                 }
             }
-        }
 
-        return $successfulUsers;
-    });
-}
-
+            return $successfulUsers;
+        });
+    }
 
 
 
 
 
 
-    public function update(array $data, $id)
-{
-    return DB::transaction(function () use ($data, $id) {
-        $subjectTeacher = DB::table('subject_teachers')->where('id', $id)->first();
-        if (!$subjectTeacher) {
-            throw new Exception('Không tìm thấy bản ghi với ID đã cung cấp.');
-        }
-        
-        // Lấy vai trò 'teacher'
-        $roleTeacher = Role::select('id', 'slug')->where('slug', 'teacher')->first();
-        if (!$roleTeacher) {
-            throw new Exception('Vai trò giáo viên không tồn tại');
-        }
-        
-        // Tìm người dùng có username và vai trò 'teacher'
-        $user = User::where('username', $data['username'])
-            ->whereHas('roles', function ($query) use ($roleTeacher) {
-                $query->where('role_id', $roleTeacher->id);
-            })->first();
-        
-        if (!$user) {
-            throw new Exception('Username này không phải là giáo viên');
-        }
-        
-        // Kiểm tra trùng lặp: xem có giáo viên khác đã dạy môn này chưa
-        $duplicate = DB::table('subject_teachers')
-            ->where('subject_id', $subjectTeacher->subject_id)
-            ->where('teacher_id', $user->id)
-            ->exists();
 
-        if ($duplicate) {
-            throw new Exception('Giáo viên này đã dạy môn này');
-        }
+    public function update(array $data, $username)
+    {
+        return DB::transaction(function () use ($data, $username) {
+            // Lấy giáo viên theo username
+            $roleTeacher = Role::select('id', 'slug')->where('slug', 'teacher')->first();
+            if (!$roleTeacher) {
+                throw new Exception('Vai trò giáo viên không tồn tại');
+            }
 
-        // Nếu không có trùng lặp, tiến hành cập nhật
-        DB::table('subject_teachers')
-            ->where('id', $id)
-            ->update([
-                'teacher_id' => $user->id,
-                'updated_at' => Carbon::now(),
-            ]);
+            // Tìm người dùng có username và vai trò 'teacher'
+            $user = User::where('username', $username)
+                ->whereHas('roles', function ($query) use ($roleTeacher) {
+                    $query->where('role_id', $roleTeacher->id);
+                })->first();
 
-        return $subjectTeacher;
-    });
-}
+            if (!$user) {
+                throw new Exception('Username này không phải là giáo viên');
+            }
+
+            // Chuyển subjectSlug thành subject_id
+            $subjectIds = [];
+            foreach ($data['subjectSlugs'] as $slug) {
+                $subject = Subject::where('slug', $slug)->first();
+                if (!$subject) {
+                    throw new Exception('Môn học với slug "' . $slug . '" không tồn tại.');
+                }
+                $subjectIds[] = $subject->id;
+            }
+
+            // Cập nhật hoặc thêm môn học cho giáo viên trong bảng subject_teachers
+            foreach ($subjectIds as $subjectId) {
+                // Kiểm tra xem giáo viên đã dạy môn này chưa
+                $duplicate = DB::table('subject_teachers')
+                    ->where('subject_id', $subjectId)
+                    ->where('teacher_id', $user->id)
+                    ->exists();
+
+                if ($duplicate) {
+                    throw new Exception('Giáo viên này đã dạy môn này');
+                }
+
+                // Nếu không trùng lặp, tiến hành cập nhật
+                DB::table('subject_teachers')->updateOrInsert(
+                    ['teacher_id' => $user->id, 'subject_id' => $subjectId],
+                    ['updated_at' => Carbon::now()],
+
+                );
+            }
+            
+            return [
+                "teacherName"=> $user->name,
+                "username"=>$user->username,
+                "subjectName"=>$subject->name
+            ] ;
+        });
+    }
+
+
 
 
     public function destroy($id)
@@ -174,17 +187,17 @@ class SubjectTeacherService
         return DB::transaction(function () use ($id) {
             $subjectTeacher = DB::table('subject_teachers')
                 ->where('id', $id)
-                ->whereNotNull('deleted_at') 
+                ->whereNotNull('deleted_at')
                 ->first();
 
             if ($subjectTeacher === null) {
                 throw new Exception('Không tìm thấy!');
             }
 
-            
+
             DB::table('subject_teachers')
                 ->where('id', $id)
-                ->whereNotNull('deleted_at') 
+                ->whereNotNull('deleted_at')
                 ->delete();
 
             return response()->json(['message' => 'Đã được xoá vĩnh viễn!']);

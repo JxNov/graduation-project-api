@@ -27,24 +27,21 @@ class SubjectTeacherRequest extends FormRequest
     public function rulesForCreate(): array
     {
         return [
-            'username' => 'required|exists:users,username',
-            'subjectSlug' => 'required|exists:subjects,slug',
+            'subjectSlugs' => 'required|exists:subjects,slug',
         ];
     }
 
     public function rulesForUpdate(): array
     {
         return [
-            'username' => 'required|exists:users,username',
+            'subjectSlugs' => 'required|exists:subjects,slug',
         ];
     }
     public function messages()
     {
         return [
-            'username.required' => 'Username đang trống',
-            'username.exists' => 'Username không tồn tại hoặc đã bị xóa',
-            'subjectSlug.required' => 'Môn học đang trống',
-            'subjectSlug.exists' => 'Môn học không tồn tại hoặc đã bị xoá.',
+            'subjectSlugs.required' => 'Môn học đang trống',
+            'subjectSlugs.exists' => 'Môn học không tồn tại hoặc đã bị xoá.',
         ];
     }
 }
