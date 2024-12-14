@@ -67,11 +67,11 @@ class SubjectTeacherController extends Controller
         }
     }
 
-    public function update(SubjectTeacherRequest $request, $id)
+    public function update(SubjectTeacherRequest $request, $username)
     {
         try {
-            $user = $this->SubjectTeacherService->update($request->all(), $id);
-            return $this->successResponse(new SubjectTeacherResource($user), 'Đổi giáo viên của môn học thành công!', Response::HTTP_OK);
+            $user = $this->SubjectTeacherService->update($request->all(), $username);
+            return $this->successResponse( $user, 'Đổi giáo viên của môn học thành công!', Response::HTTP_OK);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }

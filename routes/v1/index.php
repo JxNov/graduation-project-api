@@ -275,7 +275,7 @@ Route::prefix('subject-teachers')
         Route::get('/', [SubjectTeacherController::class, 'index']);
         Route::get('/trash', [SubjectTeacherController::class, 'trash']);
         Route::post('/', [SubjectTeacherController::class, 'store']);
-        Route::patch('/{id}', [SubjectTeacherController::class, 'update']);
+        Route::patch('/{username}', [SubjectTeacherController::class, 'update']);
         Route::delete('/{id}', [SubjectTeacherController::class, 'destroy']);
         Route::delete('forcedelete/{id}', [SubjectTeacherController::class, 'forceDelete']);
         Route::get('/restore/{id}', [SubjectTeacherController::class, 'restore']);
