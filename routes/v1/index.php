@@ -70,6 +70,7 @@ Route::prefix('users')
         Route::delete('/assign-roles-permissions', [UserController::class, 'revokeRolesAndPermissions']);
         Route::patch('/updateUser/{username}', [UserController::class, 'updateUser']);
         Route::delete('/{username}', [UserController::class, 'destroy']);
+        Route::patch('/forgotpassword', [UserController::class, 'forgotPassword']);
     });
 
 // khóa học sinh
