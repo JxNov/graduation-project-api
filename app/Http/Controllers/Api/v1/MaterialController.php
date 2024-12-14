@@ -95,8 +95,21 @@ class MaterialController extends Controller
 
             $material = $this->materialService->createNewMaterialForBlock($data);
 
+            $block = Block::where('slug', $data['block_slug'])->first();
+
+            $data = [
+                'title' => $material->title,
+                'slug' => $material->slug,
+                'description' => $material->description,
+                'filePath' => $material->file_path,
+                'subjectName' => optional($material->subject)->name,
+                'teacherName' => optional($material->teacher)->name,
+                'blockName' => $block->name,
+                'blockSlug' => $block->slug,
+            ];
+
             return $this->successResponse(
-                new ClassMaterialResource($material),
+                $data,
                 'Tạo mới tài liệu thành công',
                 Response::HTTP_CREATED
             );

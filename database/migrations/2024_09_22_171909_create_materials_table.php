@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('materials', function (Blueprint $table) {
             $table->id();
-            $table->string('title', 100)->unique();
-            $table->string('slug', 130);
+            $table->string('title', 100);
+            $table->string('slug', 130)->unique();
             $table->text('description')->nullable();
             $table->text('file_path');
 

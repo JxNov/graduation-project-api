@@ -57,7 +57,7 @@ class MaterialService
             $data['subject_id'] = $subject->id;
             $data['teacher_id'] = $teacher->id;
 
-            $data['slug'] = Str::slug($subject->slug . '-' . $data['title']);
+            $data['slug'] = Str::slug($subject->slug . '-' . $data['title']) . '-' . rand(1111,9999);
 
             if (isset($data['file_path'])) {
                 $fileName = $data['file_path']->getClientOriginalName();
@@ -213,7 +213,7 @@ class MaterialService
             $data['subject_id'] = $subject->id;
             $data['teacher_id'] = $teacher->id;
 
-            $data['slug'] = Str::slug($subject->slug . '-' . $data['title']);
+            $data['slug'] = Str::slug($subject->slug . '-' . $data['title']) . '-' . rand(1111,9999);
 
             if (isset($data['file_path'])) {
                 $fileName = $data['file_path']->getClientOriginalName();
