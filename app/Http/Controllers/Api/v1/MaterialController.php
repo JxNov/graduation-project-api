@@ -26,11 +26,14 @@ class MaterialController extends Controller
     public function getBlockMaterial()
     {
         try {
-            $blocks = Block::with(['classFromMaterials'])->get();
+            $blocks = Block::with(['classFromMaterials.subject'])->get();
 
-            $data = $blocks->map(function ($block) {
-                $materials = $block->classFromMaterials->map(function ($material) {
-                    return [
+            $data = [];
+            foreach ($blocks as $block) {
+                foreach ($block->classFromMaterials as $material) {
+                    $data[] = [
+                        'blockName' => $block->name,
+                        'blockSlug' => $block->slug,
                         'title' => $material->title,
                         'slug' => $material->slug,
                         'description' => $material->description ?? null,
@@ -38,14 +41,8 @@ class MaterialController extends Controller
                         'subjectName' => $material->subject->name,
                         'subjectSlug' => $material->subject->slug,
                     ];
-                });
-
-                return [
-                    'blockName' => $block->name,
-                    'blockSlug' => $block->slug,
-                    'materials' => $materials,
-                ];
-            });
+                }
+            }
 
             return $this->successResponse(
                 $data,
