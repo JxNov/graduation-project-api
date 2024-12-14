@@ -404,6 +404,21 @@ class UserService
         });
     }
 
+    public function deleteUser($username)
+    {
+        return DB::transaction(function () use ($username) {
+            $user = User::where('username', $username)->first();
+
+            if ($user === null) {
+                throw new \Exception('Người dùng không tồn tại hoặc đã bị xóa');
+            }
+
+            $user->delete();
+
+            return $user;
+        });
+    }
+
     public function generateUsername($fullName, $existingUsernames)
     {
         $cleanedName = $this->removeAccents($fullName);
