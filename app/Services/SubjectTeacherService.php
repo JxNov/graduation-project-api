@@ -109,31 +109,19 @@ class SubjectTeacherService
                 $subjectIds[] = $subject->id;
             }
 
-            // Cập nhật hoặc thêm môn học cho giáo viên trong bảng subject_teachers
-            foreach ($subjectIds as $subjectId) {
-                // Kiểm tra xem giáo viên đã dạy môn này chưa
-                $duplicate = DB::table('subject_teachers')
-                    ->where('subject_id', $subjectId)
-                    ->where('teacher_id', $user->id)
-                    ->exists();
+            $user->subjects()->sync($subjectIds);
 
-                if ($duplicate) {
-                    throw new Exception('Giáo viên này đã dạy môn này');
-                }
-
-                // Nếu không trùng lặp, tiến hành cập nhật
-                DB::table('subject_teachers')->updateOrInsert(
-                    ['teacher_id' => $user->id, 'subject_id' => $subjectId],
-                    ['updated_at' => Carbon::now()],
-
-                );
-            }
-            
             return [
-                "teacherName"=> $user->name,
-                "username"=>$user->username,
-                "subjectName"=>$subject->name
-            ] ;
+                'name' => $user->name,
+                'username' => $user->username,
+                'image' => $user->image,
+                'dateOfBirth' => $user->date_of_birth,
+                'gender' => $user->gender,
+                'address' => $user->address,
+                'phoneNumber' => $user->phone_number,
+                'email' => $user->email,
+                'subjects' => $user->subjects->pluck('name'),
+            ];
         });
     }
 
