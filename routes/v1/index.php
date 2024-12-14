@@ -210,7 +210,7 @@ Route::prefix('students')
     ->group(function () {
         Route::get('/', [StudentController::class, 'index']);
         Route::post('/', [StudentController::class, 'store']);
-        Route::put('/{username}', [StudentController::class, 'update']);
+        Route::patch('/{username}', [StudentController::class, 'update']);
         Route::delete('/{username}', [StudentController::class, 'destroy']);
         Route::get('/restore/{username}', [StudentController::class, 'restore']);
         Route::get('/show/{username}', [StudentController::class, 'show']);
@@ -220,7 +220,7 @@ Route::prefix('teachers')
     ->group(function () {
         Route::get('/', [TeacherController::class, 'index']);
         Route::post('/', [TeacherController::class, 'store']);
-        Route::put('/{username}', [TeacherController::class, 'update']);
+        Route::patch('/{username}', [TeacherController::class, 'update']);
         Route::delete('/{username}', [TeacherController::class, 'destroy']);
         Route::get('/restore/{username}', [TeacherController::class, 'restore']);
         Route::get('/show/{username}', [TeacherController::class, 'show']);
