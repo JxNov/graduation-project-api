@@ -38,7 +38,7 @@ class TeacherService
                 'username' => $username,
                 'image'=>$data['image'],
                 'email' => $data['email'],
-                'password' => Hash::make('abc123456'), // Mật khẩu mặc định
+                'password' => Hash::make(env('PASSWORD_DEFAULT')), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],
                 'gender' => $data['gender'],
                 'address' => $data['address'],
@@ -118,7 +118,7 @@ class TeacherService
                 'username' => $newUsername,
                 'image'=>$data['image'],
                 'email' => $data['email'],
-                'password' => Hash::make('abc123456'), // Mật khẩu mặc định
+                'password' => Hash::make(env('PASSWORD_DEFAULT')), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],
                 'gender' => $data['gender'],
                 'address' => $data['address'],

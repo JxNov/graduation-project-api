@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
                 'address' => 'Hà Nội',
                 'phone_number' => '0123456789',
                 'email' => 'admin@tech4school.edu.vn',
-                'password' => bcrypt('abc123'),
+                'password' => bcrypt(env('PASSWORD_DEFAULT')),
             ],
             [
                 'name' => 'Teacher 1',
@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
                 'address' => 'Hà Nội',
                 'phone_number' => '0123456789',
                 'email' => 'teacher1@tech4school.edu.vn',
-                'password' => bcrypt('abc123'),
+                'password' => bcrypt(env('PASSWORD_DEFAULT')),
             ],
             [
                 'name' => 'Teacher 2',
@@ -42,7 +42,7 @@ class UserSeeder extends Seeder
                 'address' => 'Hà Nội',
                 'phone_number' => '0123456789',
                 'email' => 'teacher2@tech4school.edu.vn',
-                'password' => bcrypt('abc123'),
+                'password' => bcrypt(env('PASSWORD_DEFAULT')),
             ],
             [
                 'name' => 'Teacher 3',
@@ -52,7 +52,7 @@ class UserSeeder extends Seeder
                 'address' => 'Hà Nội',
                 'phone_number' => '0123456789',
                 'email' => 'teacher3@tech4school.edu.vn',
-                'password' => bcrypt('abc123'),
+                'password' => bcrypt(env('PASSWORD_DEFAULT')),
             ],
             [
                 'name' => 'Nguyễn Văn Đoàn',
@@ -62,7 +62,7 @@ class UserSeeder extends Seeder
                 'address' => 'Hà Nội',
                 'phone_number' => '0333666999',
                 'email' => 'doannvps33201@tech4school.edu.vn',
-                'password' => bcrypt('abc123'),
+                'password' => bcrypt(env('PASSWORD_DEFAULT')),
             ],
             [
                 'name' => 'Đỗ Minh Kiên',
@@ -72,7 +72,7 @@ class UserSeeder extends Seeder
                 'address' => 'Hà Nội',
                 'phone_number' => '0333999666',
                 'email' => 'kiendmps32981@tech4school.edu.vn',
-                'password' => bcrypt('abc123'),
+                'password' => bcrypt(env('PASSWORD_DEFAULT')),
             ],
             [
                 'name' => 'Nguyễn Mạnh Dũng',
@@ -82,7 +82,7 @@ class UserSeeder extends Seeder
                 'address' => 'Hà Nội',
                 'phone_number' => '0999666666',
                 'email' => 'dungnmps30947@tech4school.edu.vn',
-                'password' => bcrypt('abc123'),
+                'password' => bcrypt(env('PASSWORD_DEFAULT')),
             ],
             [
                 'name' => 'Nguyễn Trung Hiếu',
@@ -92,7 +92,7 @@ class UserSeeder extends Seeder
                 'address' => 'Hà Nội',
                 'phone_number' => '0666666999',
                 'email' => 'hieuntps31062@tech4school.edu.vn',
-                'password' => bcrypt('abc123'),
+                'password' => bcrypt(env('PASSWORD_DEFAULT')),
             ],
         ];
 

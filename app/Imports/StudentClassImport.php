@@ -69,7 +69,7 @@ class StudentClassImport implements ToCollection
             'address' => $address,
             'phone_number' => $phoneNumber,
             'email' => $email,
-            'password' => Hash::make('abc123'),
+            'password' => Hash::make(env('PASSWORD_DEFAULT')),
             'created_at' => now(),
             'updated_at' => now(),
         ];
