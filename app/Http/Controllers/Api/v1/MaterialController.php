@@ -103,7 +103,7 @@ class MaterialController extends Controller
                 'description' => $material->description,
                 'filePath' => $material->file_path,
                 'subjectName' => optional($material->subject)->name,
-                'teacherName' => optional($material->teacher)->name,
+                'subjectSlug' => optional($material->subject)->slug,
                 'blockName' => $block->name,
                 'blockSlug' => $block->slug,
             ];
@@ -125,8 +125,21 @@ class MaterialController extends Controller
 
             $material = $this->materialService->updateMaterialForBlock($data, $slug);
 
+            $block = Block::where('slug', $data['block_slug'])->first();
+
+            $data = [
+                'title' => $material->title,
+                'slug' => $material->slug,
+                'description' => $material->description,
+                'filePath' => $material->file_path,
+                'subjectName' => optional($material->subject)->name,
+                'subjectSlug' => optional($material->subject)->slug,
+                'blockName' => $block->name,
+                'blockSlug' => $block->slug,
+            ];
+
             return $this->successResponse(
-                new ClassMaterialResource($material),
+                $data,
                 'Cập nhật tài liệu thành công',
                 Response::HTTP_OK
             );
