@@ -39,14 +39,16 @@ class ScoreRequest extends FormRequest
             'subject_slug' => 'required|exists:subjects,slug',
             'class_slug' => 'required|exists:classes,slug',
             'semester_slug' => 'required|exists:semesters,slug',
-            'detailed_scores' => 'required|array',
-            'detailed_scores.diem_mieng' => 'nullable|array',
-            'detailed_scores.diem_15_phut' => 'nullable|array',
-            'detailed_scores.diem_mot_tiet_1' => 'nullable|array',
-            'detailed_scores.diem_mot_tiet_2' => 'nullable|array',
-            'detailed_scores.diem_giua_ki' => 'nullable|array',
-            'detailed_scores.diem_cuoi_ki' => 'nullable|array',
-            'detailed_scores.*.*' => 'numeric|min:0|max:10',
+            'detailed_scores.diem_mieng.he_so' => 'required|numeric|min:1|max:3',
+            'detailed_scores.diem_mieng.score' => 'nullable|array',
+            'detailed_scores.diem_15_phut.he_so' => 'required|numeric|min:1|max:3',
+            'detailed_scores.diem_15_phut.score' => 'nullable|array',
+            'detailed_scores.diem_mot_tiet.he_so' => 'required|numeric|min:1|max:3',
+            'detailed_scores.diem_mot_tiet.score' => 'nullable|array',
+            'detailed_scores.diem_giua_ki.he_so' => 'required|numeric|min:1|max:3',
+            'detailed_scores.diem_giua_ki.score' => 'nullable|array',
+            'detailed_scores.diem_cuoi_ki.he_so' => 'required|numeric|min:1|max:3',
+            'detailed_scores.diem_cuoi_ki.score' => 'nullable|array',
         ];
     }
 
@@ -56,14 +58,16 @@ class ScoreRequest extends FormRequest
             $score = Score::findOrFail($this->route('id'));
 
             return [
-                'detailed_scores' => 'required|array',
-                'detailed_scores.diem_mieng' => 'nullable|array',
-                'detailed_scores.diem_15_phut' => 'nullable|array',
-                'detailed_scores.diem_mot_tiet_1' => 'nullable|array',
-                'detailed_scores.diem_mot_tiet_2' => 'nullable|array',
-                'detailed_scores.diem_giua_ki' => 'nullable|array',
-                'detailed_scores.diem_cuoi_ki' => 'nullable|array',
-                'detailed_scores.*.*' => 'numeric|min:0|max:10',
+                'detailed_scores.diem_mieng.he_so' => 'required|numeric|min:1|max:3',
+                'detailed_scores.diem_mieng.score' => 'nullable|array',
+                'detailed_scores.diem_15_phut.he_so' => 'required|numeric|min:1|max:3',
+                'detailed_scores.diem_15_phut.score' => 'nullable|array',
+                'detailed_scores.diem_mot_tiet.he_so' => 'required|numeric|min:1|max:3',
+                'detailed_scores.diem_mot_tiet.score' => 'nullable|array',
+                'detailed_scores.diem_giua_ki.he_so' => 'required|numeric|min:1|max:3',
+                'detailed_scores.diem_giua_ki.score' => 'nullable|array',
+                'detailed_scores.diem_cuoi_ki.he_so' => 'required|numeric|min:1|max:3',
+                'detailed_scores.diem_cuoi_ki.score' => 'nullable|array',
             ];
         } catch (Exception $e) {
             return [
