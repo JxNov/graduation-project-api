@@ -11,9 +11,6 @@ class ScoreResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-//            'studentId' => $this->student_id,
-//            'subjectId' => $this->subject_id,
-//            'semesterId' => $this->semester_id,
             'studentName' => optional($this->student)->name,
             'subjectName' => optional($this->subject)->name,
             'className' => optional($this->class)->name,

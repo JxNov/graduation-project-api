@@ -146,16 +146,16 @@ class ScoreService
 
     private function calculateAverageScore(array $detailedScores)
     {
-        $totalScore = 0;
-        $count = 0;
+        $totalWeightedScore = 0;
+        $totalWeights = 0;
 
-        // Tính tổng điểm từ các mảng trong detailed_scores
-        foreach ($detailedScores as $scores) {
-            if (is_array($scores)) {
-                $totalScore += array_sum($scores);
-                $count += count($scores);
+        foreach ($detailedScores as $scoreType => $details) {
+            if (isset($details['score'], $details['he_so']) && is_array($details['score'])) {
+                $totalWeightedScore += array_sum($details['score']) * $details['he_so'];
+                $totalWeights += count($details['score']) * $details['he_so'];
             }
         }
-        return $count > 0 ? round($totalScore / $count, 2) : 0;
+        return $totalWeights > 0 ? round($totalWeightedScore / $totalWeights, 2) : 0;
     }
+
 }
