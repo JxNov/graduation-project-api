@@ -15,7 +15,7 @@ class ClassMaterialResource extends JsonResource
             'description' => $this->description,
             'filePath' => $this->file_path,
             'subjectName' => optional($this->subject)->name,
-            'teacherName' => optional($this->teacher)->name,
+            'subjectSlug' => optional($this->subject)->slug,
         ];
     }
 }
