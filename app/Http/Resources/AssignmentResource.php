@@ -34,6 +34,8 @@ class AssignmentResource extends JsonResource
 //            }),
             'semesterSlug' => $this->semester->slug,
             'semesterName' => $this->semester->name,
+            'submitted' => $this->submitted,
+            'notSubmitted' => $this->not_submitted
         ];
     }
 }

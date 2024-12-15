@@ -12,6 +12,7 @@ class SubmittedAssignmentResource extends JsonResource
         return [
             'studentUsername' => optional($this->student)->username,
             'studentName' => optional($this->student)->name,
+            'studentImage' => optional($this->student)->image,
             'filePath' => $this->file_path,
             'score' => $this->score,
             'feedback' => $this->feedback,
