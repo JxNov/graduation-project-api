@@ -37,7 +37,6 @@ class AssignmentController extends Controller
             // Lấy danh sách assignments thuộc lớp đó
             $assignments = Assignment::where('class_id', $class->id)
                 ->latest('id')
-                ->select('title', 'slug', 'description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id', 'created_at', 'updated_at')
                 ->with(['subject', 'teacher', 'class', 'semester'])
                 ->get();
 
