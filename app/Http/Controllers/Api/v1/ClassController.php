@@ -130,6 +130,48 @@ class ClassController extends Controller
         }
     }
 
+    public function getClassOfTeacher($username)
+    {
+        try {
+            $teacher = User::where('username', $username)
+                ->first();
+
+            if ($teacher === null) {
+                return $this->errorResponse(
+                    'Không tìm thấy giáo viên',
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            $classOfTeacher = $teacher->teachingClasses()
+                ->select('classes.id', 'classes.name as className', 'classes.slug as classSlug', 'classes.code as classCode', 'classes.teacher_id')
+                ->with(['teacher', 'academicYears', 'blocks', 'students'])
+                ->get();
+
+            $data = $classOfTeacher->map(function ($class) {
+                // \Log::info($class->academicYears->pluck('slug'));
+                return [
+                    'name' => $class->className,
+                    'slug' => $class->classSlug,
+                    'code' => $class->classCode,
+                    'teacherName' => $class->teacher->name,
+                    'teacherUsername' => $class->teacher->username,
+                    'academicYearSlug' => $class->academicYears->pluck('slug')->first(),
+                    'blockSlug' => $class->blocks->pluck('slug')->first(),
+                    'numberOfStudents' => $class->students->count()
+                ];
+            });
+
+            return $this->successResponse(
+                $data,
+                'Lấy danh sách lớp của giáo viên thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     public function promoteStudent(ClassRequest $request, $slug)
     {
         try {
