@@ -49,6 +49,17 @@ class SubmittedAssignmentService
                 throw new Exception('Sinh viên không tồn tại hoặc đã bị xóa');
             }
 
+            // Kiểm tra xem sinh viên có thuộc lớp của bài tập hay không
+            $classId = $assignment->class_id; // Giả định rằng Assignment có `class_id`
+            $isStudentInClass = DB::table('class_students')
+                ->where('class_id', $classId)
+                ->where('student_id', $student->id)
+                ->exists();
+
+            if (!$isStudentInClass) {
+                throw new Exception('Sinh viên không thuộc lớp học được giao bài tập này.');
+            }
+
             $data['student_id'] = $student->id;
 
             // Kiểm tra xem sinh viên đã nộp bài cho bài tập này chưa
@@ -104,6 +115,7 @@ class SubmittedAssignmentService
             return SubmittedAssignment::create($data); // Tạo bản ghi mới
         });
     }
+
 
     // Xem bài nộp của tất cả học sinh trong assignment thuộc lớp
     public function viewAllSubmittedAssignmentsByClass($classSlug, $assignmentSlug)

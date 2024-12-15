@@ -39,7 +39,14 @@ class AssignmentController extends Controller
                 ->latest('id')
                 ->select('title', 'slug', 'description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id', 'created_at', 'updated_at')
                 ->with(['subject', 'teacher', 'class', 'semester'])
-                ->paginate(10);
+                ->get();
+
+            //Kiểm tra các assignment đã có bao nhiêu học sinh nộp
+            $assignments = $assignments->map(function ($assignment) {
+                $assignment->submitted = $assignment->submittedAssignments()->count();
+                $assignment->not_submitted = $assignment->class->students()->count() - $assignment->submitted;
+                return $assignment;
+            });
 
             // Kiểm tra nếu không có dữ liệu
             if ($assignments->isEmpty()) {
@@ -89,6 +96,18 @@ class AssignmentController extends Controller
                 ->where('class_id', $class->id)
                 ->with(['subject', 'teacher', 'class', 'semester'])
                 ->first();
+
+            //Kiểm tra assignment này đã có bao nhiêu học sinh nộp
+            $submittedCount = $assignment->submittedAssignments()->count();
+
+            // Tổng số học sinh trong lớp
+            $totalStudents = $class->students()->count();
+
+            // Tính số học sinh chưa nộp
+            $notSubmittedCount = $totalStudents - $submittedCount;
+
+            $assignment->submitted = $submittedCount;
+            $assignment->not_submitted = $notSubmittedCount;
 
             if (!$assignment) {
                 return $this->errorResponse('Bài tập không tồn tại hoặc không thuộc lớp này', Response::HTTP_NOT_FOUND);
@@ -145,7 +164,7 @@ class AssignmentController extends Controller
                 ->select('title', 'description', 'due_date', 'criteria', 'subject_id', 'teacher_id', 'class_id', 'semester_id')
                 ->with(['subject', 'teacher', 'class', 'semester'])
                 ->onlyTrashed()
-                ->paginate(10);
+                ->get();
 
             if ($assignments->isEmpty()) {
                 return $this->errorResponse(
