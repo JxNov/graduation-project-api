@@ -21,15 +21,17 @@ class AssignmentResource extends JsonResource
             'description' => $this->description,
             'dueDate' => $this->due_date,
             'criteria' => $this->criteria,
-            'subject' => $this->subject->name,
-            'teacher' =>  $this->teacher->name,
-            'class' => $this->class->name,
-            'semester' => $this->whenLoaded('semester', function () {
-                return $this->semester ? [
-                    'name' => $this->semester->name,
-                    'academicYearName' => $this->semester->academicYear->name
-                ] : null;
-            }),
+            'subject' => $this->subject->slug,
+//            'teacher' =>  $this->teacher->name,
+//            'class' => $this->class->slug,
+//            'semester' => $this->whenLoaded('semester', function () {
+//                return $this->semester ? [
+//                    'name' => $this->semester->name,
+//                    'slug' => $this->semester->slug,
+//                ] : null;
+//            }),
+            'semesterSlug' => $this->semester->slug,
+            'semesterName' => $this->semester->name,
         ];
     }
 }

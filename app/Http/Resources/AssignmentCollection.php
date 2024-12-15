@@ -18,12 +18,12 @@ class AssignmentCollection extends ResourceCollection
             'data' => $this->collection->transform(function ($assignment) {
                 return new AssignmentResource($assignment);
             }),
-            'meta' => [
-                'current_page' => $this->currentPage(),
-                'total_pages' => $this->lastPage(),
-                'per_page' => $this->perPage(),
-                'total' => $this->total(),
-            ],
+//            'meta' => [
+//                'current_page' => $this->currentPage(),
+//                'total_pages' => $this->lastPage(),
+//                'per_page' => $this->perPage(),
+//                'total' => $this->total(),
+//            ],
         ];
     }
 }
