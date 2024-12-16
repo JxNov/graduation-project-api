@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name', 50);
             $table->string('username', 50)->unique();
-            $table->string('image')->nullable();
+            $table->text('image')->nullable();
             $table->date('date_of_birth');
             $table->enum('gender', User::_GENDERS)->default(User::_GENDERS['Male']);
             $table->text('address');
