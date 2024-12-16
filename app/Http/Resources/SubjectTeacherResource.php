@@ -15,8 +15,8 @@ class SubjectTeacherResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'teacherName' => $this->teacher->name,   
-            'subjectName' => $this->subject->name,    
+            'teacherName' => $this['teacher'],   
+            'subjectName' => $this['subject'],    
         ];
     }
 

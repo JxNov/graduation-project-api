@@ -53,12 +53,9 @@ class SubjectTeacherController extends Controller
     public function store(SubjectTeacherRequest $request)
     {
         try {
-            // Gọi service để xử lý logic
             $subjectTeachers = $this->SubjectTeacherService->store($request->all());
-
-            // Trả về danh sách các giáo viên đã thêm thành công
             return $this->successResponse(
-                SubjectTeacherResource::collection($subjectTeachers),
+                $subjectTeachers,
                 'Thêm giáo viên dạy môn học thành công',
                 Response::HTTP_CREATED
             );
@@ -71,7 +68,7 @@ class SubjectTeacherController extends Controller
     {
         try {
             $user = $this->SubjectTeacherService->update($request->all(), $username);
-            return $this->successResponse( $user, 'Đổi giáo viên của môn học thành công!', Response::HTTP_OK);
+            return $this->successResponse($user, 'Đổi giáo viên của môn học thành công!', Response::HTTP_OK);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
@@ -98,9 +95,9 @@ class SubjectTeacherController extends Controller
     {
         try {
             $subjects = DB::table('subject_teachers')
-            ->select('id', 'teacher_id', 'subject_id')
-            ->whereNotNull('subject_teachers.deleted_at')
-            ->get();
+                ->select('id', 'teacher_id', 'subject_id')
+                ->whereNotNull('subject_teachers.deleted_at')
+                ->get();
 
             if ($subjects->isEmpty()) {
                 return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
