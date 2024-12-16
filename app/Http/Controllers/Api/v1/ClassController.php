@@ -10,6 +10,7 @@ use App\Models\AcademicYear;
 use App\Models\Block;
 use App\Models\Classes;
 use App\Models\Score;
+use App\Models\Semester;
 use App\Models\Subject;
 use App\Models\User;
 use App\Services\ClassService;
@@ -71,76 +72,10 @@ class ClassController extends Controller
     public function show(Request $request, $slug)
     {
         $subjectQuery = $request->query('subject');
-
-        if ($subjectQuery) {
-            $class = Classes::where('slug', $slug)
-                ->with(['teacher', 'academicYears', 'blocks', 'students', 'subjects'])
-                ->first();
-
-            if ($class === null) {
-                return $this->errorResponse(
-                    'Không tìm thấy lớp học',
-                    Response::HTTP_NOT_FOUND
-                );
-            }
-
-            $subject = Subject::where('slug', $subjectQuery)->first();
-
-            if ($subject === null) {
-                return $this->errorResponse(
-                    'Không tìm thấy môn học',
-                    Response::HTTP_NOT_FOUND
-                );
-            }
-
-            $score = Score::where('class_id', $class->id)
-                ->where('subject_id', $subject->id)
-                ->with('student')
-                ->get();
-
-            $data = [
-                'name' => $class->name,
-                'slug' => $class->slug,
-                'code' => $class->code,
-                'teacherName' => optional($class->teacher)->name,
-                'teacherImage' => optional($class->teacher)->image,
-                'username' => optional($class->teacher)->username,
-                'academicYearSlug' => $class->academicYears->pluck('slug')->first(),
-                'blockSlug' => $class->blocks->pluck('slug')->first(),
-                'numberOfStudents' => $class->students->count(),
-                'students' => $class->students->map(function ($student) use ($score) {
-                    $studentScore = $score->where('student_id', $student->id)->first();
-                    $mouthPoints = $studentScore->detailed_scores['diem_mieng']['score'] ?? null;
-                    $fifteenMinutesPoints = $studentScore->detailed_scores['diem_15_phut']['score'] ?? null;
-                    $onePeriodPoints = $studentScore->detailed_scores['diem_mot_tiet']['score'] ?? null;
-                    $midSemesterPoints = $studentScore->detailed_scores['diem_giua_ki']['score'] ?? null;
-                    $endSemesterPoints = $studentScore->detailed_scores['diem_cuoi_ki']['score'] ?? null;
-                    $averageScore = $studentScore->average_score ?? null;
-
-                    return [
-                        'name' => $student->name,
-                        'username' => $student->username,
-                        'image' => $student->image,
-                        'gender' => $student->gender,
-                        'mouthPoints' => $mouthPoints,
-                        'fifteenMinutesPoints' => $fifteenMinutesPoints,
-                        'onePeriodPoints' => $onePeriodPoints,
-                        'midSemesterPoints' => $midSemesterPoints,
-                        'endSemesterPoints' => $endSemesterPoints,
-                        'averageScore' => $averageScore,
-                    ];
-                }),
-            ];
-
-            return $this->successResponse(
-                $data,
-                'Lấy thông tin lớp học thành công',
-                Response::HTTP_OK
-            );
-        }
+        $semesterQuery = $request->query('semester');
 
         $class = Classes::where('slug', $slug)
-            ->with('teacher')
+            ->with(['teacher', 'academicYears', 'blocks', 'students', 'subjects'])
             ->first();
 
         if ($class === null) {
@@ -149,6 +84,32 @@ class ClassController extends Controller
                 Response::HTTP_NOT_FOUND
             );
         }
+
+        $scoresQuery = Score::where('class_id', $class->id)->with('student');
+
+        if ($semesterQuery) {
+            $semester = Semester::where('slug', $semesterQuery)->first();
+            if ($semester === null) {
+                return $this->errorResponse(
+                    'Không tìm thấy kỳ học',
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+            $scoresQuery->where('semester_id', $semester->id);
+        }
+
+        if ($subjectQuery) {
+            $subject = Subject::where('slug', $subjectQuery)->first();
+            if ($subject === null) {
+                return $this->errorResponse(
+                    'Không tìm thấy môn học',
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+            $scoresQuery->where('subject_id', $subject->id);
+        }
+
+        $scores = $scoresQuery->get();
 
         $data = [
             'name' => $class->name,
@@ -160,14 +121,28 @@ class ClassController extends Controller
             'academicYearSlug' => $class->academicYears->pluck('slug')->first(),
             'blockSlug' => $class->blocks->pluck('slug')->first(),
             'numberOfStudents' => $class->students->count(),
-            'students' => $class->students->map(function ($student) {
+            'students' => $class->students->map(function ($student) use ($scores) {
+                $studentScore = $scores->where('student_id', $student->id)->first();
+                $mouthPoints = $studentScore->detailed_scores['diem_mieng']['score'] ?? null;
+                $fifteenMinutesPoints = $studentScore->detailed_scores['diem_15_phut']['score'] ?? null;
+                $onePeriodPoints = $studentScore->detailed_scores['diem_mot_tiet']['score'] ?? null;
+                $midSemesterPoints = $studentScore->detailed_scores['diem_giua_ki']['score'] ?? null;
+                $endSemesterPoints = $studentScore->detailed_scores['diem_cuoi_ki']['score'] ?? null;
+                $averageScore = $studentScore->average_score ?? null;
+
                 return [
                     'name' => $student->name,
                     'username' => $student->username,
                     'image' => $student->image,
                     'gender' => $student->gender,
+                    'mouthPoints' => $mouthPoints,
+                    'fifteenMinutesPoints' => $fifteenMinutesPoints,
+                    'onePeriodPoints' => $onePeriodPoints,
+                    'midSemesterPoints' => $midSemesterPoints,
+                    'endSemesterPoints' => $endSemesterPoints,
+                    'averageScore' => $averageScore,
                 ];
-            })
+            }),
         ];
 
         return $this->successResponse(
@@ -176,6 +151,7 @@ class ClassController extends Controller
             Response::HTTP_OK
         );
     }
+
 
     public function update(ClassRequest $request, $slug)
     {
