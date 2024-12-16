@@ -32,6 +32,7 @@ class AuthController extends Controller
     public function profile(): JsonResponse
     {
         try {
+            $subjects = [];
             $user = JWTAuth::parseToken()->authenticate();
 
             if (!$user) {
@@ -47,6 +48,10 @@ class AuthController extends Controller
             $user->permissions = array_merge($permissions, $user->permissions()->pluck('value')->toArray());
             $user->permissions = array_values(array_unique($user->permissions));
 
+            if ($user->isTeacher()) {
+                $subjects = $user->subjects()->pluck('slug');
+            }
+
             $user = [
                 'name' => $user->name,
                 'username' => $user->username,
@@ -57,6 +62,7 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'roles' => $user->roles->pluck('name'),
                 'permissions' => $user->permissions,
+                'subjects' => $subjects
             ];
 
             return response()->json($user);
