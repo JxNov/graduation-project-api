@@ -9,6 +9,8 @@ use App\Http\Resources\ClassResource;
 use App\Models\AcademicYear;
 use App\Models\Block;
 use App\Models\Classes;
+use App\Models\Score;
+use App\Models\Subject;
 use App\Models\User;
 use App\Services\ClassService;
 use App\Traits\ApiResponseTrait;
@@ -66,8 +68,78 @@ class ClassController extends Controller
         }
     }
 
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
+        $subjectQuery = $request->query('subject');
+
+        if ($subjectQuery) {
+            $class = Classes::where('slug', $slug)
+                ->with(['teacher', 'academicYears', 'blocks', 'students', 'subjects'])
+                ->first();
+
+            if ($class === null) {
+                return $this->errorResponse(
+                    'Không tìm thấy lớp học',
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            $subject = Subject::where('slug', $subjectQuery)->first();
+
+            if ($subject === null) {
+                return $this->errorResponse(
+                    'Không tìm thấy môn học',
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            $score = Score::where('class_id', $class->id)
+                ->where('subject_id', $subject->id)
+                ->with('student')
+                ->get();
+
+            $data = [
+                'name' => $class->name,
+                'slug' => $class->slug,
+                'code' => $class->code,
+                'teacherName' => optional($class->teacher)->name,
+                'teacherImage' => optional($class->teacher)->image,
+                'username' => optional($class->teacher)->username,
+                'academicYearSlug' => $class->academicYears->pluck('slug')->first(),
+                'blockSlug' => $class->blocks->pluck('slug')->first(),
+                'numberOfStudents' => $class->students->count(),
+                'students' => $class->students->map(function ($student) use ($score) {
+                    return [
+                        'name' => $student->name,
+                        'username' => $student->username,
+                        'image' => $student->image,
+                        'gender' => $student->gender,
+                        'mouthPoints' => $score->map(function ($score) use ($student) {
+                            return $score->where('student_id', $student->id)->first()->detailed_scores['diem_mieng']['score'] ?? null;
+                        })->first(),
+                        'fifteenMinutesPoints' => $score->map(function ($score) use ($student) {
+                            return $score->where('student_id', $student->id)->first()->detailed_scores['diem_15_phut']['score'] ?? null;
+                        })->first(),
+                        'onePeriodPoints' => $score->map(function ($score) use ($student) {
+                            return $score->where('student_id', $student->id)->first()->detailed_scores['diem_mot_tiet']['score'] ?? null;
+                        })->first(),
+                        'midSemesterPoints' => $score->map(function ($score) use ($student) {
+                            return $score->where('student_id', $student->id)->first()->detailed_scores['diem_giua_ki']['score'] ?? null;
+                        })->first(),
+                        'endSemesterPoints' => $score->map(function ($score) use ($student) {
+                            return $score->where('student_id', $student->id)->first()->detailed_scores['diem_cuoi_ki']['score'] ?? null;
+                        })->first(),
+                    ];
+                }),
+            ];
+
+            return $this->successResponse(
+                $data,
+                'Lấy thông tin lớp học thành công',
+                Response::HTTP_OK
+            );
+        }
+
         $class = Classes::where('slug', $slug)
             ->with('teacher')
             ->first();
@@ -89,7 +161,7 @@ class ClassController extends Controller
             'academicYearSlug' => $class->academicYears->pluck('slug')->first(),
             'blockSlug' => $class->blocks->pluck('slug')->first(),
             'numberOfStudents' => $class->students->count(),
-            'students' => $class->students->map(function ($student){
+            'students' => $class->students->map(function ($student) {
                 return [
                     'name' => $student->name,
                     'username' => $student->username,
