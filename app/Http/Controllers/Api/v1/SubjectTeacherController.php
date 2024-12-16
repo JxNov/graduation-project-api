@@ -29,24 +29,40 @@ class SubjectTeacherController extends Controller
         $this->SubjectTeacherService = $SubjectTeacherService;
     }
     public function index()
-    {
-        try {
-            $subjects = DB::table('subject_teachers')->select('id', 'teacher_id', 'subject_id')->get();
+{
+    try {
+        
+        $teachers = User::with('subjects')->get();
 
-            if ($subjects->isEmpty()) {
-                return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
-            }
-
-            // Trả về dữ liệu qua SubjectTeacherCollection
-            return $this->successResponse(
-                new SubjectTeacherCollection($subjects),
-                'Lấy tất cả thông tin thành công',
-                Response::HTTP_OK
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        if ($teachers->isEmpty()) {
+            return $this->errorResponse('Không có dữ liệu', Response::HTTP_NOT_FOUND);
         }
+
+        
+        $teacher = $teachers->map(function ($teacher) {
+            return [
+                'teacherName' => $teacher->name,
+                'username' => $teacher->username, 
+                'subjects' => $teacher->subjects->map(function ($subject) {
+                    return [
+                        'subjectName' => $subject->name,
+                        'subjectSlug' => $subject->slug, 
+                    ];
+                }),
+            ];
+        });
+
+        // Trả về dữ liệu qua Resource
+        return $this->successResponse(
+            $teacher,
+            'Lấy tất cả thông tin thành công',
+            Response::HTTP_OK
+        );
+    } catch (\Exception $e) {
+        return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
     }
+}
+
 
 
 
