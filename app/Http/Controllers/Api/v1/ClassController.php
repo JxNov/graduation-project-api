@@ -79,8 +79,27 @@ class ClassController extends Controller
             );
         }
 
+        $data = [
+            'name' => $class->name,
+            'slug' => $class->slug,
+            'code' => $class->code,
+            'teacherName' => optional($class->teacher)->name,
+            'username' => optional($class->teacher)->username,
+            'academicYearSlug' => $class->academicYears->pluck('slug')->first(),
+            'blockSlug' => $class->blocks->pluck('slug')->first(),
+            'numberOfStudents' => $class->students->count(),
+            'students' => $class->students->map(function ($student){
+                return [
+                    'name' => $student->name,
+                    'username' => $student->username,
+                    'image' => $student->image,
+                    'gender' => $student->gender,
+                ];
+            })
+        ];
+
         return $this->successResponse(
-            new ClassResource($class),
+            $data,
             'Lấy thông tin lớp học thành công',
             Response::HTTP_OK
         );
