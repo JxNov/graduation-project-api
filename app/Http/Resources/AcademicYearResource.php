@@ -17,8 +17,14 @@ class AcademicYearResource extends JsonResource
       'slug' => $this->slug,
       'startDate' => Carbon::parse($this->start_date)->format('d/m/Y'),
       'endDate' => Carbon::parse($this->end_date)->format('d/m/Y'),
-      'generationId' => $this->generation_id,
-      'generationName' => optional($this->generation)->name
+      'generationName' => optional($this->generation)->name,
+      'generationSlug' => optional($this->generation)->slug,
+      'semesters' => $this->semesters->map(function ($semester) {
+        return [
+          'semesterName' => $semester->name,
+          'semesterSlug' => $semester->slug,
+        ];
+      })
     ];
   }
 }
