@@ -84,6 +84,7 @@ class ClassController extends Controller
             'slug' => $class->slug,
             'code' => $class->code,
             'teacherName' => optional($class->teacher)->name,
+            'teacherImage' => optional($class->teacher)->image,
             'username' => optional($class->teacher)->username,
             'academicYearSlug' => $class->academicYears->pluck('slug')->first(),
             'blockSlug' => $class->blocks->pluck('slug')->first(),
