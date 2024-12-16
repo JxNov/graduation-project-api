@@ -57,10 +57,10 @@ class MaterialService
             $data['subject_id'] = $subject->id;
             $data['teacher_id'] = $teacher->id;
 
-            $data['slug'] = Str::slug($subject->slug . '-' . $data['title']) . '-' . rand(1111,9999);
+            $data['slug'] = Str::slug($subject->slug . '-' . $data['title']) . '-' . rand(1111, 9999);
 
             if (isset($data['file_path'])) {
-                $fileName = $data['file_path']->getClientOriginalName();
+                $fileName = $class->name . ' - ' . ucfirst($data['title']) . ' - ' . $teacher->name;
                 $mimeType = $data['file_path']->getClientMimeType();
 
                 $response = $client->request('POST', 'https://www.googleapis.com/upload/drive/v3/files', [
@@ -141,7 +141,7 @@ class MaterialService
                     ]);
                 }
 
-                $fileName = $data['file_path']->getClientOriginalName();
+                $fileName = $class->name . ' - ' . ucfirst($data['title']) . ' - ' . $teacher->name;
                 $mimeType = $data['file_path']->getClientMimeType();
 
                 $response = $client->request('POST', 'https://www.googleapis.com/upload/drive/v3/files', [
@@ -181,7 +181,7 @@ class MaterialService
                 'file_path' => $data['file_path'] ?? $material->file_path,
                 'subject_id' => $subject->id,
                 'teacher_id' => $teacher->id,
-                'slug' => Str::slug($subject->slug . '-' . $data['title']),
+                'slug' => $material->slug,
             ]);
 
             $material->classes()->sync($class->id);
@@ -213,10 +213,10 @@ class MaterialService
             $data['subject_id'] = $subject->id;
             $data['teacher_id'] = $teacher->id;
 
-            $data['slug'] = Str::slug($subject->slug . '-' . $data['title']) . '-' . rand(1111,9999);
+            $data['slug'] = $subject->slug . '-' . $data['title'] . '-' . rand(1111, 9999);
 
             if (isset($data['file_path'])) {
-                $fileName = $data['file_path']->getClientOriginalName();
+                $fileName = $block->name . ' - ' . $subject->name . ' - ' . ucfirst($data['title']) . ' - ' . $teacher->name;
                 $mimeType = $data['file_path']->getClientMimeType();
 
                 $response = $client->request('POST', 'https://www.googleapis.com/upload/drive/v3/files', [
@@ -296,7 +296,7 @@ class MaterialService
                     ]);
                 }
 
-                $fileName = $data['file_path']->getClientOriginalName();
+                $fileName = $block->name . ' - ' . $subject->name . ' - ' . ucfirst($data['title']) . ' - ' . $teacher->name;
                 $mimeType = $data['file_path']->getClientMimeType();
 
                 $response = $client->request('POST', 'https://www.googleapis.com/upload/drive/v3/files', [
