@@ -109,26 +109,25 @@ class ClassController extends Controller
                 'blockSlug' => $class->blocks->pluck('slug')->first(),
                 'numberOfStudents' => $class->students->count(),
                 'students' => $class->students->map(function ($student) use ($score) {
+                    $studentScore = $score->where('student_id', $student->id)->first();
+                    $mouthPoints = $studentScore->detailed_scores['diem_mieng']['score'] ?? null;
+                    $fifteenMinutesPoints = $studentScore->detailed_scores['diem_15_phut']['score'] ?? null;
+                    $onePeriodPoints = $studentScore->detailed_scores['diem_mot_tiet']['score'] ?? null;
+                    $midSemesterPoints = $studentScore->detailed_scores['diem_giua_ki']['score'] ?? null;
+                    $endSemesterPoints = $studentScore->detailed_scores['diem_cuoi_ki']['score'] ?? null;
+                    $averageScore = $studentScore->average_score ?? null;
+
                     return [
                         'name' => $student->name,
                         'username' => $student->username,
                         'image' => $student->image,
                         'gender' => $student->gender,
-                        'mouthPoints' => $score->map(function ($score) use ($student) {
-                            return $score->where('student_id', $student->id)->first()->detailed_scores['diem_mieng']['score'] ?? null;
-                        })->first(),
-                        'fifteenMinutesPoints' => $score->map(function ($score) use ($student) {
-                            return $score->where('student_id', $student->id)->first()->detailed_scores['diem_15_phut']['score'] ?? null;
-                        })->first(),
-                        'onePeriodPoints' => $score->map(function ($score) use ($student) {
-                            return $score->where('student_id', $student->id)->first()->detailed_scores['diem_mot_tiet']['score'] ?? null;
-                        })->first(),
-                        'midSemesterPoints' => $score->map(function ($score) use ($student) {
-                            return $score->where('student_id', $student->id)->first()->detailed_scores['diem_giua_ki']['score'] ?? null;
-                        })->first(),
-                        'endSemesterPoints' => $score->map(function ($score) use ($student) {
-                            return $score->where('student_id', $student->id)->first()->detailed_scores['diem_cuoi_ki']['score'] ?? null;
-                        })->first(),
+                        'mouthPoints' => $mouthPoints,
+                        'fifteenMinutesPoints' => $fifteenMinutesPoints,
+                        'onePeriodPoints' => $onePeriodPoints,
+                        'midSemesterPoints' => $midSemesterPoints,
+                        'endSemesterPoints' => $endSemesterPoints,
+                        'averageScore' => $averageScore,
                     ];
                 }),
             ];
