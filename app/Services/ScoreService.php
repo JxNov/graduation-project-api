@@ -51,7 +51,20 @@ class ScoreService
                 ]);
             }
 
-            return $score;
+            return [
+                'subjectSlug' => $data['subject_slug'] ?? null,
+                'semesterSlug' => $data['semester_slug'] ?? null,
+                'name' => $student->name,
+                'username' => $student->username,
+                'image' => $student->image,
+                'gender' => $student->gender,
+                'mouthPoints' => $score->detailed_scores['diem_mieng']['score'] ?? null,
+                'fifteenMinutesPoints' => $score->detailed_scores['diem_15_phut']['score'] ?? null,
+                'onePeriodPoints' => $score->detailed_scores['diem_mot_tiet']['score'] ?? null,
+                'midSemesterPoints' => $score->detailed_scores['diem_giua_ki']['score'] ?? null,
+                'endSemesterPoints' => $score->detailed_scores['diem_cuoi_ki']['score'] ?? null,
+                'averageScore' => $score->average_score ?? null
+            ];
         });
     }
 
