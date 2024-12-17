@@ -438,26 +438,37 @@ class StatisticService
 
         foreach ($students as $student) {
             $semesterAverages = [];
-            $semesterPerformance = []; // Học lực của từng kỳ
+            $semesterPerformance = [];
             $hasValidScoresForYear = true;
-
-            foreach ($semesters as $semester) {
+        
+            $semesterScore1 = null;
+            $semesterPerformance1 = null;
+            $semesterScore2 = null;
+            $semesterPerformance2 = null;
+        
+            foreach ($semesters as $key => $semester) {
                 $scores = DB::table('subject_scores')
                     ->where('student_id', $student->id)
                     ->where('class_id', $class->id)
                     ->where('semester_id', $semester->id)
                     ->pluck('average_score', 'subject_id');
-
-                // Kiểm tra học sinh có đủ điểm của tất cả các môn thuộc lớp không
+        
                 $allSubjectsHaveScores = $subjects->pluck('id')->diff($scores->keys())->isEmpty();
-
+        
                 if ($allSubjectsHaveScores) {
-                    // Tính điểm trung bình kỳ học
                     $averageScore = round(array_sum($scores->toArray()) / count($scores), 2);
                     $semesterAverages[$semester->id] = $averageScore;
                     $semesterPerformance[$semester->id] = $this->determinePerformanceLevel($averageScore);
-
-                    // Lưu điểm và học lực kỳ vào bảng final_scores
+        
+                    // Gán riêng cho kỳ 1 và kỳ 2
+                    if ($key === 0) {
+                        $semesterScore1 = $averageScore;
+                        $semesterPerformance1 = $semesterPerformance[$semester->id];
+                    } elseif ($key === 1) {
+                        $semesterScore2 = $averageScore;
+                        $semesterPerformance2 = $semesterPerformance[$semester->id];
+                    }
+        
                     DB::table('final_scores')->updateOrInsert(
                         [
                             'student_id' => $student->id,
@@ -473,25 +484,22 @@ class StatisticService
                         ]
                     );
                 } else {
-                    $semesterAverages[$semester->name] = null;
-                    $semesterPerformance[$semester->name] = "Chưa đủ điểm để xét học lực";
-                    $hasValidScoresForYear = false; // không đủ điểm cho năm học
+                    $hasValidScoresForYear = false;
                 }
             }
-
-            // Tính điểm tổng kết năm học nếu đủ điểm cả hai kỳ
+        
+            // Tính điểm tổng kết năm học
             if ($hasValidScoresForYear) {
                 $validAverages = array_filter($semesterAverages, fn($score) => $score !== null);
                 $finalScoreYear = !empty($validAverages) ? round(array_sum($validAverages) / count($validAverages), 2) : 0;
                 $finalPerformance = $this->determinePerformanceLevel($finalScoreYear);
-
-                // Lưu điểm tổng kết năm vào bảng final_scores
+        
                 DB::table('final_scores')->updateOrInsert(
                     [
                         'student_id' => $student->id,
                         'academic_year_id' => $academicYear->id,
                         'class_id' => $class->id,
-                        'semester_id' => null, // tổng kết cuối năm sẽ không có semester
+                        'semester_id' => null,
                     ],
                     [
                         'average_score' => $finalScoreYear,
@@ -504,20 +512,22 @@ class StatisticService
                 $finalScoreYear = null;
                 $finalPerformance = "Chưa đủ điểm để xét học lực";
             }
-
+        
+            // Thêm vào kết quả cuối cùng với tách semesterScore1 và semesterScore2
             $finalScores[] = [
                 'studentName' => $student->name,
                 'username' => $student->username,
-                'semesterScores' => $semesterAverages,
-                'semesterPerformance' => $semesterPerformance,
-                'yearScore' => $finalScoreYear,
-                'yearPerformance' => $finalPerformance,
+                'semesterScore1' => $semesterScore1,
+                'semesterPerformance1' => $semesterPerformance1,
+                'semesterScore2' => $semesterScore2,
+                'semesterPerformance2' => $semesterPerformance2,
+                'academicYearScore' => $finalScoreYear,
+                'academicYearPerformance' => $finalPerformance,
             ];
         }
+        
 
         return (object)[
-            'teacherName' => $teacher->name,
-            'username' => $teacher->username,
             'class' => $class->name,
             'academicYear' => $academicYear->name,
             'finalScores' => $finalScores,
