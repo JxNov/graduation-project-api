@@ -128,7 +128,7 @@ class ScoreController extends Controller
             $checkAdmin = Role::where('slug', 'admin')->first();
 
             if (!$admin || !$admin->roles->contains($checkAdmin)) {
-                throw new Exception('Admin chưa đăng nhập hoặc không phải admin');
+                return $this->errorResponse('', Response::HTTP_UNAUTHORIZED);
             }
 
             $academic_year = AcademicYear::where('slug', $academic_year_query)->first();
@@ -197,7 +197,7 @@ class ScoreController extends Controller
             $checkTeacher = Role::where('slug', 'teacher')->first();
 
             if (!$teacher || !$teacher->roles->contains($checkTeacher)) {
-                throw new Exception('Giáo viên chưa đăng nhập hoặc không phải giáo viên');
+                return $this->errorResponse('', Response::HTTP_UNAUTHORIZED);
             }
 
             $academic_year = AcademicYear::where('slug', $academic_year_query)->first();
@@ -313,7 +313,7 @@ class ScoreController extends Controller
             $checkStudent = Role::where('slug', 'student')->first();
 
             if (!$student || !$student->roles->contains($checkStudent)) {
-                throw new Exception('Học sinh chưa đăng nhập hoặc không phải học sinh');
+                return $this->errorResponse('', Response::HTTP_UNAUTHORIZED);
             }
 
             $class = Classes::where('slug', $class_query)->first();
