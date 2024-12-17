@@ -138,6 +138,7 @@ Route::prefix('classes')
         Route::get('/trash', [ClassController::class, 'trash']);
         Route::get('/{slug}', [ClassController::class, 'show']);
         Route::get('/teacher/{username}', [ClassController::class, 'getClassOfTeacher']);
+        Route::get('/student/{username}', [ClassController::class, 'getClassOfStudent']);
         Route::patch('/{slug}', [ClassController::class, 'update']);
         Route::delete('/{slug}', [ClassController::class, 'destroy']);
         Route::post('/assign-class/{slug}', [ClassController::class, 'assignClassToTeacher']);
