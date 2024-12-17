@@ -12,37 +12,49 @@ use Illuminate\Support\Facades\DB;
 
 class ScoreService
 {
-    public function createNewScore($studentName, $subjectSlug, $classSlug, $semesterSlug, array $detailedScores)
+    public function saveOrUpdateScore(array $data)
     {
-        // Lấy user_id dựa trên username
-        $student = User::where('username', $studentName)->firstOrFail();
-        $studentId = $student->id;
+        return DB::transaction(function () use ($data) {
+            $student = User::where('username', $data['student_username'])->firstOrFail();
+            $studentId = $student->id;
 
-        // Lấy subject_id dựa trên subject_slug
-        $subject = Subject::where('slug', $subjectSlug)->firstOrFail();
-        $subjectId = $subject->id;
+            $subject = Subject::where('slug', $data['subject_slug'])->firstOrFail();
+            $subjectId = $subject->id;
 
-        //Lấy class_id dựa trên class_slug
-        $class = Classes::where('slug', $classSlug)->firstOrFail();
-        $classId = $class->id;
+            $class = Classes::where('slug', $data['class_slug'])->firstOrFail();
+            $classId = $class->id;
 
-        // Lấy semester_id dựa trên semester_slug
-        $semester = Semester::where('slug', $semesterSlug)->firstOrFail();
-        $semesterId = $semester->id;
+            $semester = Semester::where('slug', $data['semester_slug'])->firstOrFail();
+            $semesterId = $semester->id;
 
-        // Tính toán điểm trung bình từ detailed_scores (tính trung bình từ mảng điểm)
-        $averageScore = $this->calculateAverageScore($detailedScores);
+            $score = Score::where('student_id', $studentId)
+                ->where('subject_id', $subjectId)
+                ->where('class_id', $classId)
+                ->where('semester_id', $semesterId)
+                ->first();
 
-        // Tạo điểm mới
-        return Score::create([
-            'student_id' => $studentId,
-            'subject_id' => $subjectId,
-            'class_id' => $classId,
-            'semester_id' => $semesterId,
-            'detailed_scores' => $detailedScores,
-            'average_score' => $averageScore,
-        ]);
+            $averageScore = $this->calculateAverageScore($data['detailed_scores']);
+
+            if ($score) {
+                $score->update([
+                    'detailed_scores' => $data['detailed_scores'],
+                    'average_score' => $averageScore,
+                ]);
+            } else {
+                $score = Score::create([
+                    'student_id' => $studentId,
+                    'subject_id' => $subjectId,
+                    'class_id' => $classId,
+                    'semester_id' => $semesterId,
+                    'detailed_scores' => $data['detailed_scores'],
+                    'average_score' => $averageScore,
+                ]);
+            }
+
+            return $score;
+        });
     }
+
 
     //Lấy điểm theo username -> subject_slug -> class_slug -> semester_slug
     public function getScoreByStudentSubjectClassSemester($student_name, $subject_slug, $class_slug, $semester_slug)
@@ -84,23 +96,23 @@ class ScoreService
     }
 
 
-    public function updateScore($id, array $data)
-    {
-        // Lấy bản ghi Score dựa trên ID
-        $score = Score::findOrFail($id);
+    // public function updateScore($id, array $data)
+    // {
+    //     // Lấy bản ghi Score dựa trên ID
+    //     $score = Score::findOrFail($id);
 
 
-        // Cập nhật các trường trong Score model
-        $score->update([
-            'detailed_scores' => $data['detailed_scores'],
-        ]);
+    //     // Cập nhật các trường trong Score model
+    //     $score->update([
+    //         'detailed_scores' => $data['detailed_scores'],
+    //     ]);
 
-        // Cập nhật điểm trung bình nếu cần thiết
-        $score->average_score = $this->calculateAverageScore($data['detailed_scores']);
-        $score->save();
+    //     // Cập nhật điểm trung bình nếu cần thiết
+    //     $score->average_score = $this->calculateAverageScore($data['detailed_scores']);
+    //     $score->save();
 
-        return $score;
-    }
+    //     return $score;
+    // }
 
     public function deleteScore($id)
     {

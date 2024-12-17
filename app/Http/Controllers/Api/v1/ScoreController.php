@@ -46,32 +46,20 @@ class ScoreController extends Controller
     public function store(ScoreRequest $request)
     {
         try {
-            // Lấy dữ liệu đã được xác thực từ ScoreRequest
             $data = $request->validated();
 
-            // Gọi hàm createNewScore từ ScoreService và truyền các tham số cần thiết
-            $score = $this->scoreService->createNewScore(
-                $data['student_name'],
-                $data['subject_slug'],
-                $data['class_slug'],
-                $data['semester_slug'],
-                $data['detailed_scores']
-            );
+            $score = $this->scoreService->saveOrUpdateScore($data);
 
-            // Trả về phản hồi thành công
             return $this->successResponse(
                 new ScoreResource($score),
-                'Đã thêm điểm mới thành công',
+                'Lưu điểm cho học sinh thành công',
                 Response::HTTP_CREATED
             );
         } catch (Exception $e) {
-            // Trả về phản hồi khi có lỗi xảy ra
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
 
-
-    //Show dựa trên id của bảng subject_score
     public function show($id)
     {
         $score = Score::find($id);
@@ -92,7 +80,7 @@ class ScoreController extends Controller
     {
         try {
             // Gọi hàm từ ScoreService
-            $score = $this->scoreService->getScoreByStudentSubjectClassSemester($student_name, $subject_slug,  $class_slug, $semester_slug);
+            $score = $this->scoreService->getScoreByStudentSubjectClassSemester($student_name, $subject_slug, $class_slug, $semester_slug);
 
             return $this->successResponse(
                 new ScoreResource($score),
@@ -105,20 +93,20 @@ class ScoreController extends Controller
     }
 
 
-    public function update(ScoreRequest $request, $id)
-    {
-        try {
-            $data = $request->validated();
+    // public function update(ScoreRequest $request, $id)
+    // {
+    //     try {
+    //         $data = $request->validated();
 
-            $score = $this->scoreService->updateScore($id, $data);
+    //         $score = $this->scoreService->updateScore($id, $data);
 
-            return $this->successResponse(
-                new ScoreResource($score),
-                'Cập nhật điểm thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
+    //         return $this->successResponse(
+    //             new ScoreResource($score),
+    //             'Cập nhật điểm thành công',
+    //             Response::HTTP_OK
+    //         );
+    //     } catch (Exception $e) {
+    //         return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+    //     }
+    // }
 }

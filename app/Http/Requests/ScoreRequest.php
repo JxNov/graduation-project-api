@@ -35,7 +35,7 @@ class ScoreRequest extends FormRequest
     public function rulesForCreate(): array
     {
         return [
-            'student_name' => 'required|exists:users,username',
+            'student_username' => 'required|exists:users,username',
             'subject_slug' => 'required|exists:subjects,slug',
             'class_slug' => 'required|exists:classes,slug',
             'semester_slug' => 'required|exists:semesters,slug',
