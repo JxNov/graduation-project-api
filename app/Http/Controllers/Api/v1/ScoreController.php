@@ -51,7 +51,7 @@ class ScoreController extends Controller
             $score = $this->scoreService->saveOrUpdateScore($data);
 
             return $this->successResponse(
-                new ScoreResource($score),
+                $score,
                 'Lưu điểm cho học sinh thành công',
                 Response::HTTP_CREATED
             );
