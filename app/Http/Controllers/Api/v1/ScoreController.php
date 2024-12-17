@@ -137,52 +137,27 @@ class ScoreController extends Controller
                 ->get();
 
             $subjects = Subject::all();
-            $students = $class->students->map(function ($student) use ($scores, $subjects) {
-                $studentScores = $scores->where('student_id', $student->id);
+            $academicYear = AcademicYear::find($semester->academic_year_id);
 
-                if ($studentScores->isEmpty()) {
-                    return $subjects->map(function ($subject) use ($student) {
-                        return [
-                            'studentName' => $student->name,
-                            'studentUsername' => $student->username,
-                            'studentImage' => $student->image,
-                            'subjectName' => $subject->name,
-                            'academicYearName' => null,
-                            'semesterName' => null,
-                            'className' => null,
-                            'mouthPoints' => null,
-                            'fifteenMinutesPoints' => null,
-                            'onePeriodPoints' => null,
-                            'midSemesterPoints' => null,
-                            'endSemesterPoints' => null,
-                            'averageScore' => null,
-                        ];
-                    });
-                }
+            $students = $class->students->map(function ($student) use ($scores, $subjects, $semester, $class, $academicYear) {
+                return $subjects->map(function ($subject) use ($student, $scores, $semester, $class, $academicYear) {
+                    $score = $scores->where('student_id', $student->id)->where('subject_id', $subject->id)->first();
 
-                return $studentScores->map(function ($score) use ($student, $subjects) {
-                    $subject = Subject::find($score->subject_id);
-                    $semester = Semester::find($score->semester_id);
-                    $academicYear = AcademicYear::find($semester->academic_year_id);
-                    $class = Classes::find($score->class_id);
-
-                    return $subjects->map(function ($subject) use ($student, $score, $academicYear, $semester, $class) {
-                        return [
-                            'studentName' => $student->name,
-                            'studentUsername' => $student->username,
-                            'studentImage' => $student->image,
-                            'subjectName' => $subject->name,
-                            'academicYearName' => $academicYear->name,
-                            'semesterName' => $semester->name,
-                            'className' => $class->name,
-                            'mouthPoints' => $score->detailed_scores['diem_mieng']['score'] ?? null,
-                            'fifteenMinutesPoints' => $score->detailed_scores['diem_15_phut']['score'] ?? null,
-                            'onePeriodPoints' => $score->detailed_scores['diem_mot_tiet']['score'] ?? null,
-                            'midSemesterPoints' => $score->detailed_scores['diem_giua_ki']['score'] ?? null,
-                            'endSemesterPoints' => $score->detailed_scores['diem_cuoi_ki']['score'] ?? null,
-                            'averageScore' => $score->average_score,
-                        ];
-                    });
+                    return [
+                        'studentName' => $student->name,
+                        'studentUsername' => $student->username,
+                        'studentImage' => $student->image,
+                        'subjectName' => $subject->name,
+                        'academicYearName' => $academicYear->name,
+                        'semesterName' => $semester->name,
+                        'className' => $class->name,
+                        'mouthPoints' => $score->detailed_scores['diem_mieng']['score'] ?? null,
+                        'fifteenMinutesPoints' => $score->detailed_scores['diem_15_phut']['score'] ?? null,
+                        'onePeriodPoints' => $score->detailed_scores['diem_mot_tiet']['score'] ?? null,
+                        'midSemesterPoints' => $score->detailed_scores['diem_giua_ki']['score'] ?? null,
+                        'endSemesterPoints' => $score->detailed_scores['diem_cuoi_ki']['score'] ?? null,
+                        'averageScore' => $score->average_score ?? null,
+                    ];
                 });
             })->flatten(1);
 
@@ -206,12 +181,8 @@ class ScoreController extends Controller
 
             $checkStudent = Role::where('slug', 'student')->first();
 
-            if (!$student->roles->contains($checkStudent)) {
-                throw new Exception('Học sinh chưa đăng nhập');
-            }
-
-            if (!$student) {
-                throw new Exception('Học sinh không tồn tại');
+            if (!$student || !$student->roles->contains($checkStudent)) {
+                throw new Exception('Học sinh chưa đăng nhập hoặc không phải học sinh');
             }
 
             $class = Classes::where('slug', $class_query)->first();
@@ -230,15 +201,17 @@ class ScoreController extends Controller
                 ->get();
 
             $subjects = Subject::all();
-            $subjects = $subjects->map(function ($subject) use ($scores) {
+            $academicYear = AcademicYear::find($semester->academic_year_id);
+
+            $subjects = $subjects->map(function ($subject) use ($semester, $academicYear, $scores, $class) {
                 $score = $scores->where('subject_id', $subject->id)->first();
 
                 if (!$score) {
                     return [
                         'subjectName' => $subject->name,
-                        'academicYearName' => null,
-                        'semesterName' => null,
-                        'className' => null,
+                        'academicYearName' => $academicYear->name,
+                        'semesterName' => $semester->name,
+                        'className' => $class->name,
                         'mouthPoints' => null,
                         'fifteenMinutesPoints' => null,
                         'onePeriodPoints' => null,
@@ -247,10 +220,6 @@ class ScoreController extends Controller
                         'averageScore' => null,
                     ];
                 }
-
-                $semester = Semester::find($score->semester_id);
-                $academicYear = AcademicYear::find($semester->academic_year_id);
-                $class = Classes::find($score->class_id);
 
                 return [
                     'subjectName' => $subject->name,
@@ -262,7 +231,7 @@ class ScoreController extends Controller
                     'onePeriodPoints' => $score->detailed_scores['diem_mot_tiet']['score'] ?? null,
                     'midSemesterPoints' => $score->detailed_scores['diem_giua_ki']['score'] ?? null,
                     'endSemesterPoints' => $score->detailed_scores['diem_cuoi_ki']['score'] ?? null,
-                    'averageScore' => $score->average_score,
+                    'averageScore' => $score->average_score ?? null,
                 ];
             });
 
