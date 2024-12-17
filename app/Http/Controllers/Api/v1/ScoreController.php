@@ -8,6 +8,7 @@ use App\Http\Resources\ScoreCollection;
 use App\Http\Resources\ScoreResource;
 use App\Models\AcademicYear;
 use App\Models\Classes;
+use App\Models\Role;
 use App\Models\Score;
 use App\Models\Subject;
 use App\Models\User;
@@ -200,8 +201,14 @@ class ScoreController extends Controller
 
             $student = Auth::user();
 
-            if (!$student) {
+            $checkStudent = Role::where('slug', 'student')->first();
+
+            if (!$student->roles->contains($checkStudent)) {
                 throw new Exception('Học sinh chưa đăng nhập');
+            }
+
+            if (!$student) {
+                throw new Exception('Học sinh không tồn tại');
             }
 
             $class = Classes::where('slug', $class_query)->first();
