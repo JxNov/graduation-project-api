@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,4 +18,12 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')
     ->group(function () {
         require base_path('routes/v1/index.php');
+    });
+
+Route::prefix('auth')
+    ->group(function () {
+        Route::post('login', [AuthController::class, 'login']);
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('refresh-token', [AuthController::class, 'refresh']);
+        Route::get('profile', [AuthController::class, 'profile']);
     });
