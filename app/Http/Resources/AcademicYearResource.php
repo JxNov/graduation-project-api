@@ -24,6 +24,12 @@ class AcademicYearResource extends JsonResource
           'semesterName' => $semester->name,
           'semesterSlug' => $semester->slug,
         ];
+      }),
+      'classes' => $this->classes->map(function ($class) {
+        return [
+          'className' => $class->name,
+          'classSlug' => $class->slug,
+        ];
       })
     ];
   }
