@@ -289,8 +289,8 @@ Route::prefix('scores')
         Route::get('/', [ScoreController::class, 'index']);
         Route::get('/{student_name}/{subject_slug}/{class_slug}/{semester_slug}', [ScoreController::class, 'getScoreByStudentSubjectSemester']); //Lấy theo người dùng => môn học => lớp học => kì học
         Route::post('/', [ScoreController::class, 'store']);
-        Route::get('/{id}', [ScoreController::class, 'show']);
-        Route::patch('/{id}', [ScoreController::class, 'update']);
+        // Route::get('/{id}', [ScoreController::class, 'show']);
+        // Route::patch('/{id}', [ScoreController::class, 'update']);
         //        Route::delete('/{id}', [ScoreController::class, 'destroy']);
         Route::get('/list/{class_slug}', [ScoreController::class, 'calculateAndSaveFinalScores']);
     });
