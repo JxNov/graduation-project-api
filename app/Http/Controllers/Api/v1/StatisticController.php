@@ -10,6 +10,9 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Resources\ScoreResource;
+use App\Models\Classes;
+use App\Models\Generation;
+use App\Models\User;
 
 class StatisticController extends Controller
 {
@@ -116,10 +119,10 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function showStudentScoreSemester($classSlug,$semesterSlug,$yearSlug)
+    public function showStudentScoreSemester($classSlug, $semesterSlug, $yearSlug)
     {
         try {
-            $student = $this->statisticService->showStudentScoreSemester($classSlug,$semesterSlug, $yearSlug);
+            $student = $this->statisticService->showStudentScoreSemester($classSlug, $semesterSlug, $yearSlug);
 
             return $this->successResponse(
                 $student,
@@ -130,10 +133,10 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function showStudentScoreSemesterClass($classSlug,$semesterSlug,$yearSlug)
+    public function showStudentScoreSemesterClass($classSlug, $semesterSlug, $yearSlug)
     {
         try {
-            $student = $this->statisticService->showStudentScoreSemesterClass($classSlug,$semesterSlug, $yearSlug);
+            $student = $this->statisticService->showStudentScoreSemesterClass($classSlug, $semesterSlug, $yearSlug);
 
             return $this->successResponse(
                 $student,
@@ -144,7 +147,7 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function calculateFinalScoreYearClass($classSlug,$yearSlug)
+    public function calculateFinalScoreYearClass($classSlug, $yearSlug)
     {
         try {
             $student = $this->statisticService->calculateFinalScoreYearClass($classSlug, $yearSlug);
@@ -158,5 +161,72 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-
+    public function countStudentAll()
+    {
+        try {
+            $students = User::whereHas('roles', function ($query) {
+                $query->where('slug', 'student');
+            })->whereNull('deleted_at')->count();
+            $count = [
+                'numberStudent' => $students
+            ];
+            return $this->successResponse(
+                $count,
+                'Thống kê số học sinh toàn trường thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+    public function countTeacherAll()
+    {
+        try {
+            $teachers = User::whereHas('roles', function ($query) {
+                $query->where('slug', 'teacher');
+            })->whereNull('deleted_at')->count();
+            $count = [
+                'numberTeacher' => $teachers
+            ];
+            return $this->successResponse(
+                $count,
+                'Thống kê số học sinh toàn trường thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+    public function countGenerationAll()
+    {
+        try {
+            $generation = Generation::count();
+            $count = [
+                'numberGeneration' => $generation
+            ];
+            return $this->successResponse(
+                $count,
+                'Thống kê số khoá học thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+    public function countClassAll()
+    {
+        try {
+            $classes = Classes::count();
+            $count = [
+                'numberClasses' => $classes
+            ];
+            return $this->successResponse(
+                $count,
+                'Thống kê số lớp học thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
 }

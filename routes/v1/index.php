@@ -315,6 +315,10 @@ Route::prefix('classrooms')
 //Thống kê
 Route::prefix('statistic')
     ->group(function () {
+        Route::get('/student', [StatisticController::class, 'countStudentAll']);
+        Route::get('/teacher', [StatisticController::class, 'countTeacherAll']);
+        Route::get('/generation', [StatisticController::class, 'countGenerationAll']);
+        Route::get('/classes', [StatisticController::class, 'countClassAll']);
         Route::get('/list/{block_slug}', [StatisticController::class, 'StudentClassInBlock']);
         Route::get('/gender/{block_slug}', [StatisticController::class, 'getGenderRatioInBlock']);
         Route::get('/final/{classSlug}/{yearSlug}', [StatisticController::class, 'calculateFinalScoreYearClass']); // điểm tổng kết của cả lớp theo năm, chỉ lưu vào final_score khi có kết quả của năm
