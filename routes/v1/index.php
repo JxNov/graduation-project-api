@@ -293,6 +293,8 @@ Route::prefix('scores')
         // Route::patch('/{id}', [ScoreController::class, 'update']);
         //        Route::delete('/{id}', [ScoreController::class, 'destroy']);
         Route::get('/list/{class_slug}', [ScoreController::class, 'calculateAndSaveFinalScores']);
+        Route::get('/classes', [ScoreController::class, 'getScoreByClassAcademicYearSemester']);
+        Route::get('/student', [ScoreController::class, 'getScoreByStudent']);
     });
 
 // Classroom
