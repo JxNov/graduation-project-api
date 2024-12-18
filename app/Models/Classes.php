@@ -159,6 +159,10 @@ class Classes extends Model
             foreach ($class->schedules as $schedule) {
                 $schedule->delete();
             }
+
+            foreach ($class->finalScores as $finalScore) {
+                $finalScore->delete();
+            }
         });
 
         static::restoring(function ($class) {
@@ -221,6 +225,10 @@ class Classes extends Model
 
             foreach ($class->schedules()->withTrashed()->get() as $schedule) {
                 $schedule->restore();
+            }
+
+            foreach ($class->finalScores as $finalScore) {
+                $finalScore->restore();
             }
         });
     }
