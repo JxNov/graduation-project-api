@@ -47,9 +47,9 @@ class AttendanceController extends Controller
 
                 if ($attendance) {
                     $totalStudents = $class->students->count();
-                    $attendedStudents = $attendance->attendanceDetails
-                        ->where('status', '!=', AttendanceDetail::_STATUS['Absent'])
-                        ->count();
+
+                    $attendedStudentsIds = $attendance->attendanceDetails->pluck('student_id')->toArray();
+                    $attendedStudents = count($attendedStudentsIds);
 
                     return [
                         'id' => $attendance->id,

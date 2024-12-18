@@ -100,6 +100,13 @@ class AttendanceService
                         'status' => $studentData['status'],
                         'reason' => $studentData['reason'] ?? null,
                     ]);
+                } else {
+                    $attendance->attendanceDetails()->updateOrCreate([
+                        'student_id' => $student->id,
+                    ], [
+                        'status' => $studentData['status'],
+                        'reason' => $studentData['reason'] ?? null,
+                    ]);
                 }
             }
 
