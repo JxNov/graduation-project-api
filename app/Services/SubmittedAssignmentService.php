@@ -51,6 +51,7 @@ class SubmittedAssignmentService
 
             // Kiểm tra xem sinh viên có thuộc lớp của bài tập hay không
             $classId = $assignment->class_id; // Giả định rằng Assignment có `class_id`
+            $class = Classes::where('id', $classId)->first();
             $isStudentInClass = DB::table('class_students')
                 ->where('class_id', $classId)
                 ->where('student_id', $student->id)
@@ -73,7 +74,7 @@ class SubmittedAssignmentService
                 $client = new \GuzzleHttp\Client();
 
                 // Tạo tên ngẫu nhiên cho file trước khi upload
-                $fileName = 'submitted_assignment/' . Str::random(9) . $data['file_path']->getClientOriginalName();
+                $fileName = $class->name . ' - ' . $assignment->title . ' - ' . $student->name;
                 $mimeType = $data['file_path']->getClientMimeType();
 
                 // Upload file lên Google Drive

@@ -166,6 +166,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Classes::class, 'class_teachers', 'teacher_id', 'class_id');
     }
+
     public function subjectScores()
     {
         return $this->hasMany(Score::class, 'student_id');
@@ -201,6 +202,16 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(SubmittedAssignment::class, 'student_id');
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'user_id');
+    }
+
+    public function materials()
+    {
+        return $this->hasMany(Material::class, 'teacher_id');
+    }
+
     protected static function booted()
     {
         static::deleting(function ($user) {
@@ -227,6 +238,10 @@ class User extends Authenticatable implements JWTSubject
                 $chatBotSession->delete();
             }
 
+            foreach ($user->comments as $comment) {
+                $comment->delete();
+            }
+
             if ($user->isStudent()) {
                 $user->generations()->updateExistingPivot($user->generations->pluck('id'), ['deleted_at' => now()]);
                 $user->conversations()->updateExistingPivot($user->conversations->pluck('id'), ['deleted_at' => now()]);
@@ -241,6 +256,55 @@ class User extends Authenticatable implements JWTSubject
 
                 foreach ($user->finalScores as $finalScore) {
                     $finalScore->delete();
+                }
+            }
+
+            if ($user->isTeacher()) {
+                $user->teachingClasses()->updateExistingPivot($user->teachingClasses->pluck('id'), ['deleted_at' => now()]);
+                $user->subjects()->updateExistingPivot($user->subjects->pluck('id'), ['deleted_at' => now()]);
+
+                $class = Classes::where('teacher_id', $user->id)->latest('id')->first();
+
+                if ($class) {
+                    $academicYear = $class->academicYears->first();
+
+                    $teachers = User::whereHas('roles', function ($role) {
+                        $role->where('slug', 'like', 'teacher');
+                    })->get();
+
+                    foreach ($teachers as $teacher) {
+
+                        $homeRoomTeacher = Classes::where('teacher_id', $teacher->id)
+                            ->whereHas('academicYears', function ($query) use ($academicYear) {
+                                $query->where('academic_years.id', $academicYear->id);
+                            })
+                            ->first();
+
+                        if (!$homeRoomTeacher) {
+                            $class->teacher_id = $teacher->id;
+                            $class->save();
+                            break;
+                        }
+
+                        $chedules = Schedule::where('teacher_id', $user->id)->get();
+
+                        foreach ($chedules as $schedule) {
+                            $schedule->teacher_id = $teacher->id;
+                            $schedule->save();
+                        }
+                    }
+                }
+
+                foreach ($user->articles as $article) {
+                    foreach ($article->comments as $comment) {
+                        $comment->delete();
+                    }
+
+                    $article->delete();
+                }
+
+                foreach ($user->materials as $material) {
+                    $material->delete();
                 }
             }
         });
@@ -265,6 +329,10 @@ class User extends Authenticatable implements JWTSubject
                 $chatBotSession->restore();
             }
 
+            foreach ($user->comments()->withTrashed()->get() as $comment) {
+                $comment->restore();
+            }
+
             if ($user->isStudent()) {
                 $userGeneration = $user->generations()->withTrashed()->get();
                 if ($userGeneration->isNotEmpty()) {
@@ -286,6 +354,30 @@ class User extends Authenticatable implements JWTSubject
 
                 foreach ($user->finalScores()->withTrashed()->get() as $finalScore) {
                     $finalScore->restore();
+                }
+            }
+
+            if ($user->isTeacher()) {
+                $teachingClasses = $user->teachingClasses()->withTrashed()->get();
+                if ($teachingClasses->isNotEmpty()) {
+                    $user->teachingClasses()->updateExistingPivot($teachingClasses->pluck('id'), ['deleted_at' => null]);
+                }
+
+                $subjects = $user->subjects()->withTrashed()->get();
+                if ($subjects->isNotEmpty()) {
+                    $user->subjects()->updateExistingPivot($subjects->pluck('id'), ['deleted_at' => null]);
+                }
+
+                foreach ($user->articles()->withTrashed()->get() as $article) {
+                    foreach ($article->comments()->withTrashed()->get() as $comment) {
+                        $comment->restore();
+                    }
+
+                    $article->restore();
+                }
+
+                foreach ($user->materials()->withTrashed()->get() as $material) {
+                    $material->restore();
                 }
             }
         });
