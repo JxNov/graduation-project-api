@@ -21,8 +21,6 @@ return new class extends Migration
             
             $table->timestamps();
             $table->softDeletes();
-
-            $table->unique(['start_date', 'end_date'], 'academic_years_unique');
         });
     }
 

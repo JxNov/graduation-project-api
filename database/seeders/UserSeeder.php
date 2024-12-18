@@ -108,7 +108,7 @@ class UserSeeder extends Seeder
             }
 
             if ($user->username === 'doannvps33201' || $user->username === 'kiendmps32981' || $user->username === 'dungnmps30947' || $user->username === 'hieuntps31062') {
-                $user->roles()->attach(3);
+                $user->roles()->attach(1);
             }
         }
     }
