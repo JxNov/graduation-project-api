@@ -35,6 +35,11 @@ class Classes extends Model
         return $this->belongsToMany(User::class, 'class_teachers', 'class_id', 'teacher_id');
     }
 
+    public function students(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'class_students', 'class_id', 'student_id');
+    }
+
     public function academicYears(): BelongsToMany
     {
         return $this->belongsToMany(AcademicYear::class, 'academic_year_classes', 'class_id', 'academic_year_id');
@@ -49,9 +54,14 @@ class Classes extends Model
         return $this->belongsToMany(Subject::class, 'subject_classes', 'class_id', 'subject_id');
     }
 
+    public function subjectScores()
+    {
+        return $this->hasMany(Score::class, 'class_id');
+    }
+
     public function schedules(): HasMany
     {
-        return $this->hasMany(Schedule::class);
+        return $this->hasMany(Schedule::class, 'class_id');
     }
 
     public function materials()
@@ -59,14 +69,9 @@ class Classes extends Model
         return $this->belongsToMany(Material::class, 'class_materials', 'class_id', 'material_id');
     }
 
-    public function students()
-    {
-        return $this->belongsToMany(User::class, 'class_students', 'class_id', 'student_id');
-    }
-
     public function attendances()
     {
-        return $this->hasMany(Attendance::class);
+        return $this->hasMany(Attendance::class, 'class_id');
     }
 
     public function generation()
@@ -84,6 +89,11 @@ class Classes extends Model
         return $this->hasMany(Article::class, 'class_id');
     }
 
+    public function finalScores()
+    {
+        return $this->hasMany(FinalScore::class, 'class_id');
+    }
+
     protected static function booted()
     {
         static::creating(function ($class) {
@@ -99,6 +109,14 @@ class Classes extends Model
                 $class->classTeachers()->updateExistingPivot($class->classTeachers->pluck('id'), ['deleted_at' => now()]);
             }
 
+            if ($class->students->isNotEmpty()) {
+                $class->students()->updateExistingPivot($class->students->pluck('id'), ['deleted_at' => now()]);
+            }
+
+            if ($class->subjects->isNotEmpty()) {
+                $class->subjects()->updateExistingPivot($class->subjects->pluck('id'), ['deleted_at' => now()]);
+            }
+
             if ($class->blocks->isNotEmpty()) {
                 $class->blocks()->updateExistingPivot($class->blocks->pluck('id'), ['deleted_at' => now()]);
             }
@@ -111,15 +129,52 @@ class Classes extends Model
                 $class->materials()->updateExistingPivot($class->materials->pluck('id'), ['deleted_at' => now()]);
             }
 
-            $class->articles->each(function ($article) {
+            foreach ($class->assignments as $assignment) {
+                foreach ($assignment->submittedAssignments as $submittedAssignment) {
+                    $submittedAssignment->delete();
+                }
+
+                $assignment->delete();
+            }
+
+            foreach ($class->articles as $article) {
+                foreach ($article->comments as $comments) {
+                    $comments->delete();
+                }
                 $article->delete();
-            });
+            }
+
+            foreach ($class->attendances as $attendance) {
+                foreach ($attendance->attendanceDetails as $attendanceDetail) {
+                    $attendanceDetail->delete();
+                }
+
+                $attendance->delete();
+            }
+
+            foreach ($class->subjectScores as $subjectScore) {
+                $subjectScore->delete();
+            }
+
+            foreach ($class->schedules as $schedule) {
+                $schedule->delete();
+            }
         });
 
         static::restoring(function ($class) {
             $blockClass = $class->blocks()->withTrashed()->get();
             if ($blockClass->isNotEmpty()) {
                 $class->blocks()->updateExistingPivot($blockClass->pluck('id'), ['deleted_at' => null]);
+            }
+
+            $studentClass = $class->students()->withTrashed()->get();
+            if ($studentClass->isNotEmpty()) {
+                $class->students()->updateExistingPivot($studentClass->pluck('id'), ['deleted_at' => null]);
+            }
+
+            $subjectClass = $class->subjects()->withTrashed()->get();
+            if ($subjectClass->isNotEmpty()) {
+                $class->subjects()->updateExistingPivot($subjectClass->pluck('id'), ['deleted_at' => null]);
             }
 
             $academicYearClass = $class->academicYears()->withTrashed()->get();
@@ -137,9 +192,36 @@ class Classes extends Model
                 $class->classTeachers()->updateExistingPivot($teachClass->pluck('id'), ['deleted_at' => null]);
             }
 
-            $class->articles()->onlyTrashed()->each(function ($article) {
+            foreach ($class->assignments()->withTrashed()->get() as $assignment) {
+                foreach ($assignment->submittedAssignments()->withTrashed()->get() as $submittedAssignment) {
+                    $submittedAssignment->restore();
+                }
+
+                $assignment->restore();
+            }
+
+            foreach ($class->articles()->withTrashed()->get() as $article) {
+                foreach ($article->comments()->withTrashed()->get() as $comments) {
+                    $comments->restore();
+                }
                 $article->restore();
-            });
+            }
+
+            foreach ($class->attendances()->withTrashed()->get() as $attendance) {
+                foreach ($attendance->attendanceDetails()->withTrashed()->get() as $attendanceDetail) {
+                    $attendanceDetail->restore();
+                }
+
+                $attendance->restore();
+            }
+
+            foreach ($class->subjectScores()->withTrashed()->get() as $subjectScore) {
+                $subjectScore->restore();
+            }
+
+            foreach ($class->schedules()->withTrashed()->get() as $schedule) {
+                $schedule->restore();
+            }
         });
     }
 }

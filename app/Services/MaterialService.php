@@ -377,31 +377,24 @@ class MaterialService
         }
     }
 
-
     public function forceDeleteMaterial($slug)
     {
         return DB::transaction(function () use ($slug) {
             $material = Material::where('slug', $slug)->first();
 
+            $accessToken = $this->token();
+            $client = new \GuzzleHttp\Client();
+
             if ($material === null) {
                 throw new Exception('Tài liệu không tồn tại hoặc đã bị xóa');
             }
 
-            $fileId = $material->file_path;
-
-            if ($fileId) {
-                $accessToken = $this->token();
-                $client = new \GuzzleHttp\Client();
-
-                $response = $client->request('DELETE', "https://www.googleapis.com/drive/v3/files/{$fileId}", [
+            if ($material->file_path) {
+                $client->request('DELETE', 'https://www.googleapis.com/drive/v3/files/' . $material->file_path, [
                     'headers' => [
                         'Authorization' => 'Bearer ' . $accessToken,
                     ],
                 ]);
-
-                if ($response->getStatusCode() !== 204) {
-                    throw new Exception('Không thể xóa file từ Google Drive');
-                }
             }
 
             $material->forceDelete();

@@ -51,6 +51,47 @@ class Assignment extends Model
 
     public function submittedAssignments()
     {
-        return $this->hasMany(SubmittedAssignment::class);
+        return $this->hasMany(SubmittedAssignment::class, 'assignment_id');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($assignment) {
+            foreach ($assignment->submittedAssignments as $submittedAssignment) {
+                $submittedAssignment->delete();
+            }
+
+            $semester = $assignment->semester;
+
+            $subjectScores = Score::where('semester_id', $semester->id)->get();
+            $finalScores = FinalScore::where('semester_id', $semester->id)->get();
+
+            foreach ($subjectScores as $subjectScore) {
+                $subjectScore->delete();
+            }
+
+            foreach ($finalScores as $finalSore) {
+                $finalSore->delete();
+            }
+        });
+
+        static::restoring(function ($assignment) {
+            $assignment->submittedAssignments()->withTrashed()->get()->each(function ($submitedAssignment) {
+                $submitedAssignment->restore();
+            });
+
+            $semester = $assignment->semester;
+
+            $subjectScores = Score::where('semester_id', $semester->id)->withTrashed()->get();
+            $finalScores = FinalScore::where('semester_id', $semester->id)->withTrashed()->get();
+
+            foreach ($subjectScores as $subjectScore) {
+                $subjectScore->restore();
+            }
+
+            foreach ($finalScores as $finalSore) {
+                $finalSore->restore();
+            }
+        });
     }
 }
