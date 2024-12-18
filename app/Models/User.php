@@ -173,4 +173,89 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(FinalScore::class, 'student_id');
     }
+
+    public function articles()
+    {
+        return $this->hasMany(Article::class, 'teacher_id');
+    }
+
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class, 'teacher_id');
+    }
+
+    // protected static function booted()
+    // {
+    //     static::deleting(function ($user) {
+    //         if ($user->generations->isNotEmpty()) {
+    //             $user->generations()->updateExistingPivot($user->generations->pluck('id'), ['deleted_at' => now()]);
+    //         }
+
+    //         if ($user->roles->isNotEmpty()) {
+    //             $user->roles()->updateExistingPivot($user->roles->pluck('id'), ['deleted_at' => now()]);
+    //         }
+
+    //         if ($user->permissions->isNotEmpty()) {
+    //             $user->permissions()->updateExistingPivot($user->permissions->pluck('id'), ['deleted_at' => now()]);
+    //         }
+
+    //         if ($user->permissions->isNotEmpty()) {
+    //             $user->permissions()->updateExistingPivot($user->permissions->pluck('id'), ['deleted_at' => now()]);
+    //         }
+
+    //         if ($user->classes->isNotEmpty()) {
+    //             $user->classes()->updateExistingPivot($user->classes->pluck('id'), ['deleted_at' => now()]);
+    //         }
+
+    //         if ($user->teachingClasses->isNotEmpty()) {
+    //             $user->teachingClasses()->updateExistingPivot($user->teachingClasses->pluck('id'), ['deleted_at' => now()]);
+    //         }
+
+    //         if ($user->conversations->isNotEmpty()) {
+    //             $user->conversations()->updateExistingPivot($user->conversations->pluck('id'), ['deleted_at' => now()]);
+    //         }
+
+    //         if ($user->conversations->isNotEmpty()) {
+    //             $user->conversations()->updateExistingPivot($user->conversations->pluck('id'), ['deleted_at' => now()]);
+    //         }
+
+    //         if ($user->subjects->isNotEmpty()) {
+    //             $user->subjects()->updateExistingPivot($user->subjects->pluck('id'), ['deleted_at' => now()]);
+    //         }
+
+    //         foreach ($user->articles as $article) {
+    //             foreach ($article->comments as $comment) {
+    //                 $comment->delete();
+    //             }
+    //             $article->delete();
+    //         }
+
+    //         foreach ($user->assignments as $assignment) {
+    //             foreach ($assignment->submittedAssignments as $submittedAssignment) {
+    //                 $submittedAssignment->delete();
+    //             }
+    //             $assignment->delete();
+    //         }
+
+    //         foreach ($user->attendanceDetails as $attendanceDetail) {
+    //             $attendanceDetail->delete();
+    //         }
+
+    //         foreach ($user->messages as $message) {
+    //             $message->delete();
+    //         }
+
+    //         foreach ($user->subjectScores as $subjectScore) {
+    //             $subjectScore->delete();
+    //         }
+
+    //         foreach ($user->finalScores as $finalScore) {
+    //             $finalScore->delete();
+    //         }
+    //     });
+
+    //     static::restoring(function ($user) {
+
+    //     });
+    // }
 }
