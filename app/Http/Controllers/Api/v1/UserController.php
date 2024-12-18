@@ -257,6 +257,16 @@ class UserController extends Controller
         }
     }
 
+    public function restoreUser($username)
+    {
+        try {
+            $this->userService->restore($username);
+            return $this->successResponse(null, 'Khôi phục người dùng thành công', Response::HTTP_OK);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     public function destroy($username)
     {
         try {

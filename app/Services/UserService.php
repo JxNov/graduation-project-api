@@ -419,6 +419,21 @@ class UserService
         });
     }
 
+    public function restore($username)
+    {
+        return DB::transaction(function () use ($username) {
+            $user = User::where('username', $username)->withTrashed()->first();
+
+            if ($user === null) {
+                throw new \Exception('Người dùng không tồn tại hoặc đã bị xóa');
+            }
+
+            $user->restore();
+
+            return $user;
+        });
+    }
+
     public function generateUsername($fullName, $existingUsernames)
     {
         $cleanedName = $this->removeAccents($fullName);
