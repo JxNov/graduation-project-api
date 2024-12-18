@@ -29,14 +29,15 @@ class TeacherService
                         'name' => $firebasePath
                     ]
                 );
+
+                $data['image'] = $firebasePath;
             }
 
-            $data['image'] = $firebasePath;
             // Lưu thông tin giáo viên vào cơ sở dữ liệu
             $teacher = User::create([
                 'name' => $data['name'],
                 'username' => $username,
-                'image'=>$data['image'],
+                'image' => $data['image'] ?? null,
                 'email' => $data['email'],
                 'password' => Hash::make(env('PASSWORD_DEFAULT')), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],
@@ -110,13 +111,15 @@ class TeacherService
                     ]
                 );
                 $data['image'] = $firebasePath;
+            } else {
+                $data['image'] = $user->image;
             }
 
             // Cập nhật thông tin người dùng
             $user->update([
                 'name' => $data['name'],
                 'username' => $newUsername,
-                'image'=>$data['image'],
+                'image' => $data['image'],
                 'email' => $data['email'],
                 'password' => Hash::make(env('PASSWORD_DEFAULT')), // Mật khẩu mặc định
                 'date_of_birth' => $data['date_of_birth'],

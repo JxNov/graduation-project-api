@@ -53,7 +53,7 @@ class AssignmentService
             foreach ($class->students as $student) {
                 $student->notify(new NewAssignmentNotification($assignment));
             }
-            \Log::info($assignment->toArray());
+            // \Log::info($assignment->toArray());
             return $assignment;
         });
     }
