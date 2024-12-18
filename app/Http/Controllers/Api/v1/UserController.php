@@ -256,7 +256,7 @@ class UserController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    
+
     public function destroy($username)
     {
         try {
@@ -266,11 +266,13 @@ class UserController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function forgotPassword( Request $request ){
-        try{
-            $usernames = $request->input('usernames');
-            $this->userService->forgotPassword($usernames);
-            return $this->successResponse($usernames, 'Thành công', Response::HTTP_OK);
+
+    public function forgotPassword(Request $request)
+    {
+        try {
+            $email = $request->input('email');
+            $this->userService->forgotPassword($email);
+            return $this->successResponse($email, 'Thành công', Response::HTTP_OK);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }

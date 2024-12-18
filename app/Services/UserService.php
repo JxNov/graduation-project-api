@@ -450,17 +450,21 @@ class UserService
     {
         return $username . '@tech4school.edu.vn';
     }
-    public function forgotPassword($usernames){
-        return DB::transaction(function () use ($usernames) {
-            $users = User::whereIn('username', $usernames)->get();
+
+    public function forgotPassword($email)
+    {
+        return DB::transaction(function () use ($email) {
+            $userEmail = is_string($email) ? [$email] : $email;
+            $users = User::whereIn('email', $userEmail)->get();
             foreach ($users as $user) {
                 $user->update([
-                    'password' => Hash::make(env('PASSWORD_DEFAULT')), 
+                    'password' => Hash::make(env('PASSWORD_DEFAULT')),
                 ]);
             }
             return $users;
         });
     }
+
     private function removeAccents($string)
     {
         $accents = [
