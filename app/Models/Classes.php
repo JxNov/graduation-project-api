@@ -227,7 +227,7 @@ class Classes extends Model
                 $schedule->restore();
             }
 
-            foreach ($class->finalScores as $finalScore) {
+            foreach ($class->finalScores()->withTrashed()->get() as $finalScore) {
                 $finalScore->restore();
             }
         });
