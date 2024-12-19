@@ -137,6 +137,16 @@ class SemesterService
                 throw new Exception('Kỳ học đã khôi phục hoặc không tồn tại');
             }
 
+            $academicYear = AcademicYear::withTrashed()->where('id', $semester->academic_year_id);
+
+            if ($academicYear === null) {
+                throw new Exception('Cần khôi phục năm học của kỳ học trước');
+            }
+
+            if ($academicYear->trashed()) {
+                throw new Exception('Cần khôi phục năm học của kỳ học trước');
+            }
+
             $semester->restore();
             return $semester;
         });
