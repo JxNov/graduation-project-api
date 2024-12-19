@@ -23,6 +23,11 @@ class Generation extends Model
         return $this->hasMany(AcademicYear::class);
     }
 
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'user_generations');
+    }
+
     protected static function booted()
     {
         static::deleting(function ($generation) {
