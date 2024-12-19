@@ -70,7 +70,7 @@ class AttendanceService
 
             $dayNow = Carbon::now()->toDateString();
 
-            if ($attendance && Carbon::parse($attendance->date)->toDateString() < $dayNow) {
+            if (Carbon::parse($attendance->date)->toDateString() < $dayNow) {
                 throw new Exception('Đã quá hạn để cập nhật điểm danh');
             }
 
@@ -78,6 +78,10 @@ class AttendanceService
 
             if ($class === null) {
                 throw new Exception('Lớp học không tồn tại hoặc đã bị xóa');
+            }
+
+            if (!isset($data['students']) || !is_array($data['students'])) {
+                throw new Exception('Danh sách học sinh không hợp lệ.');
             }
 
             $attendance->update([
@@ -95,17 +99,20 @@ class AttendanceService
                     ->where('student_id', $student->id)
                     ->first();
 
-                if ($studentData && $attendanceDetail) {
+                $status = $studentData['status'] ?? 'Absent';
+                $reason = $studentData['reason'] ?? null;
+
+                if ($attendanceDetail) {
                     $attendanceDetail->update([
-                        'status' => $studentData['status'],
-                        'reason' => $studentData['reason'] ?? null,
+                        'status' => $status,
+                        'reason' => $reason,
                     ]);
                 } else {
                     $attendance->attendanceDetails()->updateOrCreate([
                         'student_id' => $student->id,
                     ], [
-                        'status' => $studentData['status'],
-                        'reason' => $studentData['reason'] ?? null,
+                        'status' => $status,
+                        'reason' => $reason,
                     ]);
                 }
             }
@@ -114,6 +121,7 @@ class AttendanceService
             return $attendance;
         });
     }
+
 
     public function updateStudentAttendance($data, $user, $attendance)
     {

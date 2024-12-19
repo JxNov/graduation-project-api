@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
-use App\Models\AttendanceDetail;
 use App\Models\Classes;
 use App\Models\User;
 use App\Services\AttendanceService;
@@ -25,7 +24,6 @@ class AttendanceController extends Controller
     {
         $this->attendanceService = $attendanceService;
     }
-
     public function index()
     {
         try {
@@ -216,7 +214,6 @@ class AttendanceController extends Controller
 
         try {
             $user = User::with('classes')->where('username', $username)->first();
-
             if ($user === null) {
                 throw new Exception('Người dùng không tồn tại hoặc đã bị xóa');
             }
@@ -235,6 +232,7 @@ class AttendanceController extends Controller
             $result = $this->attendanceService->updateStudentAttendance($data, $user, $attendance);
 
             return response()->json([
+                'className' => $attendance->class->name,
                 'username' => $user->username,
                 'date' => $attendance->date,
                 'shifts' => $attendance->shifts,
