@@ -59,6 +59,7 @@ Route::prefix('users')
     ->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::post('/', [UserController::class, 'store']);
+        Route::get('/trash', [UserController::class, 'trash']);
         Route::get('/showUser/{username}', [UserController::class, 'showUser']);
         Route::get('/{username}/roles', [UserController::class, 'getUserRoles']);
         Route::patch('/{username}/roles', [UserController::class, 'assignRoles']);
@@ -69,6 +70,7 @@ Route::prefix('users')
         Route::patch('/assign-roles-permissions', [UserController::class, 'assignRolesAndPermissions']);
         Route::delete('/assign-roles-permissions', [UserController::class, 'revokeRolesAndPermissions']);
         Route::patch('/updateUser/{username}', [UserController::class, 'updateUser']);
+        Route::patch('/change-info/{username}', [UserController::class, 'changeInfo']);
         Route::patch('/restore/{username}', [UserController::class, 'restoreUser']);
         Route::delete('/{username}', [UserController::class, 'destroy']);
         Route::patch('/forgot-password', [UserController::class, 'forgotPassword']);
