@@ -317,12 +317,10 @@ Route::prefix('classrooms')
 //Thống kê
 Route::prefix('statistic')
     ->group(function () {
-        Route::get('/student', [StatisticController::class, 'countStudentAll']);
-        Route::get('/teacher', [StatisticController::class, 'countTeacherAll']);
-        Route::get('/generation', [StatisticController::class, 'countGenerationAll']);
-        Route::get('/classes', [StatisticController::class, 'countClassAll']);
-        Route::get('/list/{block_slug}', [StatisticController::class, 'StudentClassInBlock']);
-        Route::get('/gender/{block_slug}', [StatisticController::class, 'getGenderRatioInBlock']);
+        Route::get('/countall', [StatisticController::class, 'countAll']); // thống kê tổng số lượng học sinh, giáo viên, lớp học, môn học
+        Route::get('/performation/{academicYearSlug}', [StatisticController::class, 'getPerformationLevelAll']);// thống kê học lực của tất cả học sinh
+        Route::get('/list/{block_slug}', [StatisticController::class, 'StudentClassInBlock']); // số lượng học sinh theo từng khối
+        Route::get('/gender/{generationSlug}', [StatisticController::class, 'getGenderRatioInGeneration']);// tỉ lệ giới tính theo từng khoá
         Route::get('/final/{classSlug}/{yearSlug}', [StatisticController::class, 'calculateFinalScoreYearClass']); // điểm tổng kết của cả lớp theo năm, chỉ lưu vào final_score khi có kết quả của năm
         Route::get('/class-semester/{semester_slug}', [StatisticController::class, 'getStatisticAllClassInSemester']); // thống kê điểm TB của tất cả lớp theo kỳ
         Route::get('{subject_slug}/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticByClassSubjectSemester']);

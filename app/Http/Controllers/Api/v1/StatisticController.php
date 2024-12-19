@@ -105,14 +105,14 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function getGenderRatioInBlock($block_slug)
+    public function getGenderRatioInGeneration($generationSlug)
     {
         try {
-            $count = $this->statisticService->getGenderRatioInBlock($block_slug);
+            $count = $this->statisticService->getGenderRatioInGeneration($generationSlug);
 
             return $this->successResponse(
                 $count,
-                'Thống kê số học sinh nam, nữ trong khối thành công',
+                'Thống kê số học sinh nam, nữ trong khoá thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
@@ -161,68 +161,38 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function countStudentAll()
+    public function countAll()
     {
         try {
             $students = User::whereHas('roles', function ($query) {
                 $query->where('slug', 'student');
             })->whereNull('deleted_at')->count();
-            $count = [
-                'numberStudent' => $students
-            ];
-            return $this->successResponse(
-                $count,
-                'Thống kê số học sinh toàn trường thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
-    public function countTeacherAll()
-    {
-        try {
             $teachers = User::whereHas('roles', function ($query) {
                 $query->where('slug', 'teacher');
             })->whereNull('deleted_at')->count();
-            $count = [
-                'numberTeacher' => $teachers
-            ];
-            return $this->successResponse(
-                $count,
-                'Thống kê số học sinh toàn trường thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
-    public function countGenerationAll()
-    {
-        try {
             $generation = Generation::count();
-            $count = [
-                'numberGeneration' => $generation
-            ];
-            return $this->successResponse(
-                $count,
-                'Thống kê số khoá học thành công',
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
-    public function countClassAll()
-    {
-        try {
             $classes = Classes::count();
             $count = [
+                'numberStudent' => $students,
+                'numberTeacher' => $teachers,
+                'numberGeneration' => $generation,
                 'numberClasses' => $classes
             ];
             return $this->successResponse(
                 $count,
-                'Thống kê số lớp học thành công',
+                'Thống kê số học sinh toàn trường thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+    public function getPerformationLevelAll($academicYearSlug){
+        try {
+            $performation = $this->statisticService->getPerformationLevelAll($academicYearSlug);
+            return $this->successResponse(
+                $performation,
+                'Thống kê học lực toàn trường trong năm thành công',
                 Response::HTTP_OK
             );
         } catch (Exception $e) {
