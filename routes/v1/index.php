@@ -135,6 +135,7 @@ Route::prefix('blocks')
 Route::prefix('classes')
     ->group(function () {
         Route::get('/', [ClassController::class, 'index']);
+        Route::get('/getfailedstudents', [ClassController::class, 'getFailedStudents']);
         Route::post('/', [ClassController::class, 'store']);
         Route::get('/trash', [ClassController::class, 'trash']);
         Route::get('/{slug}', [ClassController::class, 'show']);

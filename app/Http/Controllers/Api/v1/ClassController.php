@@ -295,7 +295,20 @@ class ClassController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+    public function getFailedStudents(){
+        try {
+            
+            $getFailedStudents = $this->classService->getFailedStudents();
 
+            return $this->successResponse(
+                $getFailedStudents,
+                'Lấy thành công danh sách học sinh không đủ điều kiện lên lớp.',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
     public function destroy($slug)
     {
         try {
