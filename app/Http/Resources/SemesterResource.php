@@ -16,7 +16,6 @@ class SemesterResource extends JsonResource
             'startDate' => Carbon::parse($this->start_date)->format('d/m/Y'),
             'endDate' => Carbon::parse($this->end_date)->format('d/m/Y'),
             'academicYearId' => $this->academic_year_id,
-            'generationName' => optional($this->academicYear->generation)->name,
             'academicYearName' => optional($this->academicYear)->name
         ];
     }

@@ -180,6 +180,16 @@ class AcademicYearService
                 throw new Exception('Không tìm thấy năm học đã xóa');
             }
 
+            $generation = Generation::withTrashed()->find($academicYear->generation_id);
+
+            if ($generation === null) {
+                throw new Exception('Cần khôi phục khóa học sinh của năm học trước');
+            }
+
+            if ($generation->trashed()) {
+                throw new Exception('Cần khôi phục khóa học sinh của năm học trước');
+            }
+
             $academicYear->restore();
 
             return $academicYear;

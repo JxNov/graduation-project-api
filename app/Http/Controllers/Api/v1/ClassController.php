@@ -327,7 +327,7 @@ class ClassController extends Controller
 
     public function trash()
     {
-        $classes = Classes::select('id', 'name', 'slug', 'teacher_id')
+        $classes = Classes::select('id', 'name', 'code', 'slug', 'teacher_id')
             ->latest('id')
             ->with('teacher')
             ->onlyTrashed()
