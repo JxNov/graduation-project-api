@@ -199,6 +199,7 @@ Route::prefix('excels')
             ->group(function () {
                 Route::post('import', [StudentClassController::class, 'importStudent']);
                 Route::get('/', [StudentClassController::class, 'index']);
+                Route::get('/surplusStudents', [StudentClassController::class, 'surplusStudents']); // học sinh không có lớp, chưa được phân lớp sau khi dùng distribute 
                 Route::post('/', [StudentClassController::class, 'store']);
                 Route::post('/distributeStudents/{academic_year_slug}/{blockSlug}', [StudentClassController::class, 'distributeStudents']);
                 Route::patch('/{id}', [StudentClassController::class, 'update']);
