@@ -316,4 +316,24 @@ class StudentClassService
             ];
         });
     }
+    public function surplusStudents()
+    {
+        return DB::transaction(function () {
+            // Lấy danh sách học sinh chưa có lớp trong bảng trung gian class_students
+            $students = User::whereHas('roles', fn($query) => $query->where('slug', 'student'))
+                ->doesntHave('classes') // Kiểm tra học sinh chưa có lớp
+                ->get();
+            $surplusStudents = $students->map(function ($student) {
+                return [
+                    'name' => $student->name,
+                    'username' => $student->username,
+                    'email' => $student->email
+                ];
+            });
+            return [
+                'total' => $students->count(),
+                'students' => $surplusStudents
+            ];
+        });
+    }
 }
