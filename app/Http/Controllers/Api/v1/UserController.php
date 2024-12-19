@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateStudentRequest;
 use App\Http\Resources\StudentResource;
 use App\Http\Resources\TeacherResource;
+use App\Http\Resources\UserCollection;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -224,6 +225,39 @@ class UserController extends Controller
         }
     }
 
+    public function changeInfo(Request $request, $username)
+    {
+        try {
+            $data = $request->validate(
+                [
+                    'name' => 'required|max:50',
+                    'date_of_birth' => 'required',
+                    'gender' => 'required',
+                    'address' => 'required',
+                    'phone_number' => 'required|min:10',
+                ],
+                [
+                    'name.required' => 'Tên đang trống',
+                    'name.max' => 'Tên quá dài',
+                    'date_of_birth.required' => 'Ngày sinh đang trống',
+                    'gender.required' => 'Giới tính đang trống',
+                    'address.required' => 'Địa chỉ đang trống',
+                    'phone_number.required' => 'Số điện thoại đang trống',
+                ]
+            );
+
+            $user = $this->userService->changeInfo($data, $username);
+
+            return $this->successResponse(
+                new StudentResource($user),
+                'Cập nhật người dùng thành công',
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     public function store(Request $request)
     {
         try {
@@ -265,6 +299,25 @@ class UserController extends Controller
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
+    }
+
+    public function trash()
+    {
+        $users = User::onlyTrashed()->get();
+
+        if ($users->isEmpty()) {
+            return $this->successResponse(
+                null,
+                'Không có dữ liệu',
+                Response::HTTP_OK
+            );
+        }
+
+        return $this->successResponse(
+            new UserCollection($users),
+            'Lấy tất cả thông tin người dùng đã xóa thành công',
+            Response::HTTP_OK
+        );
     }
 
     public function destroy($username)

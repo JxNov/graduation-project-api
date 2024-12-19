@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Role;
 use App\Models\Permission;
 use App\Models\User;
+use Exception;
 use Illuminate\Support\Facades\Hash;
 
 class UserService
@@ -429,6 +430,25 @@ class UserService
             }
 
             $user->restore();
+
+            return $user;
+        });
+    }
+
+    public function changeInfo(array $data, $username)
+    {
+        return DB::transaction(function () use ($data, $username) {
+            $user = User::where('username', $username)->first();
+            if ($user === null) {
+                throw new Exception('Người dùng không tồn tại hoặc đã bị xóa');
+            }
+            
+            $existingUsernames = User::pluck('username')->toArray();
+            
+            $data['username'] = $this->generateUsername($data['name'], $existingUsernames);
+            $data['email'] = $this->generateEmail($data['username']);
+
+            $user->update($data);
 
             return $user;
         });
