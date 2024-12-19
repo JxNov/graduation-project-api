@@ -151,10 +151,9 @@ class GenerationController extends Controller
             ->get();
 
         if ($generations->isEmpty()) {
-            return $this->successResponse(
-                null,
+            return $this->errorResponse(
                 'Không có dữ liệu',
-                Response::HTTP_OK
+                Response::HTTP_NOT_FOUND
             );
         }
 

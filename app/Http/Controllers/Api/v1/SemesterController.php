@@ -159,10 +159,9 @@ class SemesterController extends Controller
             ->get();
 
         if ($semesters->isEmpty()) {
-            return $this->successResponse(
-                null,
+            return $this->errorResponse(
                 'Không có dữ liệu',
-                Response::HTTP_OK
+                Response::HTTP_NOT_FOUND
             );
         }
 
