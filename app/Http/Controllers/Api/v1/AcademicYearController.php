@@ -165,10 +165,9 @@ class AcademicYearController extends Controller
             ->get();
 
         if ($academicYears->isEmpty()) {
-            return $this->successResponse(
-                null,
+            return $this->errorResponse(
                 'Không có dữ liệu',
-                Response::HTTP_OK
+                Response::HTTP_NOT_FOUND
             );
         }
 

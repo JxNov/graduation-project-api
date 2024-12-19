@@ -306,10 +306,9 @@ class UserController extends Controller
         $users = User::onlyTrashed()->get();
 
         if ($users->isEmpty()) {
-            return $this->successResponse(
-                null,
+            return $this->errorResponse(
                 'Không có dữ liệu',
-                Response::HTTP_OK
+                Response::HTTP_NOT_FOUND
             );
         }
 
