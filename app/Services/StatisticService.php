@@ -12,6 +12,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\ScoreResource;
+use App\Models\Generation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -162,46 +163,46 @@ class StatisticService
         });
     }
 
-    public function getGenderRatioInBlock($block_slug)
+    public function getGenderRatioInGeneration($generationSlug)
     {
-        return DB::transaction(function () use ($block_slug) {
-            // Lấy thông tin khối từ slug
-            $block = Block::where('slug', $block_slug)->first();
-            if ($block === null) {
-                throw new Exception('Khối không tồn tại hoặc đã bị xóa');
+        return DB::transaction(function () use ($generationSlug) {
+            // Lấy thông tin khóa từ slug
+            $generation = Generation::where('slug', $generationSlug)->first();
+            if (!$generation) {
+                throw new Exception('Khóa không tồn tại hoặc đã bị xóa');
             }
 
-            // Lấy danh sách học sinh thuộc các lớp của khối
-            $students = User::whereHas('classes', function ($query) use ($block) {
-                $query->whereHas('blocks', function ($subQuery) use ($block) {
-                    $subQuery->where('block_id', $block->id);
-                });
-            })->get();
+            // Lấy danh sách học sinh thuộc khóa
+            $students = $generation->users()->get();
+
+            // Nếu không có học sinh
+            if ($students->isEmpty()) {
+                throw new Exception('Không có học sinh nào trong khóa này');
+            }
+
             // Đếm số lượng học sinh nam và nữ
             $genderCount = $students->groupBy('gender')->map(function ($group) {
                 return $group->count();
             });
+
             $maleCount = $genderCount->get('Male', 0);
             $femaleCount = $genderCount->get('Female', 0);
             $total = $maleCount + $femaleCount;
 
-            if ($total === 0) {
-                throw new Exception('Không có học sinh nào trong khối này.');
-            }
-
-            // Tính tỷ lệ phần trăm cho nam và nữ
+            // Tính tỷ lệ phần trăm
             $maleRatio = round(($maleCount / $total) * 100, 2);
             $femaleRatio = round(($femaleCount / $total) * 100, 2);
 
-
+            // Trả về kết quả
             return [
-                'male_count' => $maleCount,
-                'female_count' => $femaleCount,
-                'male_ratio' => $maleRatio . '%',
-                'female_ratio' => $femaleRatio . '%'
+                'maleCount' => $maleCount,
+                'femaleCount' => $femaleCount,
+                'maleRatio' => $maleRatio . '%',
+                'femaleRatio' => $femaleRatio . '%'
             ];
         });
     }
+
 
     // hàm tính toán thống kê của lớp theo kỳ
     private function calculateScoreStatisticsByClassSemester($scores, $semesterName, $className)
@@ -440,26 +441,26 @@ class StatisticService
             $semesterAverages = [];
             $semesterPerformance = [];
             $hasValidScoresForYear = true;
-        
+
             $semesterScore1 = null;
             $semesterPerformance1 = null;
             $semesterScore2 = null;
             $semesterPerformance2 = null;
-        
+
             foreach ($semesters as $key => $semester) {
                 $scores = DB::table('subject_scores')
                     ->where('student_id', $student->id)
                     ->where('class_id', $class->id)
                     ->where('semester_id', $semester->id)
                     ->pluck('average_score', 'subject_id');
-        
+
                 $allSubjectsHaveScores = $subjects->pluck('id')->diff($scores->keys())->isEmpty();
-        
+
                 if ($allSubjectsHaveScores) {
                     $averageScore = round(array_sum($scores->toArray()) / count($scores), 2);
                     $semesterAverages[$semester->id] = $averageScore;
                     $semesterPerformance[$semester->id] = $this->determinePerformanceLevel($averageScore);
-        
+
                     // Gán riêng cho kỳ 1 và kỳ 2
                     if ($key === 0) {
                         $semesterScore1 = $averageScore;
@@ -468,7 +469,7 @@ class StatisticService
                         $semesterScore2 = $averageScore;
                         $semesterPerformance2 = $semesterPerformance[$semester->id];
                     }
-        
+
                     DB::table('final_scores')->updateOrInsert(
                         [
                             'student_id' => $student->id,
@@ -487,13 +488,13 @@ class StatisticService
                     $hasValidScoresForYear = false;
                 }
             }
-        
+
             // Tính điểm tổng kết năm học
             if ($hasValidScoresForYear) {
                 $validAverages = array_filter($semesterAverages, fn($score) => $score !== null);
                 $finalScoreYear = !empty($validAverages) ? round(array_sum($validAverages) / count($validAverages), 2) : 0;
                 $finalPerformance = $this->determinePerformanceLevel($finalScoreYear);
-        
+
                 DB::table('final_scores')->updateOrInsert(
                     [
                         'student_id' => $student->id,
@@ -512,7 +513,7 @@ class StatisticService
                 $finalScoreYear = null;
                 $finalPerformance = "Chưa đủ điểm để xét học lực";
             }
-        
+
             // Thêm vào kết quả cuối cùng với tách semesterScore1 và semesterScore2
             $finalScores[] = [
                 'studentName' => $student->name,
@@ -525,7 +526,7 @@ class StatisticService
                 'academicYearPerformance' => $finalPerformance,
             ];
         }
-        
+
 
         return (object)[
             'class' => $class->name,
@@ -534,6 +535,60 @@ class StatisticService
         ];
     }
 
+    public function getPerformationLevelAll($academicYearSlug)
+    {
+        return DB::transaction(function () use ($academicYearSlug) {
+            // Lấy thông tin năm học
+            $year = AcademicYear::where('slug', $academicYearSlug)->first();
+            if (!$year) {
+                throw new Exception('Không tìm thấy năm học');
+            }
+
+            // Lấy danh sách các lớp thuộc năm học
+            $classes = $year->classes()->get();
+            if ($classes->isEmpty()) {
+                throw new Exception('Không có lớp nào trong năm học này');
+            }
+
+            // Khởi tạo thống kê
+            $statistics = [
+                'semester1' => ['Giỏi' => 0, 'Khá' => 0, 'Trung bình' => 0, 'Yếu' => 0],
+                'semester2' => ['Giỏi' => 0, 'Khá' => 0, 'Trung bình' => 0, 'Yếu' => 0],
+                'year' => ['Giỏi' => 0, 'Khá' => 0, 'Trung bình' => 0, 'Yếu' => 0],
+            ];
+
+            // Duyệt qua từng lớp và học sinh trong lớp
+            foreach ($classes as $class) {
+                $students = $class->students()->get();
+
+                foreach ($students as $student) {
+                    // Lấy điểm trung bình của học sinh theo từng kỳ và điểm cuối năm
+                    $scores = DB::table('final_scores')
+                        ->where('student_id', $student->id)
+                        ->whereIn('semester_id', [1, 2, null]) // Xét kỳ 1, kỳ 2 và cả năm
+                        ->get();
+
+                    foreach ($scores as $score) {
+                        $semesterKey = match ($score->semester_id) {
+                            1 => 'semester1',
+                            2 => 'semester2',
+                            null => 'year',
+                            default => null,
+                        };
+
+                        if ($semesterKey) {
+                            // Xác định học lực
+                            $performanceLevel = $this->determinePerformanceLevel($score->average_score);
+                            // Tăng số lượng học sinh theo học lực
+                            $statistics[$semesterKey][$performanceLevel]++;
+                        }
+                    }
+                }
+            }
+
+            return $statistics;
+        });
+    }
 
     // Hàm xác định học lực
     private function determinePerformanceLevel($averageScore)
