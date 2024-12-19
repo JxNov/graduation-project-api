@@ -151,9 +151,15 @@ class ClassService
     {
         return DB::transaction(function () use ($data, $slug) {
             $class = Classes::where('slug', $slug)->first();
-
+            
             if ($class === null) {
                 throw new Exception('Lớp không tồn tại hoặc đã bị xóa');
+            }
+
+            $block = Block::where('slug', $data['block_slug'])->first();
+
+            if ($block === null) {
+                throw new Exception('Khối không tồn tại hoặc đã bị xóa');
             }
 
             $students = $class->students;
@@ -199,13 +205,16 @@ class ClassService
                 throw new Exception('Không có học sinh nào trong lớp này đủ điều kiện lên lớp');
             }
 
+            $blockSubjects = $block->subjects()->select('subjects.id')->pluck('id')->toArray();
             $newClass = $this->createNewClass($data);
 
             $newClass->students()->sync($eligibleStudents);
+            $newClass->subjects()->sync($blockSubjects);
 
             return $newClass;
         });
     }
+
     public function getFailedStudents()
     {
         return DB::transaction(function () {
