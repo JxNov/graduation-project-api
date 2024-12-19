@@ -30,7 +30,7 @@ class UserController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $users = $this->userService->index();
+        $users = $this->userService->index();
 
             return $this->successResponse($users, 'Lấy danh sách người dùng thành công.');
         } catch (\Exception $e) {
