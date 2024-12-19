@@ -328,7 +328,7 @@ Route::prefix('statistic')
         Route::get('/class-semester/{semester_slug}', [StatisticController::class, 'getStatisticAllClassInSemester']); // thống kê điểm TB của tất cả lớp theo kỳ
         Route::get('{subject_slug}/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticByClassSubjectSemester']);
         Route::get('/{class_slug}/{semester_slug}', [StatisticController::class, 'getStatisticByClassSemester']); // thống kê điểm TB của 1 lớp theo kỳ
-        Route::get('/{academic_year_slug}', [StatisticController::class, 'countStudentInBlockByAcademicYear']); // số lượng học sinh theo từng khối của năm
+        Route::get('/', [StatisticController::class, 'countStudentInBlockByAcademicYear']); // số lượng học sinh theo từng khối của năm
         Route::get('/list/{classSlug}/{semesterSlug}/{yearSlug}', [StatisticController::class, 'showStudentScoreSemesterClass']); // điểm chi tiết của cả lớp học theo kì
         Route::get('/user/{classSlug}/{semesterSlug}/{yearSlug}', [StatisticController::class, 'showStudentScoreSemester']); // điểm chi tiết  của 1 học sinh theo kì
     });

@@ -77,10 +77,10 @@ class StatisticController extends Controller
         }
     }
 
-    public function countStudentInBlockByAcademicYear($academic_year_slug)
+    public function countStudentInBlockByAcademicYear()
     {
         try {
-            $count = $this->statisticService->countStudentInBlockByAcademicYear($academic_year_slug);
+            $count = $this->statisticService->countStudentInBlockByAcademicYear();
 
             return $this->successResponse(
                 $count,

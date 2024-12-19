@@ -112,34 +112,34 @@ class StatisticService
         }
     }
 
-    public function countStudentInBlockByAcademicYear($academic_year_slug)
+    public function countStudentInBlockByAcademicYear()
     {
         try {
-            $academicYear = AcademicYear::where('slug', $academic_year_slug)->first();
-
-            if ($academicYear === null) {
-                throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
-            }
-
-            $blockStudentCount = $academicYear->classes->flatMap(function ($class) {
-                return $class->blocks->map(function ($block) use ($class) {
-                    return [
-                        'blockName' => $block->name,
-                        'studentCount' => $class->students->count(),
-                    ];
+            $academicYears = AcademicYear::with('classes.blocks', 'classes.students')->get();
+    
+            $blockStudentCount = $academicYears->flatMap(function ($academicYear) {
+                return $academicYear->classes->flatMap(function ($class) use ($academicYear) {
+                    return $class->blocks->map(function ($block) use ($class, $academicYear) {
+                        return [
+                            'academicYear' => $academicYear->name,
+                            'blockName' => $block->name,
+                            'studentCount' => $class->students->count(),
+                        ];
+                    });
                 });
             });
-
+    
             return $blockStudentCount->groupBy('blockName')->map(function ($students, $blockName) {
                 return [
-                    'blockName' => $blockName,
+                    'block' => $blockName,
+                    'academicYear' => $students->pluck('academicYear')->last(),
                     'totalStudents' => $students->sum('studentCount'),
                 ];
             })->values();
         } catch (Exception $e) {
             throw $e;
         }
-    }
+    }    
 
     public function countStudentsInBlock($block_slug)
     {
@@ -529,84 +529,84 @@ class StatisticService
     }
 
     public function getPerformationLevelAll($academicYearSlug)
-{
-    return DB::transaction(function () use ($academicYearSlug) {
-        // Lấy thông tin năm học
-        $year = AcademicYear::where('slug', $academicYearSlug)->first();
-        if (!$year) {
-            throw new Exception('Không tìm thấy năm học');
-        }
+    {
+        return DB::transaction(function () use ($academicYearSlug) {
+            // Lấy thông tin năm học
+            $year = AcademicYear::where('slug', $academicYearSlug)->first();
+            if (!$year) {
+                throw new Exception('Không tìm thấy năm học');
+            }
 
-        // Lấy danh sách các lớp thuộc năm học
-        $classes = $year->classes()->get();
-        if ($classes->isEmpty()) {
-            throw new Exception('Không có lớp nào trong năm học này');
-        }
+            // Lấy danh sách các lớp thuộc năm học
+            $classes = $year->classes()->get();
+            if ($classes->isEmpty()) {
+                throw new Exception('Không có lớp nào trong năm học này');
+            }
 
-        // Khởi tạo thống kê
-        $statistics = [
-            'semester1' => ['Giỏi' => 0, 'Khá' => 0, 'Trung bình' => 0, 'Yếu' => 0],
-            'semester2' => ['Giỏi' => 0, 'Khá' => 0, 'Trung bình' => 0, 'Yếu' => 0],
-            'year' => ['Giỏi' => 0, 'Khá' => 0, 'Trung bình' => 0, 'Yếu' => 0],
-        ];
+            // Khởi tạo thống kê
+            $statistics = [
+                'semester1' => ['Giỏi' => 0, 'Khá' => 0, 'Trung bình' => 0, 'Yếu' => 0],
+                'semester2' => ['Giỏi' => 0, 'Khá' => 0, 'Trung bình' => 0, 'Yếu' => 0],
+                'year' => ['Giỏi' => 0, 'Khá' => 0, 'Trung bình' => 0, 'Yếu' => 0],
+            ];
 
-        // Duyệt qua từng lớp và học sinh trong lớp
-        foreach ($classes as $class) {
-            $students = $class->students()->get();
+            // Duyệt qua từng lớp và học sinh trong lớp
+            foreach ($classes as $class) {
+                $students = $class->students()->get();
 
-            foreach ($students as $student) {
-                // Lấy điểm trung bình của học sinh theo từng kỳ và điểm cuối năm
-                $scores = DB::table('final_scores')
-                    ->where('student_id', $student->id)
-                    ->whereIn('semester_id', [1, 2, null]) // Xét kỳ 1, kỳ 2 và cả năm
-                    ->get();
+                foreach ($students as $student) {
+                    // Lấy điểm trung bình của học sinh theo từng kỳ và điểm cuối năm
+                    $scores = DB::table('final_scores')
+                        ->where('student_id', $student->id)
+                        ->whereIn('semester_id', [1, 2, null]) // Xét kỳ 1, kỳ 2 và cả năm
+                        ->get();
 
-                foreach ($scores as $score) {
-                    $semesterKey = match ($score->semester_id) {
-                        1 => 'semester1',
-                        2 => 'semester2',
-                        null => 'year',
-                        default => null,
-                    };
+                    foreach ($scores as $score) {
+                        $semesterKey = match ($score->semester_id) {
+                            1 => 'semester1',
+                            2 => 'semester2',
+                            null => 'year',
+                            default => null,
+                        };
 
-                    if ($semesterKey) {
-                        // Xác định học lực
-                        $performanceLevel = $this->determinePerformanceLevel($score->average_score);
-                        // Tăng số lượng học sinh theo học lực
-                        $statistics[$semesterKey][$performanceLevel]++;
+                        if ($semesterKey) {
+                            // Xác định học lực
+                            $performanceLevel = $this->determinePerformanceLevel($score->average_score);
+                            // Tăng số lượng học sinh theo học lực
+                            $statistics[$semesterKey][$performanceLevel]++;
+                        }
                     }
                 }
             }
-        }
 
-        // Chuyển đổi dữ liệu thành mảng theo yêu cầu
-        $formattedStatistics = [
-            [
-                'name' => 'Kỳ 1',
-                'Giỏi' => $statistics['semester1']['Giỏi'],
-                'Khá' => $statistics['semester1']['Khá'],
-                'Trung bình' => $statistics['semester1']['Trung bình'],
-                'Yếu' => $statistics['semester1']['Yếu'],
-            ],
-            [
-                'name' => 'Kỳ 2',
-                'Giỏi' => $statistics['semester2']['Giỏi'],
-                'Khá' => $statistics['semester2']['Khá'],
-                'Trung bình' => $statistics['semester2']['Trung bình'],
-                'Yếu' => $statistics['semester2']['Yếu'],
-            ],
-            [
-                'name' => 'Cả năm',
-                'Giỏi' => $statistics['year']['Giỏi'],
-                'Khá' => $statistics['year']['Khá'],
-                'Trung bình' => $statistics['year']['Trung bình'],
-                'Yếu' => $statistics['year']['Yếu'],
-            ],
-        ];
+            // Chuyển đổi dữ liệu thành mảng theo yêu cầu
+            $formattedStatistics = [
+                [
+                    'name' => 'Kỳ 1',
+                    'Giỏi' => $statistics['semester1']['Giỏi'],
+                    'Khá' => $statistics['semester1']['Khá'],
+                    'Trung bình' => $statistics['semester1']['Trung bình'],
+                    'Yếu' => $statistics['semester1']['Yếu'],
+                ],
+                [
+                    'name' => 'Kỳ 2',
+                    'Giỏi' => $statistics['semester2']['Giỏi'],
+                    'Khá' => $statistics['semester2']['Khá'],
+                    'Trung bình' => $statistics['semester2']['Trung bình'],
+                    'Yếu' => $statistics['semester2']['Yếu'],
+                ],
+                [
+                    'name' => 'Cả năm',
+                    'Giỏi' => $statistics['year']['Giỏi'],
+                    'Khá' => $statistics['year']['Khá'],
+                    'Trung bình' => $statistics['year']['Trung bình'],
+                    'Yếu' => $statistics['year']['Yếu'],
+                ],
+            ];
 
-        return $formattedStatistics;
-    });
-}
+            return $formattedStatistics;
+        });
+    }
 
 
     // Hàm xác định học lực
