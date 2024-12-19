@@ -143,7 +143,7 @@ class SemesterService
                 throw new Exception('Cần khôi phục năm học của kỳ học trước');
             }
 
-            if ($academicYear->trashed()) {
+            if ($academicYear->withTrashed()) {
                 throw new Exception('Cần khôi phục năm học của kỳ học trước');
             }
 

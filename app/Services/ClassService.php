@@ -317,7 +317,7 @@ class ClassService
                 throw new Exception('Cần khôi phục năm học của lớp học trước');
             }
 
-            if ($academicYear->trashed()) {
+            if ($academicYear->withTrashed()) {
                 throw new Exception('Cần khôi phục năm học của lớp học trước');
             }
 
