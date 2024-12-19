@@ -49,7 +49,7 @@ class StatisticService
         $average_score = $scores->avg('average_score');
 
         // Trả về dữ liệu dưới dạng đối tượng stdClass
-        return (object)[
+        return (object) [
             'class_name' => $class->name,
             'subject_name' => $subject->name,
             'semester_slug' => $semester->name,
@@ -163,46 +163,39 @@ class StatisticService
         });
     }
 
-    public function getGenderRatioInGeneration($generationSlug)
+    public function getGenderRatioInGeneration()
     {
-        return DB::transaction(function () use ($generationSlug) {
-            // Lấy thông tin khóa từ slug
-            $generation = Generation::where('slug', $generationSlug)->first();
-            if (!$generation) {
-                throw new Exception('Khóa không tồn tại hoặc đã bị xóa');
-            }
+        return DB::transaction(function () {
+            $generations = Generation::all();
 
-            // Lấy danh sách học sinh thuộc khóa
-            $students = $generation->users()->get();
+            $genderRatios = $generations->map(function ($generation) {
+                $students = $generation->students()->get();
 
-            // Nếu không có học sinh
-            if ($students->isEmpty()) {
-                throw new Exception('Không có học sinh nào trong khóa này');
-            }
+                if ($students->isEmpty()) {
+                    return [
+                        'name' => $generation->name,
+                        'Nam' => 0,
+                        'Nữ' => 0,
+                    ];
+                }
 
-            // Đếm số lượng học sinh nam và nữ
-            $genderCount = $students->groupBy('gender')->map(function ($group) {
-                return $group->count();
+                $genderCount = $students->groupBy('gender')->map(function ($group) {
+                    return $group->count();
+                });
+
+                $maleCount = $genderCount->get('Male', 0);
+                $femaleCount = $genderCount->get('Female', 0);
+
+                return [
+                    'name' => $generation->name,
+                    'Nam' => $maleCount,
+                    'Nữ' => $femaleCount,
+                ];
             });
 
-            $maleCount = $genderCount->get('Male', 0);
-            $femaleCount = $genderCount->get('Female', 0);
-            $total = $maleCount + $femaleCount;
-
-            // Tính tỷ lệ phần trăm
-            $maleRatio = round(($maleCount / $total) * 100, 2);
-            $femaleRatio = round(($femaleCount / $total) * 100, 2);
-
-            // Trả về kết quả
-            return [
-                'maleCount' => $maleCount,
-                'femaleCount' => $femaleCount,
-                'maleRatio' => $maleRatio . '%',
-                'femaleRatio' => $femaleRatio . '%'
-            ];
+            return $genderRatios;
         });
     }
-
 
     // hàm tính toán thống kê của lớp theo kỳ
     private function calculateScoreStatisticsByClassSemester($scores, $semesterName, $className)
@@ -528,7 +521,7 @@ class StatisticService
         }
 
 
-        return (object)[
+        return (object) [
             'class' => $class->name,
             'academicYear' => $academicYear->name,
             'finalScores' => $finalScores,

@@ -105,10 +105,10 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function getGenderRatioInGeneration($generationSlug)
+    public function getGenderRatioInGeneration()
     {
         try {
-            $count = $this->statisticService->getGenderRatioInGeneration($generationSlug);
+            $count = $this->statisticService->getGenderRatioInGeneration();
 
             return $this->successResponse(
                 $count,
