@@ -295,9 +295,10 @@ class ClassController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function getFailedStudents(){
+    public function getFailedStudents()
+    {
         try {
-            
+
             $getFailedStudents = $this->classService->getFailedStudents();
 
             return $this->successResponse(
@@ -309,6 +310,38 @@ class ClassController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
+
+    public function getSemesterByAcademicYear($slug)
+    {
+        $class = Classes::where('slug', $slug)
+            ->with(['teacher', 'academicYears', 'blocks', 'students', 'subjects'])
+            ->first();
+
+        if ($class === null) {
+            return $this->errorResponse(
+                'Không tìm thấy lớp học',
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        $academicYear = $class->academicYears->first();
+
+        $semesters = $academicYear->semesters()->get();
+
+        $data = $semesters->map(function ($semester) {
+            return [
+                'semesterName' => $semester->name,
+                'semesterSlug' => $semester->slug,
+            ];
+        });
+
+        return $this->successResponse(
+            $data,
+            'Lấy thông tin kỳ học của năm thành công',
+            Response::HTTP_OK
+        );
+    }
+
     public function destroy($slug)
     {
         try {

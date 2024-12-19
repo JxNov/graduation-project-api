@@ -45,7 +45,6 @@ Route::prefix('roles')
         Route::delete('/{slug}/force-delete', [RoleController::class, 'forceDelete']);
     });
 
-
 // Quyền
 Route::prefix('permissions')
     ->group(function () {
@@ -141,6 +140,7 @@ Route::prefix('classes')
         Route::post('/', [ClassController::class, 'store']);
         Route::get('/trash', [ClassController::class, 'trash']);
         Route::get('/{slug}', [ClassController::class, 'show']);
+        Route::get('/get-semester/{slug}', [ClassController::class, 'getSemesterByAcademicYear']);
         Route::get('/teacher/{username}', [ClassController::class, 'getClassOfTeacher']);
         Route::get('/student/{username}', [ClassController::class, 'getClassOfStudent']);
         Route::patch('/{slug}', [ClassController::class, 'update']);
