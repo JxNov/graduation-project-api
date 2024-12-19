@@ -84,7 +84,7 @@ Route::prefix('generations')
         Route::get('/{slug}', [GenerationController::class, 'show']);
         Route::patch('/{slug}', [GenerationController::class, 'update']);
         Route::delete('/{slug}', [GenerationController::class, 'destroy']);
-        Route::get('/restore/{slug}', [GenerationController::class, 'restore']);
+        Route::patch('/restore/{slug}', [GenerationController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [GenerationController::class, 'forceDelete']);
     });
 
@@ -99,7 +99,7 @@ Route::prefix('academic-years')
         Route::get('/edit/{slug}', [AcademicYearController::class, 'edit']);
         Route::patch('/{slug}', [AcademicYearController::class, 'update']);
         Route::delete('/{slug}', [AcademicYearController::class, 'destroy']);
-        Route::get('/restore/{slug}', [AcademicYearController::class, 'restore']);
+        Route::patch('/restore/{slug}', [AcademicYearController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [AcademicYearController::class, 'forceDelete']);
     });
 
@@ -114,7 +114,7 @@ Route::prefix('semesters')
         Route::get('/edit/{slug}', [SemesterController::class, 'edit']);
         Route::patch('/{slug}', [SemesterController::class, 'update']);
         Route::delete('/{slug}', [SemesterController::class, 'destroy']);
-        Route::get('/restore/{slug}', [SemesterController::class, 'restore']);
+        Route::patch('/restore/{slug}', [SemesterController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [SemesterController::class, 'forceDelete']);
     });
 
@@ -144,7 +144,7 @@ Route::prefix('classes')
         Route::patch('/{slug}', [ClassController::class, 'update']);
         Route::delete('/{slug}', [ClassController::class, 'destroy']);
         Route::post('/assign-class/{slug}', [ClassController::class, 'assignClassToTeacher']);
-        Route::get('/restore/{slug}', [ClassController::class, 'restore']);
+        Route::patch('/restore/{slug}', [ClassController::class, 'restore']);
         Route::delete('/force-delete/{slug}', [ClassController::class, 'forceDelete']);
         Route::post('/promote-student/{slug}', [ClassController::class, 'promoteStudent']);
     });
