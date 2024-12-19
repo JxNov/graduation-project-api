@@ -186,7 +186,7 @@ class AcademicYearService
                 throw new Exception('Cần khôi phục khóa học sinh của năm học trước');
             }
 
-            if ($generation->withTrashed()) {
+            if ($generation->trashed()) {
                 throw new Exception('Cần khôi phục khóa học sinh của năm học trước');
             }
 
