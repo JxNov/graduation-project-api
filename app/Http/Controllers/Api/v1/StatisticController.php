@@ -77,10 +77,10 @@ class StatisticController extends Controller
         }
     }
 
-    public function countStudentInBlockByAcademicYear()
+    public function countStudentInBlockByAcademicYear($academic_year_slug)
     {
         try {
-            $count = $this->statisticService->countStudentInBlockByAcademicYear();
+            $count = $this->statisticService->countStudentInBlockByAcademicYear($academic_year_slug);
 
             return $this->successResponse(
                 $count,
@@ -187,7 +187,8 @@ class StatisticController extends Controller
             return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
-    public function getPerformationLevelAll($academicYearSlug){
+    public function getPerformationLevelAll($academicYearSlug)
+    {
         try {
             $performation = $this->statisticService->getPerformationLevelAll($academicYearSlug);
             return $this->successResponse(

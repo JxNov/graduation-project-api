@@ -112,34 +112,33 @@ class StatisticService
         }
     }
 
-    public function countStudentInBlockByAcademicYear()
+    public function countStudentInBlockByAcademicYear($academic_year_slug)
     {
         try {
-            $academicYears = AcademicYear::with('classes.blocks', 'classes.students')->get();
-    
-            $blockStudentCount = $academicYears->flatMap(function ($academicYear) {
-                return $academicYear->classes->flatMap(function ($class) use ($academicYear) {
-                    return $class->blocks->map(function ($block) use ($class, $academicYear) {
-                        return [
-                            'academicYear' => $academicYear->name,
-                            'blockName' => $block->name,
-                            'studentCount' => $class->students->count(),
-                        ];
-                    });
+            $academicYear = AcademicYear::where('slug', $academic_year_slug)->first();
+
+            if ($academicYear === null) {
+                throw new Exception('Năm học không tồn tại hoặc đã bị xóa');
+            }
+            $blockStudentCount = $academicYear->classes->flatMap(function ($class) {
+                return $class->blocks->map(function ($block) use ($class) {
+                    return [
+                        'blockName' => $block->name,
+                        'studentCount' => $class->students->count(),
+                    ];
                 });
             });
-    
+
             return $blockStudentCount->groupBy('blockName')->map(function ($students, $blockName) {
                 return [
-                    'block' => $blockName,
-                    'academicYear' => $students->pluck('academicYear')->last(),
+                    'name' => $blockName,
                     'totalStudents' => $students->sum('studentCount'),
                 ];
             })->values();
         } catch (Exception $e) {
             throw $e;
         }
-    }    
+    }
 
     public function countStudentsInBlock($block_slug)
     {
